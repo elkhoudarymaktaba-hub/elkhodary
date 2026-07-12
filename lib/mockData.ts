@@ -469,7 +469,19 @@ export const defaultSiteSettings = {
   top_ribbon_text: 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!',
   hero_card_type: 'box',
   hero_card_id: 'box-2',
-  featured_box_id: 'box-2'
+  featured_box_id: 'box-2',
+  box_builder_title: 'اصنع باقتك المدرسية المخصصة بنفسك!',
+  box_builder_desc: 'لا تتقيد بالباقات الجاهزة. اختر الكشكول، القلم، المسطرة، وكل ما تحتاجه بالكميات التي تناسبك تماماً، ودع الباقي علينا لتعبئته وتوصيله لباب منزلك.',
+  box_builder_image: '',
+  box_builder_step1: 'اختر المرحلة الدراسية',
+  box_builder_step2: 'عدّل وزد الأدوات والكميات',
+  box_builder_step3: 'أضف الصندوق للسلة',
+  box_builder_img1: '',
+  box_builder_img2: '',
+  box_builder_img3: '',
+  box_builder_img4: '',
+  box_builder_img5: '',
+  box_builder_img6: ''
 };
 
 export const defaultPages: PageData[] = [
