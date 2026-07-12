@@ -253,8 +253,8 @@ export default async function AboutPage() {
                               <p className="text-[10px] text-ink-soft/60 line-clamp-2 leading-relaxed mb-3">{box.description}</p>
                               <div className="flex items-center justify-between border-t border-dashed pt-2.5">
                                 <span className="text-xs font-black text-coral">{box.base_price} ج.م</span>
-                                <Link href={`/box-builder?stage=${box.stage}`} className="px-2.5 py-1 bg-amber text-ink font-bold text-[10px] rounded-cta">
-                                  تعديل الباقة
+                                <Link href={`/boxes/${box.id}`} className="px-2.5 py-1 bg-amber text-ink font-bold text-[10px] rounded-cta">
+                                  عرض الباقة
                                 </Link>
                               </div>
                             </div>

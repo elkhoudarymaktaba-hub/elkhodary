@@ -162,10 +162,10 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                   </div>
                   
                   <Link
-                    href={`/box-builder?stage=${featuredBox.stage}`}
+                    href={`/boxes/${featuredBox.id}`}
                     className="py-3 px-6 rounded-cta font-bold text-sm bg-ink text-white hover:bg-ink-soft shadow-md transition-all duration-300 flex items-center gap-2"
                   >
-                    <span>عرض وتعديل الباقة</span>
+                    <span>عرض وتفاصيل الباقة</span>
                   </Link>
                 </div>
               </div>

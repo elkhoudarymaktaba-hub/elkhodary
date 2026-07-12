@@ -290,7 +290,7 @@ export default async function HomePage() {
                   description: b.description || '',
                   imageUrl: b.image || b.image_url || 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=800&q=80',
                   price: b.base_price,
-                  link: `/box-builder?stage=${b.stage}`
+                  link: `/boxes/${b.id}`
                 };
               }
             }
@@ -336,10 +336,10 @@ export default async function HomePage() {
                           {block.content.ctaText || "تسوق الباقات المدرسية"}
                         </Link>
                         <Link
-                          href={block.content.cta2Link || "/box-builder"}
+                          href={block.content.cta2Link || "/products"}
                           className="w-full sm:w-auto px-8 py-4 bg-white text-ink border border-paper-line hover:border-ink font-bold text-sm rounded-cta text-center transition-all duration-300 hover:bg-paper-dark hover:scale-105"
                         >
-                          {block.content.cta2Text || "صانع الصناديق الخاص"}
+                          {block.content.cta2Text || "تصفح كافة المنتجات"}
                         </Link>
                       </div>
                     </div>

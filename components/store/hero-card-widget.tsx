@@ -83,7 +83,7 @@ export default function HeroCardWidget({ initialData }: { initialData: any }) {
               description: box.description || '',
               imageUrl: box.image_url || box.image || 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=600',
               price: box.base_price,
-              link: `/box-builder?stage=${box.stage}`
+              link: `/boxes/${box.id}`
             });
           } else {
             const mockBox = getMockData.boxes().find(b => b.id === id);
@@ -95,7 +95,7 @@ export default function HeroCardWidget({ initialData }: { initialData: any }) {
                 description: mockBox.description || '',
                 imageUrl: mockBox.image_url || mockBox.image || 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=600',
                 price: mockBox.base_price,
-                link: `/box-builder?stage=${mockBox.stage}`
+                link: `/boxes/${mockBox.id}`
               });
             }
           }

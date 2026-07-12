@@ -157,7 +157,7 @@ export default async function DynamicCustomPage({ params }: PageProps) {
                   description: b.description || '',
                   imageUrl: b.image || b.image_url || 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=800&q=80',
                   price: b.base_price,
-                  link: `/box-builder?stage=${b.stage}`
+                  link: `/boxes/${b.id}`
                 };
               }
             }

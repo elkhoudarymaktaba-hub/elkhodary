@@ -167,15 +167,7 @@ export default async function BoxesPage() {
           ) : (
             <div className="bg-white rounded-card border border-paper-line p-16 text-center shadow-card max-w-lg mx-auto">
               <Package size={48} className="mx-auto text-ink-soft/20 mb-4 animate-pulse" />
-              <p className="text-ink-soft/60 text-xs">لا تتوفر باقات جاهزة في قاعدة البيانات حالياً. يمكنك استخدام صانع الصناديق لتصميم باقتك الخاصة.</p>
-              <div className="mt-6">
-                <Link
-                  href="/box-builder"
-                  className="px-6 py-2.5 bg-coral hover:bg-coral-deep text-white font-bold text-xs rounded-cta transition-colors"
-                >
-                  الذهاب لصانع الصناديق
-                </Link>
-              </div>
+              <p className="text-ink-soft/60 text-xs">لا تتوفر باقات جاهزة في قاعدة البيانات حالياً. ترقبوا انطلاق باقاتنا المدرسية قريباً!</p>
             </div>
           )}
         </div>

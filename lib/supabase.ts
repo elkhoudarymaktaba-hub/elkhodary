@@ -365,6 +365,163 @@ const mockAuth = {
   }
 };
 
+// Memory cache storage for Supabase queries to make navigation instant
+const queryCache = new Map<string, { data: any; error: any; count?: number; timestamp: number }>();
+const CACHE_TTL = 10000; // Cache duration: 10 seconds
+
+function getCacheKey(table: string, method: string, args: any[], filters: any[], order: any, limit: any, single: boolean) {
+  return JSON.stringify({ table, method, args, filters, order, limit, single });
+}
+
+function invalidateCache(table: string) {
+  for (const key of queryCache.keys()) {
+    if (key.includes(`"table":"${table}"`)) {
+      queryCache.delete(key);
+    }
+  }
+}
+
+class CachedQueryBuilder {
+  private table: string;
+  private columns: string = '*';
+  private filters: { type: string; field: string; value: any }[] = [];
+  private orderField: string = '';
+  private orderAscending: boolean = true;
+  private limitCount: number = 1000;
+  private isSingle: boolean = false;
+  private underlyingBuilder: any;
+
+  constructor(table: string, underlyingBuilder: any) {
+    this.table = table;
+    this.underlyingBuilder = underlyingBuilder;
+  }
+
+  select(columns: string = '*') {
+    this.columns = columns;
+    if (this.underlyingBuilder) {
+      this.underlyingBuilder = this.underlyingBuilder.select(columns);
+    }
+    return this;
+  }
+
+  eq(field: string, value: any) {
+    this.filters.push({ type: 'eq', field, value });
+    if (this.underlyingBuilder) {
+      this.underlyingBuilder = this.underlyingBuilder.eq(field, value);
+    }
+    return this;
+  }
+
+  neq(field: string, value: any) {
+    this.filters.push({ type: 'neq', field, value });
+    if (this.underlyingBuilder) {
+      this.underlyingBuilder = this.underlyingBuilder.neq(field, value);
+    }
+    return this;
+  }
+
+  in(field: string, values: any[]) {
+    this.filters.push({ type: 'in', field, value: values });
+    if (this.underlyingBuilder) {
+      this.underlyingBuilder = this.underlyingBuilder.in(field, values);
+    }
+    return this;
+  }
+
+  filter(column: string, operator: string, value: any) {
+    this.filters.push({ type: 'filter', field: `${column}:${operator}`, value });
+    if (this.underlyingBuilder) {
+      this.underlyingBuilder = this.underlyingBuilder.filter(column, operator, value);
+    }
+    return this;
+  }
+
+  order(field: string, { ascending = true } = {}) {
+    this.orderField = field;
+    this.orderAscending = ascending;
+    if (this.underlyingBuilder) {
+      this.underlyingBuilder = this.underlyingBuilder.order(field, { ascending });
+    }
+    return this;
+  }
+
+  limit(count: number) {
+    this.limitCount = count;
+    if (this.underlyingBuilder) {
+      this.underlyingBuilder = this.underlyingBuilder.limit(count);
+    }
+    return this;
+  }
+
+  single() {
+    this.isSingle = true;
+    if (this.underlyingBuilder) {
+      this.underlyingBuilder = this.underlyingBuilder.single();
+    }
+    return this;
+  }
+
+  insert(values: any) {
+    invalidateCache(this.table);
+    return this.underlyingBuilder.insert(values);
+  }
+
+  update(values: any) {
+    invalidateCache(this.table);
+    return this.underlyingBuilder.update(values);
+  }
+
+  upsert(values: any) {
+    invalidateCache(this.table);
+    return this.underlyingBuilder.upsert(values);
+  }
+
+  delete() {
+    invalidateCache(this.table);
+    return this.underlyingBuilder.delete();
+  }
+
+  async then(onfulfilled?: (value: any) => any, onrejected?: (reason: any) => any) {
+    const cacheKey = getCacheKey(
+      this.table,
+      'select',
+      [this.columns],
+      this.filters,
+      { field: this.orderField, asc: this.orderAscending },
+      this.limitCount,
+      this.isSingle
+    );
+
+    const cached = queryCache.get(cacheKey);
+    const now = Date.now();
+    if (cached && (now - cached.timestamp < CACHE_TTL)) {
+      if (onfulfilled) {
+        return Promise.resolve({ data: cached.data, error: cached.error, count: cached.count }).then(onfulfilled, onrejected);
+      }
+      return { data: cached.data, error: cached.error, count: cached.count };
+    }
+
+    try {
+      const res = await this.underlyingBuilder;
+      queryCache.set(cacheKey, {
+        data: res.data,
+        error: res.error,
+        count: res.count,
+        timestamp: now
+      });
+      if (onfulfilled) {
+        return Promise.resolve(res).then(onfulfilled, onrejected);
+      }
+      return res;
+    } catch (err) {
+      if (onrejected) {
+        return Promise.reject(err).catch(onrejected);
+      }
+      throw err;
+    }
+  }
+}
+
 export const mockSupabase = {
   from(table: string) {
     return new MockSupabaseQueryBuilder(table);
@@ -377,8 +534,21 @@ export const mockSupabase = {
   }
 };
 
-// تصدير العميل الفعال تلقائياً بناءً على إعدادات .env
-export const supabase = isSupabaseConfigured ? realSupabase! : (mockSupabase as any);
+const cachedSupabase = {
+  auth: isSupabaseConfigured ? realSupabase!.auth : mockAuth,
+  storage: isSupabaseConfigured ? realSupabase!.storage : {
+    from(bucket: string) {
+      return new MockStorageBuilder(bucket);
+    }
+  },
+  from(table: string) {
+    const underlying = isSupabaseConfigured ? realSupabase!.from(table) : mockSupabase.from(table);
+    return new CachedQueryBuilder(table, underlying);
+  }
+};
+
+// تصدير العميل الفعال تلقائياً مع ميزة التخزين المؤقت (Cached)
+export const supabase = cachedSupabase as any;
 
 // مهايئ الحصول على عميل الخدمة (للتوافق)
 export const getServiceSupabase = () => {
