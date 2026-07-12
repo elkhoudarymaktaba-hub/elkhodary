@@ -56,7 +56,7 @@ export default function AnalyticsPage() {
   const [statusDonutData, setStatusDonutData] = useState<{ name: string; value: number; color: string }[]>([]);
   const [topProductsData, setTopProductsData] = useState<{ name: string; qty: number }[]>([]);
   const [cartEventsData, setCartEventsData] = useState<{ name: string; count: number }[]>([]);
-  const [visitSourcesData, setVisitSourcesData] = useState<{ name: string; value: number }[]>([]);
+  const [visitSourcesData, setVisitSourcesData] = useState<{ name: string; value: number; color: string }[]>([]);
   const [govOrdersData, setGovOrdersData] = useState<{ governorate: string; orders: number }[]>([]);
   const [avgOrderOverTime, setAvgOrderOverTime] = useState<{ date: string; avg: number }[]>([]);
 
