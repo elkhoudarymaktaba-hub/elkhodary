@@ -1,0 +1,134 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Design Tokens CSS Variables */
+:root {
+  /* Colors */
+  --color-primary: #1B4F8A;
+  --color-primary-rgb: 27, 79, 138;
+  --color-secondary: #2E7FD9;
+  --color-secondary-rgb: 46, 127, 217;
+  --color-accent: #4FA8E8;
+  --color-accent-rgb: 79, 168, 232;
+  --color-background: #F0F6FF;
+  --color-surface: #FFFFFF;
+  
+  /* Text Colors */
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: #5A6B7E;
+  
+  /* Status Colors */
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+
+  /* Typography */
+  --font-arabic: 'Cairo', sans-serif;
+  --font-english: 'Inter', sans-serif;
+  
+  /* Border Radii */
+  --radius-card: 16px;
+  --radius-button: 24px;
+  --radius-input: 12px;
+  
+  /* Shadows */
+  --shadow-premium: 0 4px 24px rgba(27, 79, 138, 0.08);
+  --shadow-premium-hover: 0 8px 32px rgba(27, 79, 138, 0.12);
+  
+  /* Transitions */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.15s ease;
+}
+
+/* Reset and Base Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-arabic);
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  direction: rtl;
+  text-align: right;
+  min-height: 100vh;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Mix Arabic and English Typography */
+[lang="en"], .number, .en-text {
+  font-family: var(--font-english);
+}
+
+/* Base Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--color-primary);
+}
+
+a {
+  color: var(--color-secondary);
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-primary);
+}
+
+button {
+  font-family: var(--font-arabic);
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius-button);
+  border: none;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+input, textarea, select {
+  font-family: var(--font-arabic);
+  font-size: 1rem;
+  border-radius: var(--radius-input);
+  border: 1.5px solid rgba(46, 127, 217, 0.15);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  padding: 0.75rem 1rem;
+  outline: none;
+  transition: var(--transition-smooth);
+  width: 100%;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 4px rgba(46, 127, 217, 0.1);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}

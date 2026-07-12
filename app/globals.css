@@ -1,0 +1,358 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink: #162E5C;             /* كحلي أساسي أزرق غني */
+  --ink-soft: #2E7FD9;        /* أزرق زاهي من الشعار */
+  --ink-muted: #6E85B7;       /* رمادي أزرق ناعم */
+  --paper: #F6F1E4;           /* خلفية الصفحة ورقي كريمي */
+  --paper-line: #E7DCC2;      /* لون الحدود الخفيفة */
+  --paper-dark: #EFE8D6;      /* ورقي كريمي أغمق قليلاً */
+  --white: #FFFFFF;           /* خلفية الكروت */
+  
+  --amber: #E7A537;           /* أصفر خردلي */
+  --amber-deep: #C9862A;      /* درجة غامقة */
+  --amber-light: #FBEBCB;     /* درجة فاتحة */
+  
+  --coral: #E4573F;           /* أحمر مرجاني */
+  --coral-deep: #C43F2B;      /* درجة غامقة */
+  --coral-light: #FBE1DB;     /* درجة فاتحة */
+  
+  --sage: #4F8F73;            /* أخضر سيچ */
+  --sage-deep: #396A56;       /* درجة غامقة */
+  --sage-light: #DCEEE5;      /* درجة فاتحة */
+  
+  --plum: #7A5C9E;            /* بنفسجي */
+  --plum-light: #EAE1F3;      /* بنفسجي فاتح */
+
+  --radius-card: 16px;
+  --radius-button: 24px;
+  --radius-input: 12px;
+}
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-tajawal;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-cairo text-ink font-bold;
+  }
+
+  /* Font helper mappings */
+  .font-arabic {
+    font-family: var(--font-cairo), sans-serif;
+  }
+
+  .font-english {
+    font-family: var(--font-inter), sans-serif;
+  }
+
+  .font-tajawal {
+    font-family: var(--font-tajawal), sans-serif;
+  }
+
+  /* Force Inter for numbers and prices */
+  .font-numbers {
+    font-family: var(--font-inter), sans-serif;
+  }
+}
+
+/* Glassmorphism utility with ink-tinted backdrop shadow */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(14, 51, 80, 0.08);
+}
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* notebook lined paper style */
+.bg-notebook-lines {
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    var(--paper) 0px,
+    var(--paper) 35px,
+    var(--paper-line) 35px,
+    var(--paper-line) 36px
+  );
+}
+
+/* Highlighter effect behind key terms */
+.highlighter {
+  position: relative;
+  z-index: 1;
+}
+.highlighter::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  right: 0;
+  width: 100%;
+  height: 35%;
+  background-color: rgba(217, 175, 86, 0.25);
+  z-index: -1;
+  transform-origin: right;
+  transform: scaleX(0);
+  animation: highlight 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 1.2s;
+}
+@keyframes highlight {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Blinking dot eyebrow */
+.blink {
+  animation: blinker 1.8s linear infinite;
+}
+@keyframes blinker {
+  50% {
+    opacity: 0.1;
+  }
+}
+
+/* Staggered rise animation */
+.animate-rise {
+  animation: riseUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes riseUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating animation for decorative shapes */
+.float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+.float-delayed {
+  animation: floatDelayed 8s ease-in-out infinite;
+}
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(3deg);
+  }
+}
+@keyframes floatDelayed {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(10px) rotate(-4deg);
+  }
+}
+
+/* Scroll reveal logic */
+.reveal {
+  opacity: 0;
+  transform: translateY(26px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Pulsing Cart Counter Badge */
+.pulse-badge {
+  animation: pulseBadge 2.4s ease-in-out infinite;
+}
+@keyframes pulseBadge {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.18);
+  }
+}
+
+/* Respect user prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-delay: 0s !important;
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* 🌙 Dark Mode / Night Mode for Admin Panel */
+body.admin-dark {
+  --ink: #F8FAFC;             /* Slate 50 (Very light gray) */
+  --ink-soft: #60A5FA;        /* Sky blue / accent blue */
+  --ink-muted: #94A3B8;       /* Slate 400 (Muted gray) */
+  --paper: #0F172A;           /* Slate 900 (Main dark background) */
+  --paper-line: #1E293B;      /* Slate 800 (Borders) */
+  --paper-dark: #1E293B;      /* Slate 800 */
+  --white: #1E293B;           /* Slate 800 (Card background) */
+  
+  --amber: #F59E0B;
+  --amber-deep: #D97706;
+  --amber-light: #1E1B4B;     /* Slate-related dark amber */
+  
+  --coral: #EF4444;
+  --coral-deep: #DC2626;
+  --coral-light: #7F1D1D;
+  
+  --sage: #10B981;
+  --sage-deep: #059669;
+  --sage-light: #064E3B;
+}
+
+/* Global resets for admin dark mode components */
+body.admin-dark {
+  background-color: var(--paper) !important;
+  color: var(--ink) !important;
+}
+
+body.admin-dark .bg-white {
+  background-color: var(--white) !important;
+}
+
+body.admin-dark .bg-slate-50 {
+  background-color: #1E293B !important;
+}
+
+body.admin-dark .bg-slate-100 {
+  background-color: #0F172A !important;
+}
+
+body.admin-dark .bg-[#F6F1E4] {
+  background-color: #0F172A !important;
+}
+
+body.admin-dark .bg-[#F6F1E4]\/30 {
+  background-color: rgba(15, 23, 42, 0.3) !important;
+}
+
+body.admin-dark .bg-[#FBEBCB]\/15 {
+  background-color: rgba(245, 158, 11, 0.08) !important;
+}
+
+body.admin-dark .bg-[#FBEBCB]\/5 {
+  background-color: rgba(245, 158, 11, 0.03) !important;
+}
+
+body.admin-dark .text-slate-800 {
+  color: #F8FAFC !important;
+}
+
+body.admin-dark .text-slate-700 {
+  color: #E2E8F0 !important;
+}
+
+body.admin-dark .text-slate-600 {
+  color: #CBD5E1 !important;
+}
+
+body.admin-dark .text-slate-500 {
+  color: #94A3B8 !important;
+}
+
+body.admin-dark .text-slate-400 {
+  color: #64748B !important;
+}
+
+body.admin-dark .border-slate-100 {
+  border-color: var(--paper-line) !important;
+}
+
+body.admin-dark .border-slate-200 {
+  border-color: var(--paper-line) !important;
+}
+
+body.admin-dark .border-\[\#E7DCC2\] {
+  border-color: var(--paper-line) !important;
+}
+
+body.admin-dark input,
+body.admin-dark textarea,
+body.admin-dark select {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  border-color: var(--paper-line) !important;
+}
+
+body.admin-dark input:focus,
+body.admin-dark textarea:focus,
+body.admin-dark select:focus {
+  border-color: var(--ink-soft) !important;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15) !important;
+}
+
+body.admin-dark table {
+  color: #E2E8F0 !important;
+}
+
+body.admin-dark table tr:hover {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+body.admin-dark table th {
+  color: #94A3B8 !important;
+}
+
+/* Sidebar overrides for admin dark mode */
+body.admin-dark aside {
+  background-color: #0F172A !important;
+  border-left-color: var(--paper-line) !important;
+}
+
+body.admin-dark aside a {
+  color: #94A3B8 !important;
+}
+
+body.admin-dark aside a.active,
+body.admin-dark aside a:hover {
+  background-color: #1E293B !important;
+  color: #60A5FA !important;
+}
+
+/* Dialog wrapper overrides */
+body.admin-dark [role="dialog"] {
+  background-color: #0F172A !important;
+  border-color: var(--paper-line) !important;
+  color: #F8FAFC !important;
+}
+
+body.admin-dark [role="dialog"] h2,
+body.admin-dark [role="dialog"] h3 {
+  color: #F8FAFC !important;
+}
+
+/* Button overrides for dark mode */
+body.admin-dark button[variant="outline"] {
+  border-color: var(--paper-line) !important;
+  color: #F8FAFC !important;
+  background-color: transparent !important;
+}
+
+body.admin-dark button[variant="outline"]:hover {
+  background-color: #1E293B !important;
+}
+

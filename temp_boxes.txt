@@ -1,0 +1,141 @@
+import Link from 'next/link';
+import Image from 'next/image';
+import { supabase } from '@/lib/supabase';
+import { Package, ArrowLeft } from 'lucide-react';
+
+export const revalidate = 0; // Fresh data on every load
+
+async function getBoxes() {
+  try {
+    const { data, error } = await supabase
+      .from('boxes')
+      .select('*')
+      .eq('is_active', true)
+      .order('base_price', { ascending: true });
+
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    console.error('Error fetching boxes:', err);
+    return [];
+  }
+}
+
+export const metadata = {
+  title: 'الباقات المدرسية الجاهزة حسب المرحلة',
+  description: 'تسوق باقات ومستلزمات المدارس الجاهزة والكاملة والمعدّة مسبقاً لكل من رياض الأطفال والابتدائي والإعدادي والثانوي في مصر.',
+};
+
+export default async function BoxesPage() {
+  const boxes = await getBoxes();
+
+  const getStageLabel = (stage: string) => {
+    switch (stage.toLowerCase()) {
+      case 'kg': return 'رياض الأطفال';
+      case 'primary': return 'المرحلة الابتدائية';
+      case 'middle': return 'المرحلة الإعدادية';
+      case 'high': return 'المرحلة الثانوية';
+      default: return stage;
+    }
+  };
+
+  return (
+    <div className="bg-paper-dark/30 min-h-screen py-12 pt-28">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        
+        {/* Page Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-3xl font-black text-ink">
+            الباقات المدرسية الجاهزة
+          </h1>
+          <p className="text-ink-soft/60 text-xs sm:text-sm max-w-lg mx-auto">
+            نوفر باقات مدروسة ومجهزة بعناية فائقة تحتوي على كافة مستلزمات كل مرحلة دراسية لبدء العام الدراسي بقوة وبضغطة زر واحدة.
+          </p>
+        </div>
+
+        {/* Available Boxes */}
+        <div className="space-y-6 pt-6">
+          <div className="border-b border-dashed border-paper-line pb-3">
+            <h2 className="text-xl font-extrabold text-ink">الباقات المدرسية الجاهزة المتاحة للطلب</h2>
+          </div>
+
+          {boxes.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {boxes.map((box, index) => {
+                const spineColors = ['bg-sage', 'bg-coral', 'bg-amber', 'bg-ink-soft'];
+                const spineColor = spineColors[index % spineColors.length];
+
+                return (
+                  <div
+                    key={box.id}
+                    className="bg-white rounded-card overflow-hidden border border-paper-line shadow-card hover:shadow-brand transition-all duration-300 flex flex-col justify-between relative transform hover:-translate-y-2 hover:-rotate-[0.6deg]"
+                  >
+                    <div className="flex flex-col h-full justify-between">
+                      <div className="relative h-56 bg-paper-dark/20 rounded-bl-xl overflow-hidden">
+                        {box.image ? (
+                          <Image
+                            src={box.image}
+                            alt={box.name}
+                            fill
+                            className="object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-primary/5 text-primary">
+                            <Package size={48} />
+                          </div>
+                        )}
+                        <span className="absolute top-4 left-4 bg-white text-ink-soft text-xs font-bold px-3 py-1 rounded-full border border-paper-line">
+                          {getStageLabel(box.stage)}
+                        </span>
+                      </div>
+
+                      <div className="p-5 flex-grow flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <h3 className="font-extrabold text-base text-ink leading-snug">{box.name}</h3>
+                          <p className="text-ink-soft/70 text-xs leading-relaxed line-clamp-2">
+                            {box.description || 'باقة متكاملة تحوي أفضل المستلزمات لبدء العام الدراسي بقوة.'}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-5 mt-4 border-t border-dashed border-paper-line">
+                          <div className="font-numbers">
+                            <span className="block text-[9px] text-ink-soft/40 font-cairo font-bold">سعر الباقة الأساسي</span>
+                            <span className="text-coral-deep font-extrabold text-lg">
+                              {box.base_price} <span className="text-xs font-cairo font-normal text-ink-soft">ج.م</span>
+                            </span>
+                          </div>
+
+                          <Link
+                            href={`/boxes/${box.id}`}
+                            className="py-2 px-5 bg-coral hover:bg-coral-deep text-white font-bold text-xs rounded-cta transition-colors flex items-center gap-1 shadow-md shadow-coral/10"
+                          >
+                            <span>عرض وتعديل</span>
+                            <ArrowLeft size={14} />
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white rounded-card border border-paper-line p-16 text-center shadow-card max-w-lg mx-auto">
+              <Package size={48} className="mx-auto text-ink-soft/20 mb-4 animate-pulse" />
+              <p className="text-ink-soft/60 text-xs">لا تتوفر باقات جاهزة في قاعدة البيانات حالياً. يمكنك استخدام صانع الصناديق لتصميم باقتك الخاصة.</p>
+              <div className="mt-6">
+                <Link
+                  href="/box-builder"
+                  className="px-6 py-2.5 bg-coral hover:bg-coral-deep text-white font-bold text-xs rounded-cta transition-colors"
+                >
+                  الذهاب لصانع الصناديق
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
+    </div>
+  );
+}
