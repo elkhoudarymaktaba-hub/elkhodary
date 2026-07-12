@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Search, Plus, Star, StarOff, Edit2, Trash2, ToggleLeft, 
-  ToggleRight, Check, AlertCircle, Upload, X, ChevronLeft, ChevronRight
+  ToggleRight, Check, AlertCircle, Upload, X, ChevronLeft, ChevronRight, Image as ImageIcon
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getMockData, saveMockData, Product, Category } from '@/lib/mockData';
