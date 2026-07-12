@@ -65,13 +65,13 @@ async function DynamicProductsRow({ block }: { block: PageBlock }) {
         {products.length > 0 ? (
           isGrid ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {products.map((product) => (
+              {products.map((product: any) => (
                 <ProductCard key={product.id} product={product as any} />
               ))}
             </div>
           ) : (
             <div className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x" dir="rtl">
-              {products.map((product) => (
+              {products.map((product: any) => (
                 <div key={product.id} className="min-w-[280px] sm:min-w-[300px] snap-start shrink-0">
                   <ProductCard product={product as any} />
                 </div>
@@ -296,13 +296,13 @@ export default async function DynamicCustomPage({ params }: PageProps) {
                   {(() => {
                     const displayedBoxes = Array.isArray(block.content.boxIds) && block.content.boxIds.length > 0
                       ? block.content.boxIds
-                          .map(id => boxes.find(b => b.id === id))
+                          .map((id: any) => boxes.find((b: any) => b.id === id))
                           .filter(Boolean)
                       : boxes;
 
                     return displayedBoxes.length > 0 ? (
                       <div className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x">
-                        {displayedBoxes.map((box, index) => {
+                        {displayedBoxes.map((box: any, index: number) => {
                           const spineColors = ['bg-sage', 'bg-coral', 'bg-amber', 'bg-ink-soft'];
                           const spineColor = spineColors[index % spineColors.length];
 
