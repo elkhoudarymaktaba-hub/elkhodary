@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase, cachedFetch } from '@/lib/supabase';
 import ProductCard from '@/components/store/product-card';
 import HeroCardWidget from '@/components/store/hero-card-widget';
 import BoxBuilderTeaser from '@/components/store/box-builder-teaser';
@@ -11,30 +11,32 @@ import { PageBlock, getMockData } from '@/lib/mockData';
 export const revalidate = 0; // Fresh data on every load
 
 async function getPageData(slug: string) {
-  try {
-    const { data: pageData } = await supabase
-      .from('pages')
-      .select('*')
-      .eq('slug', slug)
-      .limit(1);
+  return cachedFetch(`page-data-${slug}`, async () => {
+    try {
+      const { data: pageData } = await supabase
+        .from('pages')
+        .select('*')
+        .eq('slug', slug)
+        .limit(1);
 
-    const dbPage = pageData && pageData.length > 0 ? pageData[0] : null;
-    const mockPage = getMockData.pages().find(p => p.slug.toLowerCase() === slug.toLowerCase());
+      const dbPage = pageData && pageData.length > 0 ? pageData[0] : null;
+      const mockPage = getMockData.pages().find(p => p.slug.toLowerCase() === slug.toLowerCase());
 
-    let useMock = !dbPage;
-    if (dbPage && mockPage) {
-      const dbTime = dbPage.updated_at ? new Date(dbPage.updated_at).getTime() : 0;
-      const mockTime = mockPage.updated_at ? new Date(mockPage.updated_at).getTime() : 0;
-      if (mockTime > dbTime) {
-        useMock = true;
+      let useMock = !dbPage;
+      if (dbPage && mockPage) {
+        const dbTime = dbPage.updated_at ? new Date(dbPage.updated_at).getTime() : 0;
+        const mockTime = mockPage.updated_at ? new Date(mockPage.updated_at).getTime() : 0;
+        if (mockTime > dbTime) {
+          useMock = true;
+        }
       }
-    }
 
-    return useMock ? mockPage : dbPage;
-  } catch (error) {
-    console.error('Error fetching dynamic page data:', error);
-    return null;
-  }
+      return useMock ? mockPage : dbPage;
+    } catch (error) {
+      console.error('Error fetching dynamic page data:', error);
+      return null;
+    }
+  }, 5000);
 }
 
 async function DynamicProductsRow({ block }: { block: PageBlock }) {

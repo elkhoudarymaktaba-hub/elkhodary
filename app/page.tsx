@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import { supabase, cachedFetch } from '@/lib/supabase';
 import ProductCard from '@/components/store/product-card';
 import { Package, Sparkles, Smile, Truck, ShieldCheck, ArrowLeft, Layers } from 'lucide-react';
 import { PageBlock, getMockData } from '@/lib/mockData';
@@ -20,9 +20,10 @@ function getStageLabel(stage: string) {
 export const revalidate = 0; // Fresh data on every load
 
 async function getHomeData() {
-  try {
-    // 1. Fetch pages and extract hero block first to know what to pre-fetch
-    const pagesPromise = supabase
+  return cachedFetch('home-page-data', async () => {
+    try {
+      // 1. Fetch pages and extract hero block first to know what to pre-fetch
+      const pagesPromise = supabase
       .from('pages')
       .select('*')
       .eq('slug', 'home')
@@ -183,8 +184,8 @@ async function getHomeData() {
     }
 
     return {
-      featuredProducts: productsRes.data || [],
-      boxes: boxesRes.data || [],
+      featuredProducts: featuredProducts,
+      boxes: boxes,
       heroCardData,
       boxBuilderSettings,
       blocks
@@ -203,7 +204,9 @@ async function getHomeData() {
       blocks: []
     };
   }
+ }, 5000);
 }
+
 
 async function DynamicProductsRow({ block }: { block: PageBlock }) {
   let query = supabase.from('products').select('*, categories(name)').eq('is_active', true);

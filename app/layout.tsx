@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Cairo, Tajawal, Inter } from 'next/font/google';
 import './globals.css';
-import { supabase } from '@/lib/supabase';
+import { supabase, cachedFetch } from '@/lib/supabase';
 import TrackingProvider from '@/components/store/tracking-provider';
 import Header from '@/components/store/header';
 import Footer from '@/components/store/footer';
@@ -27,35 +27,37 @@ const inter = Inter({
 });
 
 async function getStoreData() {
-  try {
-    const settingsPromise = supabase.from('site_settings').select('key, value');
-    const pixelsPromise = supabase.from('tracking_pixels').select('platform, pixel_id, active').eq('active', true);
-    const pagesPromise = supabase.from('pages').select('slug, title');
+  return cachedFetch('store-layout-data', async () => {
+    try {
+      const settingsPromise = supabase.from('site_settings').select('key, value');
+      const pixelsPromise = supabase.from('tracking_pixels').select('platform, pixel_id, active').eq('active', true);
+      const pagesPromise = supabase.from('pages').select('slug, title');
 
-    const [settingsRes, pixelsRes, pagesRes] = await Promise.all([settingsPromise, pixelsPromise, pagesPromise]);
+      const [settingsRes, pixelsRes, pagesRes] = await Promise.all([settingsPromise, pixelsPromise, pagesPromise]);
 
-    const settings: Record<string, string> = {};
-    settingsRes.data?.forEach((s) => {
-      settings[s.key] = s.value;
-    });
+      const settings: Record<string, string> = {};
+      settingsRes.data?.forEach((s: any) => {
+        settings[s.key] = s.value;
+      });
 
-    return {
-      storeName: settings.store_name || 'مكتبة الخضري',
-      logoUrl: settings.logo_url || null,
-      topRibbonText: settings.top_ribbon_text || 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!',
-      pixels: pixelsRes.data || [],
-      pages: pagesRes.data || [],
-    };
-  } catch (error) {
-    console.error('Error fetching layout data:', error);
-    return {
-      storeName: 'مكتبة الخضري',
-      logoUrl: null,
-      topRibbonText: 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!',
-      pixels: [],
-      pages: [],
-    };
-  }
+      return {
+        storeName: settings.store_name || 'مكتبة الخضري',
+        logoUrl: settings.logo_url || null,
+        topRibbonText: settings.top_ribbon_text || 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!',
+        pixels: pixelsRes.data || [],
+        pages: pagesRes.data || [],
+      };
+    } catch (error) {
+      console.error('Error fetching layout data:', error);
+      return {
+        storeName: 'مكتبة الخضري',
+        logoUrl: null,
+        topRibbonText: 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!',
+        pixels: [],
+        pages: [],
+      };
+    }
+  }, 5000);
 }
 
 export async function generateMetadata(): Promise<Metadata> {

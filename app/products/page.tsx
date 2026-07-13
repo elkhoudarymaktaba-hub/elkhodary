@@ -1,50 +1,52 @@
-import { supabase } from '@/lib/supabase';
+import { supabase, cachedFetch } from '@/lib/supabase';
 import ProductsClient from './products-client';
 import { getMockData } from '@/lib/mockData';
 
 export const revalidate = 0; // Fresh data on every load
 
 async function getProductsData() {
-  try {
-    const categoriesPromise = supabase
-      .from('categories')
-      .select('*')
-      .order('name');
+  return cachedFetch('products-page-data', async () => {
+    try {
+      const categoriesPromise = supabase
+        .from('categories')
+        .select('*')
+        .order('name');
 
-    const productsPromise = supabase
-      .from('products')
-      .select('*, categories(name)')
-      .eq('is_active', true)
-      .order('created_at', { ascending: false });
+      const productsPromise = supabase
+        .from('products')
+        .select('*, categories(name)')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
 
-    const pagePromise = supabase
-      .from('pages')
-      .select('*')
-      .eq('slug', 'products')
-      .limit(1);
+      const pagePromise = supabase
+        .from('pages')
+        .select('*')
+        .eq('slug', 'products')
+        .limit(1);
 
-    const [categoriesRes, productsRes, pageRes] = await Promise.all([
-      categoriesPromise,
-      productsPromise,
-      pagePromise
-    ]);
+      const [categoriesRes, productsRes, pageRes] = await Promise.all([
+        categoriesPromise,
+        productsPromise,
+        pagePromise
+      ]);
 
-    let pageData = null;
-    if (pageRes.data && pageRes.data.length > 0) {
-      pageData = pageRes.data[0];
-    } else {
-      pageData = getMockData.pages().find(p => p.slug === 'products') || null;
+      let pageData = null;
+      if (pageRes.data && pageRes.data.length > 0) {
+        pageData = pageRes.data[0];
+      } else {
+        pageData = getMockData.pages().find(p => p.slug === 'products') || null;
+      }
+
+      return {
+        categories: categoriesRes.data || [],
+        products: productsRes.data || [],
+        pageData,
+      };
+    } catch (error) {
+      console.error('Error fetching products page data:', error);
+      return { categories: [], products: [], pageData: null };
     }
-
-    return {
-      categories: categoriesRes.data || [],
-      products: productsRes.data || [],
-      pageData,
-    };
-  } catch (error) {
-    console.error('Error fetching products page data:', error);
-    return { categories: [], products: [], pageData: null };
-  }
+  }, 5000);
 }
 
 export async function generateMetadata() {

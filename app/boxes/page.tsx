@@ -1,42 +1,44 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '@/lib/supabase';
+import { supabase, cachedFetch } from '@/lib/supabase';
 import { Package, ArrowLeft, GraduationCap, ChevronLeft } from 'lucide-react';
 import { getMockData } from '@/lib/mockData';
 
 export const revalidate = 0; // Fresh data on every load
 
 async function getBoxesData() {
-  try {
-    const boxesPromise = supabase
-      .from('boxes')
-      .select('*')
-      .eq('is_active', true)
-      .order('base_price', { ascending: true });
+  return cachedFetch('boxes-page-data', async () => {
+    try {
+      const boxesPromise = supabase
+        .from('boxes')
+        .select('*')
+        .eq('is_active', true)
+        .order('base_price', { ascending: true });
 
-    const pagePromise = supabase
-      .from('pages')
-      .select('*')
-      .eq('slug', 'packages')
-      .limit(1);
+      const pagePromise = supabase
+        .from('pages')
+        .select('*')
+        .eq('slug', 'packages')
+        .limit(1);
 
-    const [boxesRes, pageRes] = await Promise.all([boxesPromise, pagePromise]);
+      const [boxesRes, pageRes] = await Promise.all([boxesPromise, pagePromise]);
 
-    let pageData = null;
-    if (pageRes.data && pageRes.data.length > 0) {
-      pageData = pageRes.data[0];
-    } else {
-      pageData = getMockData.pages().find(p => p.slug === 'packages') || null;
+      let pageData = null;
+      if (pageRes.data && pageRes.data.length > 0) {
+        pageData = pageRes.data[0];
+      } else {
+        pageData = getMockData.pages().find(p => p.slug === 'packages') || null;
+      }
+
+      return {
+        boxes: boxesRes.data || [],
+        pageData,
+      };
+    } catch (err) {
+      console.error('Error fetching boxes page data:', err);
+      return { boxes: [], pageData: null };
     }
-
-    return {
-      boxes: boxesRes.data || [],
-      pageData,
-    };
-  } catch (err) {
-    console.error('Error fetching boxes page data:', err);
-    return { boxes: [], pageData: null };
-  }
+  }, 5000);
 }
 
 export async function generateMetadata() {
