@@ -179,7 +179,7 @@ export default async function DynamicCustomPage({ params }: PageProps) {
             }
 
             return (
-              <section key={block.id} className="relative overflow-hidden pt-[160px] pb-16 sm:pt-28 lg:pt-36 lg:pb-24 bg-notebook-lines border-b border-paper-line text-right">
+              <section key={block.id} className="relative overflow-hidden pt-10 pb-16 sm:pt-16 lg:pt-24 lg:pb-24 bg-notebook-lines border-b border-paper-line text-right">
                 <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-amber/5 rounded-full blur-[140px] pointer-events-none z-10" />
                 <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-coral/5 rounded-full blur-[100px] pointer-events-none z-10" />
 
@@ -187,7 +187,7 @@ export default async function DynamicCustomPage({ params }: PageProps) {
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     {/* Right: Text content */}
                     <div className="lg:col-span-7 space-y-6 text-center lg:text-right">
-                      <div className="inline-flex items-center gap-2.5 bg-white border border-paper-line text-ink-soft text-xs font-bold px-4 py-2 rounded-full shadow-sm">
+                      <div className="inline-flex items-center gap-2.5 bg-white border border-paper-line text-ink-soft text-xs font-bold px-4 py-2 rounded-full shadow-sm mb-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-sage blink shrink-0" />
                         <span>{block.content.badge_text || 'مكتبة الخضري'}</span>
                       </div>

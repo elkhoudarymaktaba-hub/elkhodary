@@ -338,7 +338,7 @@ export default async function HomePage() {
             }
 
             return (
-              <section key={block.id} className="relative overflow-hidden pt-[160px] pb-16 sm:pt-28 lg:pt-36 lg:pb-24 bg-notebook-lines border-b border-paper-line text-right">
+              <section key={block.id} className="relative overflow-hidden pt-10 pb-16 sm:pt-16 lg:pt-24 lg:pb-24 bg-notebook-lines border-b border-paper-line text-right">
                 <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-amber/5 rounded-full blur-[140px] pointer-events-none z-10" />
                 <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-coral/5 rounded-full blur-[100px] pointer-events-none z-10" />
                 
@@ -347,12 +347,12 @@ export default async function HomePage() {
                     {/* Right: Text content */}
                     <div className="lg:col-span-7 space-y-6 text-center lg:text-right">
                       {/* Eyebrow badge with blinking dot */}
-                      <div className="inline-flex items-center gap-2.5 bg-white border border-paper-line text-ink-soft text-xs font-bold px-4 py-2 rounded-full shadow-sm">
+                      <div className="inline-flex items-center gap-2.5 bg-white border border-paper-line text-ink-soft text-xs font-bold px-4 py-2 rounded-full shadow-sm mb-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-sage blink shrink-0" />
                         <span>{block.content.badge_text || 'عروض العودة للدراسة 2026/2027'}</span>
                       </div>
                       
-                      <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black text-ink leading-tight animate-rise">
+                      <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black text-ink leading-tight animate-rise mb-3">
                         {block.content.title ? (
                           <>
                             {block.content.title.split(' ')[0]} <br className="hidden sm:inline" />
@@ -366,11 +366,11 @@ export default async function HomePage() {
                         )}
                       </h1>
                       
-                      <p className="text-ink-soft/75 text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium">
+                      <p className="text-ink-soft/75 text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium mb-5">
                         {block.content.subtitle || 'اكتشف باقات الأدوات المدرسية المخصصة لكل مرحلة تعليمية لتشتري مستلزمات السنة كاملة بضغطة زر، أو قم ببناء صندوقك المخصص بالكامل.'}
                       </p>
 
-                      <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
+                      <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                         <Link
                           href={block.content.ctaLink || "/boxes"}
                           className="btn-primary w-full sm:w-auto px-8 py-4 text-center transition-all duration-300 shadow-glow hover:scale-105"

@@ -117,14 +117,14 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
   );
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-sm">
-      <div className="bg-gradient-to-r from-ink to-ink-soft text-white py-1 px-4 text-center text-xs font-bold shadow-sm flex items-center justify-center gap-2 relative z-50">
-        <Sparkles size={12} className="animate-spin text-amber" />
-        <span>{currentRibbon || 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!'}</span>
+    <>
+      <div className="bg-gradient-to-r from-ink to-ink-soft text-white py-2 px-4 text-center text-xs font-bold shadow-sm flex items-center justify-center gap-2 relative z-50">
+        <Sparkles size={12} className="animate-spin text-amber shrink-0" />
+        <span className="leading-tight">{currentRibbon || 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!'}</span>
       </div>
 
       <header
-        className={`w-full transition-all duration-350 border-b border-paper-line bg-white ${
+        className={`sticky top-0 left-0 right-0 z-40 transition-all duration-350 border-b border-paper-line bg-white ${
           scrolled
             ? 'shadow-brand py-2.5'
             : 'py-3.5'
@@ -248,6 +248,6 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
           </div>
         )}
       </header>
-    </div>
+    </>
   );
 }
