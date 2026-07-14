@@ -5,7 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   Settings, Image as ImageIcon, CreditCard, ToggleLeft, ToggleRight, 
   Save, AlertTriangle, ShieldCheck, Link2, MonitorPlay, BookOpen, Layers,
-  Star, Trash2
+  Star, Trash2, Heart
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getMockData } from '@/lib/mockData';
@@ -55,12 +55,14 @@ export default function SettingsPage() {
 
   // 4. إدارة التقييمات والآراء
   const [adminReviews, setAdminReviews] = useState<any[]>([]);
-  const [selectedReviewProductId, setSelectedReviewProductId] = useState('');
   const [newAdminReviewName, setNewAdminReviewName] = useState('');
   const [newAdminReviewCity, setNewAdminReviewCity] = useState('');
   const [newAdminReviewRating, setNewAdminReviewRating] = useState(5);
   const [newAdminReviewText, setNewAdminReviewText] = useState('');
   const [newAdminReviewVerified, setNewAdminReviewVerified] = useState(true);
+  const [testimonialsTitle, setTestimonialsTitle] = useState('آراء عائلتنا الدافئة');
+  const [testimonialsSubtitle, setTestimonialsSubtitle] = useState('قالوا عن مكتبة الخضري');
+  const [isAddReviewOpen, setIsAddReviewOpen] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -93,6 +95,8 @@ export default function SettingsPage() {
         const boxImg4Obj = data.find((s: any) => s.key === 'box_builder_img4');
         const boxImg5Obj = data.find((s: any) => s.key === 'box_builder_img5');
         const boxImg6Obj = data.find((s: any) => s.key === 'box_builder_img6');
+        const testTitleObj = data.find((s: any) => s.key === 'testimonials_title');
+        const testSubtitleObj = data.find((s: any) => s.key === 'testimonials_subtitle');
 
         if (nameObj) setStoreName(nameObj.value);
         if (logoObj) setLogoUrl(logoObj.value);
@@ -103,6 +107,8 @@ export default function SettingsPage() {
         if (featuredBoxObj) setFeaturedBoxId(featuredBoxObj.value);
         if (heroTypeObj) setHeroCardType(heroTypeObj.value as any);
         if (heroIdObj) setHeroCardId(heroIdObj.value);
+        if (testTitleObj) setTestimonialsTitle(testTitleObj.value);
+        if (testSubtitleObj) setTestimonialsSubtitle(testSubtitleObj.value);
         if (boxTitleObj) setBoxBuilderTitle(boxTitleObj.value);
         if (boxDescObj) setBoxBuilderDesc(boxDescObj.value);
         if (boxImageObj) setBoxBuilderImage(boxImageObj.value);
@@ -166,7 +172,7 @@ export default function SettingsPage() {
   const fetchAdminReviews = async () => {
     try {
       const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
-      if (data) {
+      if (data && data.length > 0) {
         setAdminReviews(data);
         return;
       }
@@ -177,31 +183,70 @@ export default function SettingsPage() {
     // Fallback: LocalStorage
     if (typeof window !== 'undefined') {
       const local = localStorage.getItem('kh_reviews');
+      let allReviews = [];
       if (local) {
         try {
-          setAdminReviews(JSON.parse(local));
+          allReviews = JSON.parse(local);
         } catch (e) {
           console.error(e);
         }
+      }
+
+      if (allReviews.length === 0) {
+        const defaultMock = [
+          {
+            id: 't-1',
+            product_id: 'global',
+            product_name: 'المتجر العام',
+            customer_name: 'مريم محمود',
+            city: 'الإسكندرية',
+            rating: 5,
+            comment: 'الباقة المدرسية تجنن والتفاصيل والفرز نظيفة جداً. الأدوات جودتها عالية والشغل يستاهل كل قرش بجد.',
+            created_at: new Date().toISOString(),
+            is_verified: true
+          },
+          {
+            id: 't-2',
+            product_id: 'global',
+            product_name: 'المتجر العام',
+            customer_name: 'سارة محمد',
+            city: 'القاهرة',
+            rating: 5,
+            comment: 'طلبت الكتب المدرسية والمستلزمات، خامات ممتازة وتغليف فاخر ومنسق جداً، والتوصيل سريع لباب البيت.',
+            created_at: new Date().toISOString(),
+            is_verified: true
+          },
+          {
+            id: 't-3',
+            product_id: 'global',
+            product_name: 'المتجر العام',
+            customer_name: 'ندى أحمد',
+            city: 'دمياط',
+            rating: 5,
+            comment: 'الهدية كانت لابني في أول يوم دراسي، ملامحه وهو بيفتح العلبة وتفاصيل الأدوات لا تُقدر بثمن، متشكرة جداً.',
+            created_at: new Date().toISOString(),
+            is_verified: true
+          }
+        ];
+        localStorage.setItem('kh_reviews', JSON.stringify(defaultMock));
+        setAdminReviews(defaultMock);
+      } else {
+        setAdminReviews(allReviews);
       }
     }
   };
 
   const handleAddAdminReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedReviewProductId || !newAdminReviewName.trim() || !newAdminReviewText.trim()) {
-      showToast('يرجى تحديد المنتج وكتابة اسم العميل ونص التقييم!', 'error');
+    if (!newAdminReviewName.trim() || !newAdminReviewText.trim()) {
+      showToast('يرجى كتابة اسم العميل ونص التقييم!', 'error');
       return;
     }
 
-    const prod = products.find(p => p.id === selectedReviewProductId);
-    const bx = boxes.find(b => b.id === selectedReviewProductId);
-    const prodName = prod ? prod.name : (bx ? bx.name : 'منتج غير معروف');
-
     const reviewObj = {
       id: `rev-${Date.now()}`,
-      product_id: selectedReviewProductId,
-      product_name: prodName,
+      product_id: 'global',
+      product_name: 'المتجر العام',
       customer_name: newAdminReviewName,
       city: newAdminReviewCity || 'مصر',
       rating: newAdminReviewRating,
@@ -236,8 +281,8 @@ export default function SettingsPage() {
     setNewAdminReviewCity('');
     setNewAdminReviewText('');
     setNewAdminReviewRating(5);
-    setSelectedReviewProductId('');
-    showToast('تم إضافة التقييم بنجاح وعرضه على المنتج!', 'success');
+    setIsAddReviewOpen(false);
+    showToast('تم إضافة التقييم بنجاح وعرضه على المتجر!', 'success');
   };
 
   const handleDeleteAdminReview = async (reviewId: string) => {
@@ -361,7 +406,9 @@ export default function SettingsPage() {
       { key: 'box_builder_img3', value: boxBuilderImg3 },
       { key: 'box_builder_img4', value: boxBuilderImg4 },
       { key: 'box_builder_img5', value: boxBuilderImg5 },
-      { key: 'box_builder_img6', value: boxBuilderImg6 }
+      { key: 'box_builder_img6', value: boxBuilderImg6 },
+      { key: 'testimonials_title', value: testimonialsTitle },
+      { key: 'testimonials_subtitle', value: testimonialsSubtitle }
     ];
 
     try {
@@ -391,7 +438,9 @@ export default function SettingsPage() {
         box_builder_img3: boxBuilderImg3,
         box_builder_img4: boxBuilderImg4,
         box_builder_img5: boxBuilderImg5,
-        box_builder_img6: boxBuilderImg6
+        box_builder_img6: boxBuilderImg6,
+        testimonials_title: testimonialsTitle,
+        testimonials_subtitle: testimonialsSubtitle
       };
       
       // حفظ الإعدادات في localStorage لضمان التحديث اللحظي للعميل
@@ -587,6 +636,193 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            {/* ⭐ إدارة التقييمات والآراء (Reviews Management Card) */}
+            <div className="bg-white rounded-[16px] shadow-premium border border-[#E7DCC2] p-6 space-y-6">
+              
+              {/* Header Editor / Toggler Section */}
+              <div className="space-y-4 text-center border-b border-[#E7DCC2] pb-6">
+                <span className="text-xs font-bold text-slate-500 block mb-0.5 text-right">تعديل العنوان الفرعي لقسم الآراء:</span>
+                <input
+                  type="text"
+                  value={testimonialsSubtitle}
+                  onChange={(e) => setTestimonialsSubtitle(e.target.value)}
+                  className="w-full text-center text-ink-soft font-extrabold text-sm tracking-wider bg-slate-50 border border-slate-200 rounded-[12px] py-2 focus:bg-white outline-none focus:border-ink-soft font-arabic"
+                  placeholder="قالوا عن مكتبة الخضري"
+                />
+                
+                <span className="text-xs font-bold text-slate-500 block mb-0.5 text-right">تعديل العنوان الرئيسي لقسم الآراء:</span>
+                <input
+                  type="text"
+                  value={testimonialsTitle}
+                  onChange={(e) => setTestimonialsTitle(e.target.value)}
+                  className="w-full text-center text-lg sm:text-xl font-black text-ink bg-slate-50 border border-slate-200 rounded-[12px] py-2 focus:bg-white outline-none focus:border-ink-soft font-arabic"
+                  placeholder="آراء عائلتنا الدافئة"
+                />
+
+                <div className="pt-2 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsAddReviewOpen(!isAddReviewOpen)}
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-ink-soft hover:bg-ink text-white font-extrabold text-xs sm:text-sm rounded-full transition-all duration-300 shadow-md shadow-ink-soft/15 hover:scale-[1.02] active:scale-95 font-arabic"
+                  >
+                    <span>{isAddReviewOpen ? 'إغلاق نافذة الإضافة ✖️' : 'إضافة رأي عميل جديد ✍️'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Toggleable Review Creator Form */}
+              {isAddReviewOpen && (
+                <div className="p-5 bg-slate-50 border border-slate-100 rounded-[16px] space-y-4 animate-in slide-in-from-top-3 duration-200">
+                  <h4 className="text-xs font-bold text-ink pr-1 border-r-2 border-ink-soft font-arabic">إضافة تقييم جديد يدويًا (كتقييم موثق)</h4>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 block mb-1">اسم العميل</label>
+                      <input
+                        type="text"
+                        placeholder="مثال: يوسف أحمد"
+                        value={newAdminReviewName}
+                        onChange={(e) => setNewAdminReviewName(e.target.value)}
+                        className="w-full rounded-[12px] border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-right focus:border-ink-soft focus:outline-none font-arabic"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 block mb-1">المحافظة / المدينة</label>
+                      <input
+                        type="text"
+                        placeholder="مثال: القاهرة"
+                        value={newAdminReviewCity}
+                        onChange={(e) => setNewAdminReviewCity(e.target.value)}
+                        className="w-full rounded-[12px] border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-right focus:border-ink-soft focus:outline-none font-arabic"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 block mb-1">التقييم (النجوم)</label>
+                      <select
+                        value={newAdminReviewRating}
+                        onChange={(e) => setNewAdminReviewRating(Number(e.target.value))}
+                        className="w-full rounded-[12px] border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-right focus:border-ink-soft focus:outline-none font-arabic"
+                      >
+                        <option value="5">⭐⭐⭐⭐⭐ (5 نجوم)</option>
+                        <option value="4">⭐⭐⭐⭐ (4 نجوم)</option>
+                        <option value="3">⭐⭐⭐ (3 نجوم)</option>
+                        <option value="2">⭐⭐ (نجمتان)</option>
+                        <option value="1">⭐ (نجمة واحدة)</option>
+                      </select>
+                    </div>
+
+                    <div className="flex items-center justify-end gap-3 h-[58px]">
+                      <span className="text-xs font-bold text-slate-700">مشتري مؤكد وعميل حقيقي</span>
+                      <button
+                        type="button"
+                        onClick={() => setNewAdminReviewVerified(!newAdminReviewVerified)}
+                      >
+                        {newAdminReviewVerified ? (
+                          <ToggleRight className="w-8 h-8 text-sage" />
+                        ) : (
+                          <ToggleLeft className="w-8 h-8 text-slate-300" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1">نص التعليق / التقييم</label>
+                    <textarea
+                      rows={3}
+                      placeholder="اكتب تعليق التقييم هنا..."
+                      value={newAdminReviewText}
+                      onChange={(e) => setNewAdminReviewText(e.target.value)}
+                      className="w-full rounded-[12px] border border-slate-200 bg-white p-3 text-xs text-right focus:border-ink-soft focus:outline-none resize-none font-tajawal"
+                    />
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="button"
+                      onClick={handleAddAdminReview}
+                      className="px-6 py-2.5 bg-ink-soft hover:bg-ink text-white rounded-xl text-xs font-bold transition-all shadow-sm font-arabic"
+                    >
+                      إضافة التقييم المعروض
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Visual Grid list of testimonial cards */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-bold text-ink pr-1 border-r-2 border-ink-soft font-arabic">الآراء والتقييمات الحالية ({adminReviews.length})</h4>
+                
+                {adminReviews.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    {adminReviews.map((rev) => (
+                      <div
+                        key={rev.id}
+                        className="bg-white rounded-[16px] border border-paper-line p-5 shadow-card hover:border-ink-soft/40 transition-colors flex flex-col justify-between text-right relative overflow-hidden group"
+                      >
+                        {/* Floating delete button */}
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteAdminReview(rev.id)}
+                          className="absolute top-2.5 left-2.5 p-1 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-lg transition-colors z-20"
+                          title="حذف التقييم"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+
+                        {/* Quote Watermark */}
+                        <span className="absolute -top-3 -right-2 text-paper-line/30 font-serif text-[90px] select-none pointer-events-none leading-none">
+                          “
+                        </span>
+
+                        <div className="space-y-3.5 relative z-10">
+                          {/* Stars */}
+                          <div className="flex gap-0.5 justify-start">
+                            {Array.from({ length: 5 }).map((_, idx) => (
+                              <svg
+                                key={idx}
+                                className={`w-3.5 h-3.5 ${idx < rev.rating ? 'text-ink-soft fill-ink-soft' : 'text-slate-200'}`}
+                                fill="currentColor"
+                                viewBox="0 0 20 20"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                              </svg>
+                            ))}
+                          </div>
+
+                          {/* Comment */}
+                          <p className="text-xs text-ink-soft/90 leading-relaxed font-tajawal font-medium min-h-[60px]">
+                            {rev.comment}
+                          </p>
+                        </div>
+
+                        {/* Footer details */}
+                        <div className="border-t border-paper-line pt-3 mt-4 flex items-center justify-between z-10 relative">
+                          <div className="text-right">
+                            <span className="font-extrabold text-xs text-ink block font-arabic">{rev.customer_name}</span>
+                            {rev.city && (
+                              <span className="text-[10px] text-ink/50 block font-tajawal font-bold mt-0.5">{rev.city}</span>
+                            )}
+                          </div>
+                          
+                          <span className="text-ink-soft">
+                            <Heart className="w-4 h-4 fill-current" />
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-10 text-slate-400 text-xs">
+                    لا توجد تقييمات مضافة للمتجر حالياً.
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* 2. وضع الصيانة (Maintenance Mode Card) */}
             <div className={`bg-white rounded-[16px] shadow-premium border p-6 space-y-4 transition-all duration-300 ${
@@ -624,168 +860,7 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {/* ⭐ إدارة التقييمات والآراء (Reviews Management Card) */}
-            <div className="bg-white rounded-[16px] shadow-premium border border-[#E7DCC2] p-6 space-y-6">
-              <h3 className="text-base font-bold text-ink border-r-4 border-amber pr-2 flex items-center gap-1.5">
-                <Star className="w-5 h-5 text-amber fill-amber" />
-                <span>إدارة وإضافة تقييمات العملاء</span>
-              </h3>
 
-              <div className="p-4 bg-slate-50 border border-slate-100 rounded-[12px] space-y-4">
-                <h4 className="text-xs font-bold text-slate-700 font-arabic">إضافة تقييم جديد يدويًا (كتقييم موثق)</h4>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 block mb-1">اختر المنتج/الباقة</label>
-                    <select
-                      value={selectedReviewProductId}
-                      onChange={(e) => setSelectedReviewProductId(e.target.value)}
-                      className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none"
-                    >
-                      <option value="">-- اختر المنتج/الباقة --</option>
-                      <optgroup label="الباقات الجاهزة">
-                        {boxes.map((b) => (
-                          <option key={b.id} value={b.id}>{b.name}</option>
-                        ))}
-                      </optgroup>
-                      <optgroup label="المنتجات الفردية">
-                        {products.map((p) => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
-                        ))}
-                      </optgroup>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 block mb-1">اسم العميل</label>
-                    <input
-                      type="text"
-                      placeholder="مثال: يوسف أحمد"
-                      value={newAdminReviewName}
-                      onChange={(e) => setNewAdminReviewName(e.target.value)}
-                      className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none font-arabic"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 block mb-1">المحافظة / المدينة</label>
-                    <input
-                      type="text"
-                      placeholder="مثال: القاهرة"
-                      value={newAdminReviewCity}
-                      onChange={(e) => setNewAdminReviewCity(e.target.value)}
-                      className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none font-arabic"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[10px] font-bold text-slate-500 block mb-1">التقييم (النجوم)</label>
-                    <select
-                      value={newAdminReviewRating}
-                      onChange={(e) => setNewAdminReviewRating(Number(e.target.value))}
-                      className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none"
-                    >
-                      <option value="5">⭐⭐⭐⭐⭐ (5 نجوم)</option>
-                      <option value="4">⭐⭐⭐⭐ (4 نجوم)</option>
-                      <option value="3">⭐⭐⭐ (3 نجوم)</option>
-                      <option value="2">⭐⭐ (نجمتان)</option>
-                      <option value="1">⭐ (نجمة واحدة)</option>
-                    </select>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 h-[58px]">
-                    <span className="text-xs font-bold text-slate-700">مشتري مؤكد وعميل حقيقي</span>
-                    <button
-                      type="button"
-                      onClick={() => setNewAdminReviewVerified(!newAdminReviewVerified)}
-                    >
-                      {newAdminReviewVerified ? (
-                        <ToggleRight className="w-8 h-8 text-sage" />
-                      ) : (
-                        <ToggleLeft className="w-8 h-8 text-slate-300" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold text-slate-500 block mb-1">نص التعليق / التقييم</label>
-                  <textarea
-                    rows={2}
-                    placeholder="اكتب تعليق التقييم هنا..."
-                    value={newAdminReviewText}
-                    onChange={(e) => setNewAdminReviewText(e.target.value)}
-                    className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none resize-none"
-                  />
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    type="button"
-                    onClick={handleAddAdminReview}
-                    className="px-5 py-2 bg-amber hover:bg-amber-deep text-white rounded-xl text-xs font-bold transition-all shadow-sm"
-                  >
-                    إضافة التقييم المعروض
-                  </button>
-                </div>
-              </div>
-
-              {/* قائمة التقييمات الحالية */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-bold text-slate-700 font-arabic">الآراء والتقييمات الحالية ({adminReviews.length})</h4>
-                
-                {adminReviews.length > 0 ? (
-                  <div className="border border-slate-100 rounded-xl overflow-hidden max-h-64 overflow-y-auto no-scrollbar">
-                    <table className="w-full text-right text-xs">
-                      <thead className="bg-slate-50 border-b border-slate-100 text-slate-500">
-                        <tr>
-                          <th className="p-3 font-bold">المنتج</th>
-                          <th className="p-3 font-bold">العميل</th>
-                          <th className="p-3 font-bold text-center">التقييم</th>
-                          <th className="p-3 font-bold">التعليق</th>
-                          <th className="p-3 font-bold text-center">إجراءات</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-50">
-                        {adminReviews.map((rev) => (
-                          <tr key={rev.id} className="hover:bg-slate-50/40">
-                            <td className="p-3 font-bold truncate max-w-[120px]">{rev.product_name}</td>
-                            <td className="p-3 truncate max-w-[100px]">
-                              <div>
-                                <span className="block font-bold">{rev.customer_name}</span>
-                                {rev.city && <span className="block text-[9.5px] text-slate-400 font-bold">{rev.city}</span>}
-                              </div>
-                            </td>
-                            <td className="p-3 text-center">
-                              <span className="font-bold text-amber font-numbers">{rev.rating}</span>
-                              <span className="text-[9px] text-slate-400">/5</span>
-                            </td>
-                            <td className="p-3 text-slate-500 truncate max-w-[200px]" title={rev.comment}>
-                              {rev.comment}
-                            </td>
-                            <td className="p-3 text-center">
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteAdminReview(rev.id)}
-                                className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-slate-400 text-xs">
-                    لا توجد تقييمات مضافة للمتجر حالياً.
-                  </div>
-                )}
-              </div>
-            </div>
 
           </div>
 

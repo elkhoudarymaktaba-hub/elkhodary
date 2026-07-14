@@ -16,6 +16,7 @@ export default function CartPage() {
     couponError,
     updateQty,
     removeItem,
+    addItem,
     applyCoupon,
     removeCoupon,
     getSubtotal,
@@ -27,6 +28,7 @@ export default function CartPage() {
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);
 
   useEffect(() => {
     setMounted(true);
@@ -35,6 +37,26 @@ export default function CartPage() {
       setCouponApplied(true);
     }
   }, [coupon]);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('kh_products');
+      if (stored) {
+        const allProducts = JSON.parse(stored);
+        // Filter cheap products under 100 EGP, excluding those already in the cart
+        const cartProductIds = items.map(item => item.productId);
+        const cheapAndActive = allProducts.filter((p: any) => 
+          p.is_active && 
+          p.price_unit <= 100 && 
+          !cartProductIds.includes(p.id)
+        );
+        // Pick up to 4 cheap products
+        setSuggestedProducts(cheapAndActive.slice(0, 4));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [items]);
 
   if (!mounted) {
     return (
@@ -128,6 +150,18 @@ export default function CartPage() {
                           </span>
                         </div>
 
+                        {/* Colors List in Cart */}
+                        {(item as any).colors && (item as any).colors.length > 0 && (
+                          <div className="flex flex-wrap gap-1 items-center mt-2.5">
+                            <span className="text-[10px] text-slate-400 font-bold ml-1.5 font-arabic">الألوان المختارة:</span>
+                            {(item as any).colors.map((c: string, idx: number) => (
+                              <span key={idx} className="text-[9px] bg-amber/10 text-amber-deep font-bold px-2 py-0.5 rounded border border-amber/20 font-arabic">
+                                {c}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
                         {/* Customized box items list inside cart */}
                         {item.type === 'box' && item.customItems && (
                           <div className="mt-3 bg-paper rounded-xl border border-paper-line p-3 max-w-md">
@@ -196,6 +230,49 @@ export default function CartPage() {
                 ))}
 
               </div>
+
+              {/* SUGGESTED ITEMS CROSS-SELLING */}
+              {suggestedProducts.length > 0 && (
+                <div className="bg-white rounded-card shadow-card border border-paper-line p-6 space-y-4 animate-fade-in-up mt-6">
+                  <h3 className="font-extrabold text-ink text-sm flex items-center gap-2 border-b border-paper-line pb-3">
+                    <Plus size={16} className="text-[#1E90FF] animate-pulse" />
+                    <span>مستلزمات دراسية هامة قد تحتاجها:</span>
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {suggestedProducts.map((prod) => {
+                      const prodImage = prod.images?.[0] || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=150&q=80';
+                      return (
+                        <div key={prod.id} className="flex items-center gap-3 p-3 bg-paper rounded-xl border border-paper-line hover:border-amber/40 transition-colors">
+                          <div className="relative w-12 h-12 rounded-lg bg-white border border-paper-line overflow-hidden shrink-0">
+                            <img src={prodImage} alt={prod.name} className="object-contain p-1 w-full h-full" />
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h4 className="font-bold text-xs text-ink truncate">{prod.name}</h4>
+                            <p className="text-[10px] text-slate-500 font-numbers font-black mt-0.5">{prod.price_unit} ج.م</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              addItem({
+                                type: 'product',
+                                productId: prod.id,
+                                name: prod.name,
+                                price: prod.price_unit,
+                                qty: 1,
+                                image: prodImage,
+                                unitType: 'piece',
+                              });
+                            }}
+                            className="btn-primary px-3 py-1.5 text-[10px] text-white font-bold shrink-0 shadow-sm"
+                          >
+                            أضف سريعا
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
             </div>
 
             {/* LEFT COLUMN: Summary and Coupons */}

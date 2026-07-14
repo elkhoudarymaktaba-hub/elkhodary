@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { 
   Home, BarChart3, ClipboardList, Package, FolderOpen, 
-  Box, Ticket, Truck, FileEdit, Radio, Key, Settings, LogOut, Users
+  Box, Ticket, Truck, FileEdit, Radio, Key, Settings, LogOut, Users, FileText
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { supabase } from '@/lib/supabase';
@@ -15,6 +15,7 @@ const menuItems = [
   { label: 'الرئيسية', path: '/admin', icon: Home },
   { label: 'التحليلات', path: '/admin/analytics', icon: BarChart3 },
   { label: 'الطلبات', path: '/admin/orders', icon: ClipboardList },
+  { label: 'قوائم المدارس', path: '/admin/supply-lists', icon: FileText },
   { label: 'المنتجات', path: '/admin/products', icon: Package },
   { label: 'الأقسام', path: '/admin/categories', icon: FolderOpen },
   { label: 'الباقات والبوكسات', path: '/admin/boxes', icon: Box },

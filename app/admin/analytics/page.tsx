@@ -22,13 +22,88 @@ const statusLabels: Record<string, string> = {
   cancelled: 'ملغي',
 };
 
-const colorsPalette = ['#16233F', '#E7A537', '#E4573F', '#4F8F73', '#7A5C9E', '#2E3E63', '#6B7796'];
+const colorsPalette = ['#0073E6', '#E7A537', '#E4573F', '#10B981', '#8B5CF6', '#F97316', '#06B6D4'];
 const statusColors = {
   new: '#E7A537',
-  confirmed: '#7A5C9E',
-  shipping: '#2E3E63',
-  delivered: '#4F8F73',
+  confirmed: '#8B5CF6',
+  shipping: '#0073E6',
+  delivered: '#10B981',
   cancelled: '#E4573F',
+};
+
+const CustomYAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  return (
+    <text
+      x={x + 10}
+      y={y}
+      dy={4}
+      textAnchor="end"
+      fill="var(--ink)"
+      fontSize={11}
+      fontWeight="bold"
+      fontFamily="var(--font-cairo)"
+      style={{ direction: 'rtl' }}
+    >
+      {payload.value.length > 28 ? payload.value.slice(0, 28) + '...' : payload.value}
+    </text>
+  );
+};
+
+const wrapText = (text: string, maxCharsPerLine = 12): string[] => {
+  let line1 = '';
+  let line2 = '';
+  
+  if (text.includes(' - ')) {
+    const parts = text.split(' - ');
+    line1 = parts[0].trim();
+    line2 = parts.slice(1).join(' - ').trim();
+  } else {
+    if (text.length <= maxCharsPerLine) {
+      return [text];
+    }
+    const words = text.split(' ');
+    for (let i = 0; i < words.length; i++) {
+      if ((line1 + words[i]).length <= maxCharsPerLine) {
+        line1 += (line1 ? ' ' : '') + words[i];
+      } else {
+        line2 = words.slice(i).join(' ');
+        break;
+      }
+    }
+  }
+  
+  // Truncate individual lines if they are still too long
+  if (line1.length > 16) line1 = line1.slice(0, 15) + '..';
+  if (line2.length > 16) line2 = line2.slice(0, 15) + '..';
+  
+  return [line1, line2].filter(Boolean);
+};
+
+const CustomXAxisTick = (props: any) => {
+  const { x, y, payload } = props;
+  const text = payload.value;
+  const lines = wrapText(text, 12);
+  
+  return (
+    <g transform={`translate(${x},${y})`}>
+      {lines.map((line, idx) => (
+        <text
+          key={idx}
+          x={0}
+          y={idx * 14}
+          dy={12}
+          textAnchor="middle"
+          fill="var(--ink)"
+          fontSize={10}
+          fontWeight="bold"
+          fontFamily="var(--font-cairo)"
+        >
+          {line}
+        </text>
+      ))}
+    </g>
+  );
 };
 
 export default function AnalyticsPage() {
@@ -59,6 +134,7 @@ export default function AnalyticsPage() {
   const [visitSourcesData, setVisitSourcesData] = useState<{ name: string; value: number; color: string }[]>([]);
   const [govOrdersData, setGovOrdersData] = useState<{ governorate: string; orders: number }[]>([]);
   const [avgOrderOverTime, setAvgOrderOverTime] = useState<{ date: string; avg: number }[]>([]);
+  const [govView, setGovView] = useState<'chart' | 'rank'>('chart');
 
   useEffect(() => {
     setMounted(true);
@@ -216,7 +292,7 @@ export default function AnalyticsPage() {
     const cartData = cartEvents.map(event => {
       const prodName = products.find(p => p.id === event.product_id)?.name || 'منتج غير معروف';
       return {
-        name: prodName.length > 20 ? prodName.slice(0, 20) + '...' : prodName,
+        name: prodName,
         count: event.count
       };
     });
@@ -307,44 +383,44 @@ export default function AnalyticsPage() {
         
         {/* إجمالي المبيعات */}
         <div className="bg-white p-4 rounded-[16px] shadow-premium border border-[#E7DCC2] space-y-1.5 text-right">
-          <p className="text-[10px] font-bold text-slate-400 font-arabic">المبيعات الإجمالية</p>
+          <p className="text-xs font-bold text-slate-500 font-arabic">المبيعات الإجمالية</p>
           <h3 className="text-xl font-black text-ink font-english">{metrics.totalSales.toLocaleString()} ج.م</h3>
-          <p className="text-[10px] text-slate-400 font-arabic">بدون الطلبات الملغية</p>
+          <p className="text-[11px] font-medium text-slate-500 font-arabic">بدون الطلبات الملغية</p>
         </div>
 
         {/* الطلبات المؤكدة */}
         <div className="bg-white p-4 rounded-[16px] shadow-premium border border-[#E7DCC2] space-y-1.5 text-right">
-          <p className="text-[10px] font-bold text-slate-400 font-arabic">الطلبات المؤكدة</p>
-          <h3 className="text-xl font-black text-[#7A5C9E] font-english">{metrics.confirmedCount} طلب</h3>
-          <p className="text-[10px] text-slate-400 font-arabic">بانتظار الشحن والتوصيل</p>
+          <p className="text-xs font-bold text-slate-500 font-arabic">الطلبات المؤكدة</p>
+          <h3 className="text-xl font-black text-[#8B5CF6] font-english">{metrics.confirmedCount} طلب</h3>
+          <p className="text-[11px] font-medium text-slate-500 font-arabic">بانتظار الشحن والتوصيل</p>
         </div>
 
         {/* الطلبات الملغية */}
         <div className="bg-white p-4 rounded-[16px] shadow-premium border border-[#E7DCC2] space-y-1.5 text-right">
-          <p className="text-[10px] font-bold text-slate-400 font-arabic">الطلبات الملغية</p>
+          <p className="text-xs font-bold text-slate-500 font-arabic">الطلبات الملغية</p>
           <h3 className="text-xl font-black text-coral font-english">{metrics.cancelledCount} طلب</h3>
-          <p className="text-[10px] text-slate-400 font-arabic">تم إلغاؤها بالكامل</p>
+          <p className="text-[11px] font-medium text-slate-500 font-arabic">تم إلغاؤها بالكامل</p>
         </div>
 
         {/* متوسط قيمة الطلب */}
         <div className="bg-white p-4 rounded-[16px] shadow-premium border border-[#E7DCC2] space-y-1.5 text-right">
-          <p className="text-[10px] font-bold text-slate-400 font-arabic">متوسط الطلب</p>
+          <p className="text-xs font-bold text-slate-500 font-arabic">متوسط الطلب</p>
           <h3 className="text-xl font-black text-coral font-english">{metrics.avgOrderVal.toLocaleString()} ج.م</h3>
-          <p className="text-[10px] text-slate-400 font-arabic">القيمة المالية الوسطى للعميل</p>
+          <p className="text-[11px] font-medium text-slate-500 font-arabic">القيمة المالية الوسطى للعميل</p>
         </div>
 
         {/* نسبة الطلب إلى الزيارات */}
         <div className="bg-white p-4 rounded-[16px] shadow-premium border border-[#E7DCC2] space-y-1.5 text-right">
-          <p className="text-[10px] font-bold text-slate-400 font-arabic">نسبة الطلب (الطلبات/الزيارات)</p>
+          <p className="text-xs font-bold text-slate-500 font-arabic">نسبة الطلب (الطلبات/الزيارات)</p>
           <h3 className="text-xl font-black text-slate-700 font-english">{metrics.orderVisitsRatio}</h3>
-          <p className="text-[10px] text-slate-400 font-arabic">الزيارات محسوبة من البيكسل</p>
+          <p className="text-[11px] font-medium text-slate-500 font-arabic">الزيارات محسوبة من البيكسل</p>
         </div>
 
         {/* نسبة التحويل */}
         <div className="bg-white p-4 rounded-[16px] shadow-premium border border-[#E7DCC2] space-y-1.5 text-right">
-          <p className="text-[10px] font-bold text-slate-400 font-arabic">نسبة التحويل</p>
+          <p className="text-xs font-bold text-slate-500 font-arabic">نسبة التحويل</p>
           <h3 className="text-xl font-black text-sage-deep font-english">{metrics.conversionRate}%</h3>
-          <p className="text-[10px] text-slate-400 font-arabic">معدل تحويل الزائر لمشترٍ</p>
+          <p className="text-[11px] font-medium text-slate-500 font-arabic">معدل تحويل الزائر لمشترٍ</p>
         </div>
 
       </div>
@@ -359,11 +435,10 @@ export default function AnalyticsPage() {
             {mounted && salesProgressData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={salesProgressData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" />
-                  <XAxis dataKey="date" stroke="#6B7796" tick={{ fill: '#16233F', fontSize: 10, fontFamily: 'var(--font-cairo)' }} dy={5} />
-                  <YAxis stroke="#6B7796" tick={{ fill: '#16233F', fontSize: 10 }} dx={-5} />
+                  <XAxis dataKey="date" stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} dy={5} />
+                  <YAxis stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} dx={-5} />
                   <Tooltip formatter={(v) => [`${v} ج.م`, 'المبيعات']} />
-                  <Line type="monotone" dataKey="revenue" stroke="#16233F" strokeWidth={2.5} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="revenue" stroke="#0073E6" strokeWidth={2.5} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             ) : (
@@ -397,8 +472,8 @@ export default function AnalyticsPage() {
                     layout="horizontal" 
                     verticalAlign="bottom" 
                     align="center"
-                    iconSize={10}
-                    formatter={(val) => <span className="text-[10px] font-bold text-slate-500 font-arabic">{val}</span>}
+                    iconSize={12}
+                    formatter={(val) => <span className="text-[13px] font-bold text-ink font-arabic">{val}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -420,8 +495,8 @@ export default function AnalyticsPage() {
                   margin={{ right: 10, left: 20, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" horizontal={false} />
-                  <XAxis type="number" stroke="#6B7796" reversed={true} tick={{ fill: '#16233F', fontSize: 10 }} />
-                  <YAxis dataKey="name" type="category" stroke="#6B7796" orientation="right" tick={{ fill: '#16233F', fontSize: 10, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} width={160} tickFormatter={(v) => v.length > 22 ? v.slice(0, 22) + '...' : v} />
+                  <XAxis type="number" stroke="#6B7796" reversed={true} tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} />
+                  <YAxis dataKey="name" type="category" stroke="#6B7796" orientation="right" tick={<CustomYAxisTick />} width={180} />
                   <Tooltip formatter={(v) => [`${v} قطعة`, 'الكمية']} />
                   <Bar dataKey="qty" fill="#E7A537" radius={[8, 0, 0, 8]} />
                 </RechartsBarChart>
@@ -440,8 +515,8 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsBarChart data={cartEventsData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" />
-                  <XAxis dataKey="name" stroke="#6B7796" tick={{ fill: '#16233F', fontSize: 9, fontFamily: 'var(--font-cairo)' }} tickFormatter={(v) => v.length > 15 ? v.slice(0, 15) + '..' : v} />
-                  <YAxis stroke="#6B7796" tick={{ fill: '#16233F', fontSize: 10 }} />
+                  <XAxis dataKey="name" stroke="#6B7796" height={55} interval={0} tick={<CustomXAxisTick />} />
+                  <YAxis stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} />
                   <Tooltip formatter={(v) => [`${v} مرة`, 'إضافة للسلة']} />
                   <Bar dataKey="count" fill="#E4573F" radius={[8, 8, 0, 0]} />
                 </RechartsBarChart>
@@ -476,8 +551,8 @@ export default function AnalyticsPage() {
                     layout="horizontal" 
                     verticalAlign="bottom" 
                     align="center"
-                    iconSize={8}
-                    formatter={(val) => <span className="text-[10px] font-bold text-slate-500 font-arabic">{val}</span>}
+                    iconSize={12}
+                    formatter={(val) => <span className="text-[13px] font-bold text-ink font-arabic">{val}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -489,18 +564,72 @@ export default function AnalyticsPage() {
 
         {/* 6. المحافظات الأكثر طلباً */}
         <div className="bg-white p-5 rounded-[16px] shadow-premium border border-[#E7DCC2] space-y-4">
-          <h4 className="text-sm font-bold text-ink font-arabic pr-2 border-r-4 border-[#E7A537]">المحافظات الأكثر طلباً</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-bold text-ink font-arabic pr-2 border-r-4 border-[#E7A537]">المحافظات الأكثر طلباً</h4>
+            <div className="flex gap-1 bg-slate-100 p-0.5 rounded-full border border-slate-200">
+              <button
+                onClick={() => setGovView('chart')}
+                className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all duration-200 ${
+                  govView === 'chart' ? 'bg-white text-ink shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                رسم بياني
+              </button>
+              <button
+                onClick={() => setGovView('rank')}
+                className={`px-3 py-1 text-[10px] font-bold rounded-full transition-all duration-200 ${
+                  govView === 'rank' ? 'bg-white text-ink shadow-sm' : 'text-slate-400 hover:text-slate-600'
+                }`}
+              >
+                ترتيب المحافظات
+              </button>
+            </div>
+          </div>
           <div className="h-64">
             {mounted && govOrdersData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <RechartsBarChart data={govOrdersData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" />
-                  <XAxis dataKey="governorate" stroke="#6B7796" tick={{ fill: '#16233F', fontSize: 10, fontFamily: 'var(--font-cairo)' }} />
-                  <YAxis stroke="#6B7796" tick={{ fill: '#16233F', fontSize: 10 }} />
-                  <Tooltip formatter={(v) => [`${v} طلب`, 'الطلبات']} />
-                  <Bar dataKey="orders" fill="#7A5C9E" radius={[6, 6, 0, 0]} />
-                </RechartsBarChart>
-              </ResponsiveContainer>
+              govView === 'chart' ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <RechartsBarChart data={govOrdersData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" />
+                    <XAxis dataKey="governorate" stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} />
+                    <YAxis stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} />
+                    <Tooltip formatter={(v) => [`${v} طلب`, 'الطلبات']} />
+                    <Bar dataKey="orders" fill="#8B5CF6" radius={[6, 6, 0, 0]} />
+                  </RechartsBarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="space-y-2 h-full overflow-y-auto pr-1 no-scrollbar">
+                  {govOrdersData.map((item, idx) => {
+                    const totalGovOrders = govOrdersData.reduce((sum, g) => sum + g.orders, 0);
+                    const pct = totalGovOrders > 0 ? Math.round((item.orders / totalGovOrders) * 100) : 0;
+                    const progressColor = idx === 0 ? 'bg-[#E7A537]' : (idx === 1 ? 'bg-[#8B5CF6]' : (idx === 2 ? 'bg-[#0073E6]' : 'bg-slate-400'));
+                    const rankBadge = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : `${idx + 1}`));
+                    
+                    return (
+                      <div key={item.governorate} className="flex flex-col gap-1 p-2 rounded-[12px] hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all duration-200">
+                        <div className="flex items-center justify-between text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="w-5 h-5 flex items-center justify-center font-bold font-arabic bg-slate-100 rounded-full text-slate-600 text-[10px]">
+                              {rankBadge}
+                            </span>
+                            <span className="font-bold text-slate-800 font-arabic">{item.governorate}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 font-bold font-numbers">
+                            <span className="text-ink">{item.orders} طلب</span>
+                            <span className="text-slate-400">({pct}%)</span>
+                          </div>
+                        </div>
+                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full ${progressColor} rounded-full transition-all duration-500`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )
             ) : (
               <div className="h-full flex items-center justify-center text-slate-400 text-xs font-arabic">لا توجد طلبات كافية بعد</div>
             )}
@@ -515,8 +644,8 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={avgOrderOverTime}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" />
-                  <XAxis dataKey="date" stroke="#6B7796" tick={{ fill: '#16233F', fontSize: 10, fontFamily: 'var(--font-cairo)' }} />
-                  <YAxis stroke="#6B7796" tick={{ fill: '#16233F', fontSize: 10 }} />
+                  <XAxis dataKey="date" stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} />
+                  <YAxis stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} />
                   <Tooltip formatter={(v) => [`${v} ج.م`, 'متوسط القيمة']} />
                   <Line type="linear" dataKey="avg" stroke="#E4573F" strokeWidth={2} dot={{ fill: '#E7A537' }} />
                 </LineChart>

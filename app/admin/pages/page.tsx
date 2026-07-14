@@ -4,7 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { 
   FileText, Plus, Trash2, ArrowUp, ArrowDown, Eye, Save, 
-  Sparkles, Layers, AlignLeft, Image as ImageIcon, LayoutGrid, AlertCircle 
+  Sparkles, Layers, AlignLeft, Image as ImageIcon, LayoutGrid, AlertCircle,
+  Star, Heart
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getMockData, saveMockData, PageData, PageBlock } from '@/lib/mockData';
@@ -206,7 +207,7 @@ export default function PageBuilderPage() {
   };
 
   // إضافة كتلة جديدة من أي نوع
-  const addBlock = (type: 'text' | 'image' | 'mixed' | 'hero' | 'stats' | 'packages_section' | 'box_builder_section' | 'contact_section' | 'products_row' | 'about_header' | 'about_story' | 'about_values' | 'box_builder_stages') => {
+  const addBlock = (type: 'text' | 'image' | 'mixed' | 'hero' | 'stats' | 'packages_section' | 'box_builder_section' | 'contact_section' | 'products_row' | 'about_header' | 'about_story' | 'about_values' | 'box_builder_stages' | 'testimonials') => {
     const newBlock: PageBlock = {
       id: `block-${Math.random().toString(36).substring(2, 9)}`,
       type,
@@ -215,9 +216,9 @@ export default function PageBuilderPage() {
         text: type === 'text' || type === 'mixed' ? 'اكتب المحتوى الخاص بك هنا...' : '',
         imageUrl: type === 'image' || type === 'mixed' || type === 'hero' ? 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&auto=format&fit=crop&q=80' : '',
         caption: type === 'image' ? 'تعليق توضيحي أسفل الصورة' : '',
-        title: type === 'packages_section' ? 'باقات المراحل الدراسية الجاهزة' : type === 'box_builder_section' ? 'اصنع صندوق مستلزماتك الدراسية بنفسك' : type === 'hero' ? 'عنوان واجهة البطل الترحيبية' : type === 'products_row' ? 'قسم المنتجات المخصصة' : type === 'box_builder_stages' ? 'اختر المرحلة الدراسية للبدء' : '',
-        subtitle: type === 'packages_section' ? 'اختر الباقة المناسبة لمرحلة طفلك ووفر عناء شراء كل قطعة بمفردها' : type === 'box_builder_section' ? 'صمم بوكس أدواتك المدرسية بنفسك واختر الكتب والقرطاسية التي تناسبك واستمتع بخصم إجمالي فوري!' : type === 'hero' ? 'عنوان فرعي يوضح أهداف الصفحة بالتفصيل' : type === 'box_builder_stages' ? 'سنقوم بتحميل باقة مقترحة مسبقاً لتسهيل عملية التخصيص عليك.' : '',
-        ctaText: type === 'packages_section' ? 'عرض كل الباقات' : type === 'box_builder_section' ? 'ابدأ تصميم صندوقك الآن' : type === 'contact_section' ? 'تواصل معنا واتساب' : type === 'hero' ? 'تصفح الآن' : '',
+        title: type === 'packages_section' ? 'باقات المراحل الدراسية الجاهزة' : type === 'box_builder_section' ? 'اصنع صندوق مستلزماتك الدراسية بنفسك' : type === 'hero' ? 'عنوان واجهة البطل الترحيبية' : type === 'products_row' ? 'قسم المنتجات المخصصة' : type === 'box_builder_stages' ? 'اختر المرحلة الدراسية للبدء' : type === 'testimonials' ? 'آراء عائلتنا الدافئة 🎓' : '',
+        subtitle: type === 'packages_section' ? 'اختر الباقة المناسبة لمرحلة طفلك ووفر عناء شراء كل قطعة بمفردها' : type === 'box_builder_section' ? 'صمم بوكس أدواتك المدرسية بنفسك واختر الكتب والقرطاسية التي تناسبك واستمتع بخصم إجمالي فوري!' : type === 'hero' ? 'عنوان فرعي يوضح أهداف الصفحة بالتفصيل' : type === 'box_builder_stages' ? 'سنقوم بتحميل باقة مقترحة مسبقاً لتسهيل عملية التخصيص عليك.' : type === 'testimonials' ? 'قالوا عن مكتبة الخضري' : '',
+        ctaText: type === 'packages_section' ? 'عرض كل الباقات' : type === 'box_builder_section' ? 'ابدأ تصميم صندوقك الآن' : type === 'contact_section' ? 'تواصل معنا واتساب' : type === 'hero' ? 'تصفح الآن' : type === 'testimonials' ? 'شاركينا تقييمك وتجربتك معنا ✍️' : '',
         ctaLink: type === 'contact_section' ? 'https://wa.me/201000000000' : type === 'hero' ? '#categories' : '',
         align: type === 'mixed' ? 'right' : undefined,
         // Dynamic products row settings
@@ -257,6 +258,19 @@ export default function PageBuilderPage() {
         high_desc: type === 'box_builder_stages' ? 'باقة متكاملة تحوي كشاكيل جامعية كبيرة، أوراق فلوسكاب وأقلام حبر فاخرة.' : undefined,
         high_price: type === 'box_builder_stages' ? '780' : undefined,
         cta_text: type === 'box_builder_stages' ? 'تخصيص الباقة' : undefined,
+        // Testimonials custom reviews defaults
+        rev1_name: type === 'testimonials' ? 'ندى أحمد' : undefined,
+        rev1_city: type === 'testimonials' ? 'دمياط' : undefined,
+        rev1_comment: type === 'testimonials' ? 'الهدية كانت لابني في أول يوم دراسي، ملامحه وهو بيفتح العلبة وتفاصيل الأدوات لا تُقدر بثمن، متشكرة جداً.' : undefined,
+        rev1_rating: type === 'testimonials' ? 5 : undefined,
+        rev2_name: type === 'testimonials' ? 'سارة محمد' : undefined,
+        rev2_city: type === 'testimonials' ? 'القاهرة' : undefined,
+        rev2_comment: type === 'testimonials' ? 'طلبت الكتب المدرسية والمستلزمات، خامات ممتازة وتغليف فاخر ومنسق جداً، والتوصيل سريع لباب البيت.' : undefined,
+        rev2_rating: type === 'testimonials' ? 5 : undefined,
+        rev3_name: type === 'testimonials' ? 'مريم محمود' : undefined,
+        rev3_city: type === 'testimonials' ? 'الإسكندرية' : undefined,
+        rev3_comment: type === 'testimonials' ? 'الباقة المدرسية تجنن والتفاصيل والفرز نظيفة جداً. الأدوات جودتها عالية والشغل يستاهل كل قرش بجد.' : undefined,
+        rev3_rating: type === 'testimonials' ? 5 : undefined,
       }
     };
     setBlocks(prev => [...prev, newBlock]);
@@ -1942,6 +1956,20 @@ export default function PageBuilderPage() {
                 );
               }
 
+              if (block.type === 'testimonials') {
+                return (
+                  <div key={block.id} className="p-5 bg-white border-b border-paper-line text-center space-y-3 font-arabic" dir="rtl">
+                    <span className="text-amber font-bold text-[10px] block">{block.content.subtitle || 'قالوا عن مكتبة الخضري'}</span>
+                    <h5 className="font-black text-xs text-ink">{block.content.title || 'آراء عائلتنا الدافئة 🎓'}</h5>
+                    <div className="flex gap-2 justify-center">
+                      <span className="text-[10px] text-slate-400 border border-slate-100 bg-slate-50 px-2.5 py-0.5 rounded-full">
+                        ✨ عرض تقييمات العملاء ذات الـ 5 نجوم
+                      </span>
+                    </div>
+                  </div>
+                );
+              }
+
               if (block.type === 'packages_section') {
                 const displayedBoxes = Array.isArray(block.content.boxIds) && block.content.boxIds.length > 0
                   ? block.content.boxIds.map(id => boxes.find(b => b.id === id)).filter(Boolean)
@@ -2349,6 +2377,7 @@ export default function PageBuilderPage() {
                             <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full font-arabic">
                               {block.type === 'hero' ? 'واجهة البطل'
                                : block.type === 'stats' ? 'شريط الإحصائيات'
+                               : block.type === 'testimonials' ? 'آراء وتقييمات العملاء'
                                : block.type === 'packages_section' ? 'قسم الباقات الجاهزة'
                                : block.type === 'box_builder_section' ? 'صانع الصناديق'
                                : block.type === 'products_row' ? 'قسم المنتجات'
@@ -2419,6 +2448,7 @@ export default function PageBuilderPage() {
                            : block.type === 'image' ? 'كتلة صورة منفردة' 
                            : block.type === 'mixed' ? 'كتلة مزدوجة (نص + صورة)' 
                            : block.type === 'stats' ? 'شريط الإحصائيات (Stats)'
+                           : block.type === 'testimonials' ? 'قسم آراء وتقييمات العملاء'
                            : block.type === 'packages_section' ? 'قسم الباقات المدرسية الجاهزة'
                            : block.type === 'box_builder_section' ? 'قسم صانع الصناديق والبوكسات'
                            : block.type === 'products_row' ? 'قسم منتجات من تصنيف مخصص'
@@ -2573,10 +2603,11 @@ export default function PageBuilderPage() {
                               value={block.content.text || ''}
                               onChange={(e) => updateBlockContent(block.id, 'text', e.target.value)}
                               className="w-full px-4 py-2 bg-white border border-[#E7DCC2] text-xs rounded-[12px] font-arabic focus:outline-none focus:border-amber"
+                              placeholder="اكتب المحتوى بتنسيق فقرات..."
                             />
                           </div>
                         </div>
-
+                        
                         <div className="space-y-2">
                           <Input
                             label="رابط الصورة (URL)"
@@ -2647,6 +2678,138 @@ export default function PageBuilderPage() {
                               </div>
                             );
                           })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 5.5. قسم التقييمات والآراء (Testimonials Block Editor) */}
+                    {block.type === 'testimonials' && (
+                      <div className="space-y-4 text-right">
+                        <h5 className="text-xs font-bold text-ink font-arabic pr-1 border-r-2 border-amber mb-3">محرر كتلة آراء وتقييمات العملاء المخصصة:</h5>
+                        
+                        <div className="p-5 bg-white border border-[#E7DCC2] rounded-[16px] shadow-premium space-y-8 text-center" dir="rtl">
+                          {/* Header Editor */}
+                          <div className="space-y-2.5 max-w-xl mx-auto text-right">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <span className="text-[10px] font-bold text-slate-400 block mb-1">العنوان الفرعي للقسم:</span>
+                                <input
+                                  type="text"
+                                  value={block.content.subtitle || ''}
+                                  onChange={(e) => updateBlockContent(block.id, 'subtitle', e.target.value)}
+                                  className="w-full text-right text-amber font-extrabold text-xs bg-slate-50 border border-slate-200 rounded-[12px] px-3.5 py-2.5 focus:bg-white outline-none focus:border-amber font-arabic"
+                                  placeholder="مثال: قالوا عن مكتبة الخضري"
+                                />
+                              </div>
+                              <div>
+                                <span className="text-[10px] font-bold text-slate-400 block mb-1">العنوان الرئيسي للقسم:</span>
+                                <input
+                                  type="text"
+                                  value={block.content.title || ''}
+                                  onChange={(e) => updateBlockContent(block.id, 'title', e.target.value)}
+                                  className="w-full text-right text-xs font-black text-ink bg-slate-50 border border-slate-200 rounded-[12px] px-3.5 py-2.5 focus:bg-white outline-none focus:border-amber font-arabic"
+                                  placeholder="مثال: آراء عائلتنا الدافئة 🎓"
+                                />
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-[10px] font-bold text-slate-400 block mb-1">نص زر المشاركة والتقييم:</span>
+                              <input
+                                type="text"
+                                value={block.content.ctaText || ''}
+                                onChange={(e) => updateBlockContent(block.id, 'ctaText', e.target.value)}
+                                className="w-full text-right text-xs font-bold bg-slate-50 text-slate-800 border border-slate-200 rounded-[12px] px-3.5 py-2.5 focus:bg-white outline-none focus:border-amber font-arabic"
+                                placeholder="مثال: شاركينا تقييمك وتجربتك معنا ✍️"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Testimonials Cards Editor */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-4">
+                            {[1, 2, 3].map((num) => {
+                              const keyName = `rev${num}_name`;
+                              const keyCity = `rev${num}_city`;
+                              const keyComment = `rev${num}_comment`;
+                              const keyRating = `rev${num}_rating`;
+                              const ratingVal = Number(block.content[keyRating] || 5);
+
+                              return (
+                                <div
+                                  key={num}
+                                  className="bg-slate-50/40 rounded-[16px] border border-paper-line p-5 shadow-card text-right relative overflow-hidden flex flex-col justify-between hover:border-amber/40 transition-colors"
+                                >
+                                  {/* Quote Watermark */}
+                                  <span className="absolute -top-3 -right-2 text-paper-line/30 font-serif text-[90px] select-none pointer-events-none leading-none">
+                                    “
+                                  </span>
+
+                                  <div className="space-y-3.5 relative z-10">
+                                    {/* Rating stars selector */}
+                                    <div className="flex gap-0.5 justify-start">
+                                      {Array.from({ length: 5 }).map((_, idx) => {
+                                        const val = idx + 1;
+                                        return (
+                                          <button
+                                            key={idx}
+                                            type="button"
+                                            onClick={() => updateBlockContent(block.id, keyRating, val)}
+                                            className="p-0.5 hover:scale-120 transition-transform"
+                                            title={`تقييم ${val} نجوم`}
+                                          >
+                                            <Star 
+                                              className={`w-4 h-4 ${val <= ratingVal ? 'text-amber fill-amber' : 'text-slate-200'}`} 
+                                            />
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+
+                                    {/* Comment text area */}
+                                    <div>
+                                      <span className="text-[9px] font-bold text-slate-400 block mb-1">التعليق والتقييم:</span>
+                                      <textarea
+                                        rows={3}
+                                        value={block.content[keyComment] || ''}
+                                        onChange={(e) => updateBlockContent(block.id, keyComment, e.target.value)}
+                                        className="w-full text-xs text-ink-soft/90 leading-relaxed font-tajawal font-medium bg-white border border-slate-200 rounded-[10px] p-2.5 focus:outline-none focus:border-amber resize-none font-tajawal"
+                                        placeholder="اكتب تعليق العميل هنا..."
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Footer Fields */}
+                                  <div className="border-t border-paper-line pt-3 mt-4 flex items-center justify-between z-10 relative">
+                                    <div className="text-right space-y-2 flex-grow pl-3">
+                                      <div>
+                                        <span className="text-[8px] font-bold text-slate-400 block mb-0.5">اسم العميل:</span>
+                                        <input
+                                          type="text"
+                                          value={block.content[keyName] || ''}
+                                          onChange={(e) => updateBlockContent(block.id, keyName, e.target.value)}
+                                          className="w-full font-extrabold text-xs text-ink bg-white border border-slate-200 rounded-[8px] px-2 py-1 focus:outline-none focus:border-amber font-arabic"
+                                          placeholder="مثال: ندى أحمد"
+                                        />
+                                      </div>
+                                      <div>
+                                        <span className="text-[8px] font-bold text-slate-400 block mb-0.5">المحافظة / المدينة:</span>
+                                        <input
+                                          type="text"
+                                          value={block.content[keyCity] || ''}
+                                          onChange={(e) => updateBlockContent(block.id, keyCity, e.target.value)}
+                                          className="w-full text-[10px] text-ink/50 block font-tajawal font-bold bg-white border border-slate-200 rounded-[8px] px-2 py-1 focus:outline-none focus:border-amber font-tajawal"
+                                          placeholder="مثال: دمياط"
+                                        />
+                                      </div>
+                                    </div>
+                                    
+                                    <span className="text-amber shrink-0 self-end mb-1">
+                                      <Heart className="w-4.5 h-4.5 fill-current" />
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -3094,6 +3257,13 @@ export default function PageBuilderPage() {
                     className="px-4 py-2 bg-white hover:bg-amber hover:text-white border border-slate-200 text-xs font-bold rounded-[24px] text-slate-700 transition-all font-arabic"
                   >
                     + إحصائيات وأرقام (Stats)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addBlock('testimonials')}
+                    className="px-4 py-2 bg-white hover:bg-amber hover:text-white border border-slate-200 text-xs font-bold rounded-[24px] text-slate-700 transition-all font-arabic"
+                  >
+                    + آراء وتقييمات العملاء
                   </button>
                   <button
                     type="button"

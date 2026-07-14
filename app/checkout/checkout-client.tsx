@@ -104,6 +104,7 @@ export default function CheckoutClient({ shippingZones }: CheckoutClientProps) {
         unit_type: item.unitType || null,
         productId: item.productId || null,
         custom_items: item.customItems || null,
+        colors: (item as any).colors || null,
       }));
 
       const { data, error: orderError } = await supabase
@@ -339,6 +340,11 @@ export default function CheckoutClient({ shippingZones }: CheckoutClientProps) {
                   <span className="text-[10px] text-ink-soft/50 font-numbers block mt-0.5 font-bold">
                     {item.qty} وحدة × {item.price} ج.م
                   </span>
+                  {(item as any).colors && (item as any).colors.length > 0 && (
+                    <span className="text-[9px] text-slate-400 font-bold block mt-0.5 font-arabic">
+                      الألوان: {(item as any).colors.join(', ')}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}

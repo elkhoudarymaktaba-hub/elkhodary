@@ -3,31 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --ink: #162E5C;             /* كحلي أساسي أزرق غني */
-  --ink-soft: #2E7FD9;        /* أزرق زاهي من الشعار */
-  --ink-muted: #6E85B7;       /* رمادي أزرق ناعم */
-  --paper: #F6F1E4;           /* خلفية الصفحة ورقي كريمي */
-  --paper-line: #E7DCC2;      /* لون الحدود الخفيفة */
-  --paper-dark: #EFE8D6;      /* ورقي كريمي أغمق قليلاً */
-  --white: #FFFFFF;           /* خلفية الكروت */
+  --ink: #0A1931;             /* كحلي داكن ناصع للنصوص المقروءة */
+  --ink-soft: #1E90FF;        /* أزرق سماوي أساسي للهوية */
+  --ink-muted: #77B5FE;       /* أزرق سماوي ناعم */
+  --paper: #FFFFFF;           /* تغيير الخلفية بالكامل إلى أبيض نظيف */
+  --paper-line: #E2E8F0;      /* حدود رمادية فاتحة ناعمة بدلاً من البيج */
+  --paper-dark: #F8FAFC;      /* خلفية تبادلية رمادي خفيف جداً */
+  --white: #FFFFFF;           /* خلفية الكروت بيضاء */
   
-  --amber: #E7A537;           /* أصفر خردلي */
-  --amber-deep: #C9862A;      /* درجة غامقة */
-  --amber-light: #FBEBCB;     /* درجة فاتحة */
+  --amber: #D4AF37;           /* لون ذهبي أساسي للبراند */
+  --amber-deep: #B89324;      /* درجة غامقة للذهبي */
+  --amber-light: #FAF1D7;     /* درجة فاتحة للذهبي */
   
-  --coral: #E4573F;           /* أحمر مرجاني */
-  --coral-deep: #C43F2B;      /* درجة غامقة */
-  --coral-light: #FBE1DB;     /* درجة فاتحة */
+  --coral: #D4AF37;           /* تحويل المرجاني بالكامل للذهبي */
+  --coral-deep: #B89324;
+  --coral-light: #FAF1D7;
   
-  --sage: #4F8F73;            /* أخضر سيچ */
-  --sage-deep: #396A56;       /* درجة غامقة */
-  --sage-light: #DCEEE5;      /* درجة فاتحة */
+  --sage: #1E90FF;            /* تحويل السيج بالكامل للأزرق السماوي */
+  --sage-deep: #0073E6;
+  --sage-light: #E6F2FF;
   
-  --plum: #7A5C9E;            /* بنفسجي */
-  --plum-light: #EAE1F3;      /* بنفسجي فاتح */
+  --plum: #1E90FF;            /* تحويل البنفسجي للأزرق السماوي */
+  --plum-light: #E6F2FF;
 
   --radius-card: 16px;
-  --radius-button: 24px;
+  --radius-button: 9999px;    /* توحيد الأزرار لتكون دائرية بالكامل */
   --radius-input: 12px;
 }
 
@@ -355,4 +355,124 @@ body.admin-dark button[variant="outline"] {
 body.admin-dark button[variant="outline"]:hover {
   background-color: #1E293B !important;
 }
+
+/* ==========================================
+   تنسيقات الأزرار الموحدة والكروت (Redesign Revamp)
+   ========================================== */
+
+/* أزرار رئيسية ذهبية */
+.btn-primary,
+button.btn-primary,
+a.btn-primary {
+  background-color: var(--amber) !important;
+  color: #FFFFFF !important; /* نص أبيض بناءً على طلب العميل */
+  font-weight: 800 !important;
+  border-radius: var(--radius-button) !important;
+  box-shadow: 0 4px 14px 0 rgba(212, 175, 55, 0.25) !important;
+  transition: all 0.3s ease-in-out !important;
+  border: 2px solid var(--amber) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.btn-primary:hover,
+button.btn-primary:hover,
+a.btn-primary:hover {
+  background-color: var(--amber-deep) !important;
+  border-color: var(--amber-deep) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px 0 rgba(212, 175, 55, 0.35) !important;
+}
+
+/* أزرار ثانوية أوتلاين زرقاء سماوية */
+.btn-secondary,
+button.btn-secondary,
+a.btn-secondary {
+  background-color: transparent !important;
+  color: var(--ink-soft) !important;
+  border: 2px solid var(--ink-soft) !important;
+  font-weight: 800 !important;
+  border-radius: var(--radius-button) !important;
+  transition: all 0.3s ease-in-out !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.btn-secondary:hover,
+button.btn-secondary:hover,
+a.btn-secondary:hover {
+  background-color: rgba(30, 144, 255, 0.08) !important;
+  color: var(--ink-soft) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* توحيد تصميم الكروت بالكامل */
+.card-unified,
+.rounded-card,
+.bg-white.rounded-card {
+  border-radius: var(--radius-card) !important;
+  box-shadow: 0 8px 20px -10px rgba(10, 25, 49, 0.15) !important;
+  border: 1px solid var(--paper-line) !important;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.card-unified:hover,
+.rounded-card:hover {
+  box-shadow: 0 15px 30px -12px rgba(10, 25, 49, 0.22) !important;
+  transform: translateY(-4px) !important;
+}
+
+/* إزالة الحدود الجانبية الملونة لكروت الباقات/الصناديق وجعلها ذهبية بالكامل */
+.absolute.top-0.left-0.w-1.h-full,
+.absolute.top-0.left-0.w-1\.5.h-full,
+.absolute.top-0.right-0.w-3.h-full {
+  background-color: var(--amber) !important; /* خليه ذهبي بس للكل */
+}
+
+/* =========================================================
+   تعديلات خاصة بنسخة الهواتف المحمولة (Mobile Responsive)
+   ========================================================= */
+@media (max-width: 767px) {
+  /* 1. الحد الأدنى للمسافة بين الأقسام 40px */
+  section, 
+  [class*="py-12"], 
+  [class*="py-16"], 
+  [class*="py-20"],
+  [class*="py-24"] {
+    padding-top: 40px !important;
+    padding-bottom: 40px !important;
+  }
+
+  /* 2. توحيد ألوان الأزرار والحد من استخدام البرتقالي/الأحمر/الأخضر */
+  .btn-primary,
+  button.btn-primary,
+  a.btn-primary,
+  .bg-coral,
+  .bg-coral-deep,
+  .bg-emerald-500,
+  .bg-emerald-600,
+  button[class*="bg-coral"],
+  a[class*="bg-coral"],
+  button[class*="bg-emerald"],
+  a[class*="bg-emerald"] {
+    background-color: #D4AF37 !important;
+    border-color: #D4AF37 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2) !important;
+  }
+
+  .btn-primary:hover,
+  button.btn-primary:hover,
+  a.btn-primary:hover,
+  .bg-coral:hover,
+  .bg-coral-deep:hover,
+  .bg-emerald-500:hover,
+  .bg-emerald-600:hover {
+    background-color: #B89324 !important;
+    border-color: #B89324 !important;
+    color: #FFFFFF !important;
+  }
+}
+
 

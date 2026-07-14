@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getMockData } from '@/lib/mockData';
 
-export const revalidate = 0; // Fresh data on every load
+export const revalidate = 1; // Cache about page and revalidate every 1 second
 
 async function getAboutData() {
   try {
@@ -52,7 +52,7 @@ export default async function AboutPage() {
   const boxes = await getBoxes();
 
   return (
-    <div className="bg-paper-dark/30 min-h-screen py-16 pt-28">
+    <div className="bg-paper-dark/30 min-h-screen py-16 pt-32">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Card Wrapper */}
@@ -253,7 +253,7 @@ export default async function AboutPage() {
                               <p className="text-[10px] text-ink-soft/60 line-clamp-2 leading-relaxed mb-3">{box.description}</p>
                               <div className="flex items-center justify-between border-t border-dashed pt-2.5">
                                 <span className="text-xs font-black text-coral">{box.base_price} ج.م</span>
-                                <Link href={`/boxes/${box.id}`} className="px-2.5 py-1 bg-amber text-ink font-bold text-[10px] rounded-cta">
+                                <Link href={`/boxes/${box.id}`} className="btn-primary px-2.5 py-1 text-[10px]">
                                   عرض الباقة
                                 </Link>
                               </div>

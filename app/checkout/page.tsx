@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import CheckoutClient from './checkout-client';
 
-export const revalidate = 0; // Fresh data on every load
+export const revalidate = 1; // Cache checkout page and revalidate every 1 second
 
 async function getShippingZones() {
   try {

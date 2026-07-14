@@ -7,6 +7,8 @@ import { Plus, Minus, RefreshCw, Trash2, ShoppingCart, Check, X, ShieldAlert } f
 import BoxVisualPreview from '@/components/store/box-visual-preview';
 import { useCartStore } from '@/lib/store/cart';
 import { trackClientEvent } from '@/lib/tracking';
+import { supabase } from '@/lib/supabase';
+import { getMockData } from '@/lib/mockData';
 
 interface Box {
   id: string;
@@ -33,28 +35,83 @@ interface BoxDetailClientProps {
   allAlternatives: Product[];
 }
 
+const getStageLabel = (stage: string) => {
+  switch (stage.toLowerCase()) {
+    case 'kg': return 'رياض الأطفال';
+    case 'primary': return 'المرحلة الابتدائية';
+    case 'middle': return 'المرحلة الإعدادية';
+    case 'high': return 'المرحلة الثانوية';
+    default: return stage;
+  }
+};
+
 export default function BoxDetailClient({ box, initialProducts, allAlternatives }: BoxDetailClientProps) {
   const router = useRouter();
   const addItem = useCartStore((state) => state.addItem);
   const [added, setAdded] = useState(false);
 
-  const [customItems, setCustomItems] = useState(() => {
-    return box.items.map((bItem) => {
+  const [customItems, setCustomItems] = useState([]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`kh_custom_box_${box.id}`);
+      if (saved) {
+        try {
+          setCustomItems(JSON.parse(saved));
+          return;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    let cachedCats: any[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        const local = localStorage.getItem('kh_categories');
+        if (local) cachedCats = JSON.parse(local);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    const boxItems = box.products || box.items || [];
+    const mapped = boxItems.map((bItem: any) => {
       const prod = initialProducts.find((p) => p.id === bItem.product_id);
+      const cat = cachedCats.find((c) => c.id === prod?.category_id);
       return {
         productId: bItem.product_id,
         name: prod?.name || 'منتج غير معروف',
-        qty: bItem.qty,
+        qty: bItem.quantity || bItem.qty || 1,
         price: prod?.price_unit || 0,
         image: prod?.images?.[0] || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=150&q=80',
         categoryId: prod?.category_id || '',
-        categoryName: prod?.categories?.name || 'أدوات مدرسية',
+        categoryName: cat ? cat.name : (prod?.categories?.name || 'أدوات مدرسية'),
       };
     });
-  });
+    setCustomItems(mapped);
+  }, [box, initialProducts]);
 
-  const [swapTargetId, setSwapTargetId] = useState<string | null>(null);
+  useEffect(() => {
+    if (customItems.length > 0) {
+      localStorage.setItem(`kh_custom_box_${box.id}`, JSON.stringify(customItems));
+    }
+  }, [customItems, box.id]);
+
+  const [swapTargetId, setSwapTargetId] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Lock scroll when Swap Modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isModalOpen]);
 
   useEffect(() => {
     trackClientEvent('ViewContent', {
@@ -139,14 +196,16 @@ export default function BoxDetailClient({ box, initialProducts, allAlternatives 
       qty: 1,
       image: boxMainImage,
       stage: box.stage,
-      customItems: customItems.map(item => ({
-        productId: item.productId,
-        name: item.name,
-        qty: item.qty,
-        price: item.price,
-        image: item.image,
-        category: item.categoryName
-      }))
+      customItems: customItems.map((item) => {
+        return {
+          productId: item.productId,
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+          image: item.image,
+          category: item.categoryName
+        };
+      })
     });
 
     trackClientEvent('AddToCart', {
@@ -156,21 +215,15 @@ export default function BoxDetailClient({ box, initialProducts, allAlternatives 
       qty: 1,
     });
 
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(`kh_custom_box_${box.id}`);
+    }
+
     setAdded(true);
     setTimeout(() => {
       setAdded(false);
       router.push('/cart');
     }, 1500);
-  };
-
-  const getStageLabel = (stage: string) => {
-    switch (stage.toLowerCase()) {
-      case 'kg': return 'رياض الأطفال';
-      case 'primary': return 'المرحلة الابتدائية';
-      case 'middle': return 'المرحلة الإعدادية';
-      case 'high': return 'المرحلة الثانوية';
-      default: return stage;
-    }
   };
 
   return (
@@ -185,89 +238,110 @@ export default function BoxDetailClient({ box, initialProducts, allAlternatives 
             <p className="text-ink-soft/50 text-xs mb-6">يمكنك زيادة الكميات، حذف القطع غير المطلوبة، أو استبدالها ببدائل مناسبة من نفس التصنيف.</p>
             
             {customItems.length > 0 ? (
-              <div className="divide-y divide-paper-dark/60">
-                {customItems.map((item) => (
-                  <div key={item.productId} className="py-4.5 flex items-center justify-between gap-4 first:pt-0 last:pb-0">
-                    
-                    {/* Item Thumbnail */}
-                    <div className="relative w-16 h-16 bg-paper rounded-xl overflow-hidden shrink-0 border border-paper-line">
-                      <Image
-                        src={item.image}
-                        alt={item.name}
-                        fill
-                        sizes="64px"
-                        className="object-contain p-1.5"
-                      />
-                    </div>
-
-                    {/* Item Info details */}
-                    <div className="flex-grow">
-                      <h4 className="font-bold text-sm text-ink line-clamp-1">{item.name}</h4>
-                      <div className="flex items-center gap-2.5 mt-1.5">
-                        <span className="text-[10px] bg-sage/10 text-sage-deep font-bold px-2 py-0.5 rounded-full border border-sage/10">
-                          {item.categoryName}
-                        </span>
-                        <span className="text-xs text-ink-soft/50 font-numbers font-bold">
-                          {item.price} ج.م للقطعة
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Controls Actions */}
-                    <div className="flex items-center gap-3 shrink-0">
+              <>
+                <div className="divide-y divide-paper-dark/60">
+                  {customItems.map((item) => (
+                    <div key={item.productId} className="py-4.5 flex items-center justify-between gap-4 first:pt-0 last:pb-0">
                       
-                      {/* Qty Counter */}
-                      <div className="flex items-center bg-paper rounded-full p-1 border border-paper-line">
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateQty(item.productId, -1)}
-                          className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark transition-colors active:scale-95 shadow-sm"
-                          aria-label="تقليل"
-                        >
-                          <Minus size={12} />
-                        </button>
-                        <span className="w-8 text-center font-bold text-sm font-numbers text-ink">
-                          {item.qty}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => handleUpdateQty(item.productId, 1)}
-                          className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark transition-colors active:scale-95 shadow-sm"
-                          aria-label="زيادة"
-                        >
-                          <Plus size={12} />
-                        </button>
+                      {/* Item Thumbnail */}
+                      <div className="relative w-16 h-16 bg-paper rounded-xl overflow-hidden shrink-0 border border-paper-line">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          sizes="64px"
+                          className="object-contain p-1.5"
+                        />
                       </div>
 
-                      {/* Swap Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleOpenSwap(item.productId)}
-                        className="p-2 bg-white text-sage hover:bg-paper border border-paper-line rounded-full transition-colors hover:text-sage-deep active:scale-95 shadow-sm"
-                        title="استبدال بمنتج آخر"
-                      >
-                        <RefreshCw size={12} />
-                      </button>
+                      {/* Item Info details */}
+                      <div className="flex-grow">
+                        <h4 className="font-bold text-sm text-ink line-clamp-1">{item.name}</h4>
+                        <div className="flex items-center gap-2.5 mt-1.5">
+                          <span className="text-[10px] bg-sage/10 text-sage-deep font-bold px-2 py-0.5 rounded-full border border-sage/10">
+                            {item.categoryName}
+                          </span>
+                          <span className="text-xs text-ink-soft/50 font-numbers font-bold">
+                            {item.price} ج.م للقطعة
+                          </span>
+                        </div>
+                      </div>
 
-                      {/* Delete Button */}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem(item.productId)}
-                        className="p-2 bg-white text-rose-500 hover:bg-rose-50 border border-paper-line hover:border-rose-100 rounded-full transition-colors active:scale-95 shadow-sm"
-                        title="حذف من الباقة"
-                      >
-                        <Trash2 size={12} />
-                      </button>
+                      {/* Controls Actions */}
+                      <div className="flex items-center gap-3 shrink-0">
+                        
+                        {/* Qty Counter */}
+                        <div className="flex items-center bg-paper rounded-full p-1 border border-paper-line">
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateQty(item.productId, -1)}
+                            className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark transition-colors active:scale-95 shadow-sm"
+                            aria-label="تقليل"
+                          >
+                            <Minus size={12} />
+                          </button>
+                          <span className="w-8 text-center font-bold text-sm font-numbers text-ink">
+                            {item.qty}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleUpdateQty(item.productId, 1)}
+                            className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark transition-colors active:scale-95 shadow-sm"
+                            aria-label="زيادة"
+                          >
+                            <Plus size={12} />
+                          </button>
+                        </div>
+
+                        {/* Swap Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenSwap(item.productId)}
+                          className="p-2 bg-white text-sage hover:bg-paper border border-paper-line rounded-full transition-colors hover:text-sage-deep active:scale-95 shadow-sm"
+                          title="استبدال بمنتج آخر"
+                        >
+                          <RefreshCw size={12} />
+                        </button>
+
+                        {/* Delete Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(item.productId)}
+                          className="p-2 bg-white text-rose-500 hover:bg-rose-50 border border-paper-line hover:border-rose-100 rounded-full transition-colors active:scale-95 shadow-sm"
+                          title="حذف من الباقة"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+
+                      </div>
 
                     </div>
-
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                
+                {/* Add other products button */}
+                <div className="mt-4 pt-4 border-t border-dashed border-paper-line flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => router.push(`/boxes/${box.id}/add-products`)}
+                    className="w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border-2 border-amber text-amber hover:bg-amber/5 active:scale-95 transition-all shadow-sm"
+                  >
+                    <Plus size={14} className="text-amber" />
+                    <span>إضافة منتجات أخرى للباقة</span>
+                  </button>
+                </div>
+              </>
             ) : (
               <div className="text-center py-12">
                 <ShieldAlert size={36} className="mx-auto text-ink-soft/30 mb-2" />
-                <p className="text-ink-soft/50 text-xs">الباقة فارغة تماماً. قم بإضافة بعض المنتجات.</p>
+                <p className="text-ink-soft/50 text-xs font-arabic">الباقة فارغة تماماً. قم بإضافة بعض المنتجات.</p>
+                <button
+                  type="button"
+                  onClick={() => router.push(`/boxes/${box.id}/add-products`)}
+                  className="mt-3 py-1.5 px-4 rounded-lg bg-amber hover:bg-amber-deep text-white font-bold text-xs transition-all"
+                >
+                  تصفح وإضافة منتجات
+                </button>
               </div>
             )}
           </div>
@@ -296,7 +370,7 @@ export default function BoxDetailClient({ box, initialProducts, allAlternatives 
               </div>
               <div className="flex items-center justify-between text-sm font-bold text-ink pt-3 border-t border-paper-line">
                 <span>سعر الباقة الإجمالي:</span>
-                <span className="text-coral-deep font-black font-numbers text-lg">
+                <span className="text-amber font-black font-numbers text-lg">
                   {totalPrice.toFixed(2)} <span className="text-xs font-cairo font-normal text-ink-soft">ج.م</span>
                 </span>
               </div>
@@ -309,7 +383,7 @@ export default function BoxDetailClient({ box, initialProducts, allAlternatives 
               className={`w-full py-3.5 px-6 rounded-cta font-bold text-sm flex items-center justify-center gap-3 transition-all duration-300 ${
                 added
                   ? 'bg-emerald-500 text-white'
-                  : 'bg-coral hover:bg-coral-deep text-white shadow-glow'
+                  : 'bg-amber hover:bg-amber-deep text-white shadow-glow'
               }`}
             >
               {added ? (
@@ -329,7 +403,6 @@ export default function BoxDetailClient({ box, initialProducts, allAlternatives 
 
       </div>
 
-      {/* SWAP MODAL */}
       {isModalOpen && swapTargetItem && (
         <div className="fixed inset-0 z-50 bg-ink/60 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-card shadow-brand border border-paper-line w-full max-w-lg overflow-hidden animate-fade-in-up">

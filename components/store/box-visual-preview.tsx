@@ -74,11 +74,11 @@ export default function BoxVisualPreview({ items, boxName, stageName }: BoxVisua
           <p className="text-ink-soft/60 text-xs font-bold flex items-center gap-1">
             <Package size={12} className="text-sage" />
             <span>
-              يحتوي على <strong className="font-numbers text-coral-deep">{items.length}</strong> منتجات (إجمالي:{' '}
-              {totalPieces > 0 && <><strong className="font-numbers text-coral-deep">{totalPieces}</strong> قطعة</>}
-              {totalPieces > 0 && totalBoxes > 0 && ' + '}
-              {totalBoxes > 0 && <><strong className="font-numbers text-coral-deep">{totalBoxes}</strong> علبة كاملة</>}
-              {totalPieces === 0 && totalBoxes === 0 && <><strong className="font-numbers text-coral-deep">0</strong> عناصر</>}
+              يحتوي على <strong className="font-numbers text-coral-deep">{items.length}</strong> منتجات (إجمالي:{" "}
+              {totalPieces > 0 ? `${totalPieces} قطعة` : ""}
+              {totalPieces > 0 && totalBoxes > 0 ? " + " : ""}
+              {totalBoxes > 0 ? `${totalBoxes} علبة كاملة` : ""}
+              {totalPieces === 0 && totalBoxes === 0 ? "0 عناصر" : ""}
               )
             </span>
           </p>

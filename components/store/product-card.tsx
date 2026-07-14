@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingCart, Check, Box } from 'lucide-react';
@@ -45,10 +45,31 @@ interface ProductCardProps {
 
 export default function ProductCard({ product }: ProductCardProps) {
   const [added, setAdded] = useState(false);
+  const [resolvedCategory, setResolvedCategory] = useState(product.categories?.name || 'أدوات مدرسية');
   const addItem = useCartStore((state) => state.addItem);
 
-  const mainImage = product.images?.[0] || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80';
-  const categoryName = product.categories?.name || 'أدوات مدرسية';
+  useEffect(() => {
+    if (product.categories?.name) {
+      setResolvedCategory(product.categories.name);
+      return;
+    }
+    
+    // Resolve dynamically from local storage or fallback
+    try {
+      const local = localStorage.getItem('kh_categories');
+      if (local) {
+        const categoriesList = JSON.parse(local);
+        const cat = categoriesList.find((c: any) => c.id === product.category_id);
+        if (cat) {
+          setResolvedCategory(cat.name);
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, [product]);
+
+  const mainImage = product.images?.[0] || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=800&q=80';
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -98,7 +119,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           
           {/* Category Badge */}
           <span className="absolute top-2.5 left-2.5 bg-white/95 text-ink-soft text-[9px] font-bold px-2 py-0.5 rounded-full border border-paper-line shadow-sm">
-            {categoryName}
+            {resolvedCategory}
           </span>
 
           {/* Featured / Custom Badge */}

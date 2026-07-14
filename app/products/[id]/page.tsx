@@ -5,7 +5,7 @@ import ProductCard from '@/components/store/product-card';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
-export const revalidate = 0; // Fresh data on every load
+export const revalidate = 1; // Cache product details page and revalidate every 1 second
 
 interface ProductDetailPageProps {
   params: {
@@ -99,9 +99,25 @@ export async function generateMetadata({ params }: ProductDetailPageProps) {
   const data = await getProductData(params.id);
   if (!data) return { title: 'منتج غير موجود' };
   
+  const product = data.product;
+  let cleanDesc = product.description || '';
+  if (cleanDesc.includes('[COLORS]:')) {
+    cleanDesc = cleanDesc.replace(/\[COLORS\]:\s*(.+)$/m, '').trim();
+  }
+  
+  const title = product.seo_title || `${product.name} | مكتبة الخضري`;
+  const description = product.seo_description || cleanDesc || 'تسوق أدوات مكتبية وقرطاسية مدرسية بجودة عالية وأسعار مميزة من مكتبة الخضري.';
+  const keywords = product.seo_keywords || `${product.name}, مكتبة الخضري, أدوات مكتبية, قرطاسية`;
+
   return {
-    title: `${data.product.name}`,
-    description: data.product.description || 'تفاصيل المنتج ومواصفاته وشراء بالقطعة والعلبة.',
+    title,
+    description,
+    keywords,
+    openGraph: {
+      title,
+      description,
+      images: Array.isArray(product.images) && product.images.length > 0 ? [product.images[0]] : [],
+    }
   };
 }
 

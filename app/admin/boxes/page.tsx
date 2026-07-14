@@ -36,6 +36,32 @@ export default function BoxesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // المراحل التعليمية الديناميكية
+  const [stages, setStages] = useState<Array<{ value: string; label: string }>>([
+    { value: 'kg', label: 'الروضة (KG)' },
+    { value: 'primary', label: 'المرحلة الابتدائية' },
+    { value: 'middle', label: 'المرحلة الإعدادية' },
+    { value: 'high', label: 'المرحلة الثانوية' }
+  ]);
+  const [showAddStageDialog, setShowAddStageDialog] = useState(false);
+  const [newStageValue, setNewStageValue] = useState('');
+  const [newStageLabel, setNewStageLabel] = useState('');
+
+  const getStageLabel = (stage: string) => {
+    const found = stages.find(s => s.value === stage);
+    return found ? found.label : stage;
+  };
+
+  const getStageColor = (stage: string) => {
+    switch (stage) {
+      case 'kg': return 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+      case 'primary': return 'bg-blue-50 text-blue-600 border border-blue-100';
+      case 'middle': return 'bg-purple-50 text-purple-600 border border-purple-100';
+      case 'high': return 'bg-amber-50 text-amber-600 border border-amber-100';
+      default: return 'bg-slate-50 text-slate-600 border border-slate-100';
+    }
+  };
+
   // أنماط العرض: grid / table / list
   const [viewMode, setViewMode] = useState<'grid' | 'table' | 'list'>('grid');
 
@@ -45,7 +71,7 @@ export default function BoxesPage() {
 
   // حقول نموذج البوكس
   const [formName, setFormName] = useState('');
-  const [formStage, setFormStage] = useState<'kg' | 'primary' | 'middle' | 'high'>('kg');
+  const [formStage, setFormStage] = useState<string>('kg');
   const [formBasePrice, setFormBasePrice] = useState(0);
   const [formDesc, setFormDesc] = useState('');
   const [formImageUrl, setFormImageUrl] = useState('');
@@ -73,6 +99,20 @@ export default function BoxesPage() {
     let productsList: Product[] = [];
     let categoriesList: Category[] = [];
 
+    // Fetch custom stages first
+    try {
+      const { data: sData } = await supabase.from('site_settings').select('value').eq('key', 'custom_stages').single();
+      if (sData && sData.value) {
+        setStages(JSON.parse(sData.value));
+      } else {
+        const local = localStorage.getItem('kh_custom_stages');
+        if (local) setStages(JSON.parse(local));
+      }
+    } catch (e) {
+      const local = localStorage.getItem('kh_custom_stages');
+      if (local) setStages(JSON.parse(local));
+    }
+
     try {
       const { data: bData } = await supabase.from('boxes').select('*');
       if (bData) boxesList = bData;
@@ -92,6 +132,23 @@ export default function BoxesPage() {
     setLoading(false);
   };
 
+  const handleAddStage = async () => {
+    if (!newStageLabel.trim()) return;
+    const val = newStageValue.trim() || `stage_${Date.now()}`;
+    const newStage = { value: val, label: newStageLabel.trim() };
+    const updatedStages = [...stages, newStage];
+    setStages(updatedStages);
+    localStorage.setItem('kh_custom_stages', JSON.stringify(updatedStages));
+    try {
+      await supabase.from('site_settings').upsert({ key: 'custom_stages', value: JSON.stringify(updatedStages) });
+    } catch (e) {
+      console.error(e);
+    }
+    setNewStageValue('');
+    setNewStageLabel('');
+    setShowAddStageDialog(false);
+  };
+
   // فتح فورم الإضافة
   const handleAddClick = () => {
     setEditingBox(null);
@@ -109,9 +166,20 @@ export default function BoxesPage() {
   const handleEditClick = (box: Box) => {
     setEditingBox(box);
     setFormName(box.name);
-    setFormStage(box.stage);
+    
+    // Parse custom stage if present in description
+    const desc = box.description || '';
+    const stageMatch = desc.match(/\[STAGE\]:\s*(.+)$/m);
+    let resolvedStage = box.stage;
+    let cleanDesc = desc;
+    if (stageMatch && stageMatch[1]) {
+      resolvedStage = stageMatch[1].trim();
+      cleanDesc = desc.replace(/\[STAGE\]:\s*(.+)$/m, '').trim();
+    }
+    
+    setFormStage(resolvedStage);
     setFormBasePrice(box.base_price);
-    setFormDesc(box.description || '');
+    setFormDesc(cleanDesc);
     setFormImageUrl(box.image_url || '');
     setFormIsActive(box.is_active);
     setBoxProducts(box.products || []);
@@ -193,11 +261,20 @@ export default function BoxesPage() {
       return;
     }
 
+    let finalDesc = formDesc.trim();
+    let dbStage = formStage;
+
+    const defaultStages = ['kg', 'primary', 'middle', 'high'];
+    if (!defaultStages.includes(formStage)) {
+      finalDesc += `\n\n[STAGE]: ${formStage}`;
+      dbStage = 'primary'; // fallback to database CHECK enum stage values
+    }
+
     const boxPayload = {
       name: formName,
-      stage: formStage,
+      stage: dbStage,
       base_price: Number(formBasePrice),
-      description: formDesc,
+      description: finalDesc,
       image_url: formImageUrl,
       is_active: formIsActive,
       products: boxProducts
@@ -206,7 +283,10 @@ export default function BoxesPage() {
     try {
       if (editingBox) {
         await supabase.from('boxes').update(boxPayload).eq('id', editingBox.id);
-        setBoxes(prev => prev.map(b => b.id === editingBox.id ? { ...b, ...boxPayload } : b));
+        
+        // Update local state with the actual stage name
+        const localPayload = { ...boxPayload, stage: formStage };
+        setBoxes(prev => prev.map(b => b.id === editingBox.id ? { ...b, ...localPayload } : b));
         alert('تم تعديل البوكس بنجاح!');
       } else {
         await supabase.from('boxes').insert([boxPayload]);
@@ -271,6 +351,8 @@ export default function BoxesPage() {
         catalogCategory={catalogCategory} setCatalogCategory={setCatalogCategory}
         catalogProducts={catalogProducts}
         onCancel={() => setIsFormOpen(false)}
+        stages={stages}
+        setShowAddStageDialog={setShowAddStageDialog}
       />
     );
   }
@@ -327,7 +409,7 @@ export default function BoxesPage() {
           </svg>
           <span className="font-bold font-arabic text-sm">جاري جلب البوكسات المدرسية...</span>
         </div>
-      ) : boxes.length > 0 ? (
+      ) : boxes.length > 0 && (
         
         <>
         <AnimatePresence mode="wait">
@@ -362,8 +444,8 @@ export default function BoxesPage() {
                     )}
                     
                     {/* شارة المرحلة */}
-                    <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold font-arabic ${stageColors[box.stage]}`}>
-                      {stageLabels[box.stage]}
+                    <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold font-arabic ${getStageColor(box.stage)}`}>
+                      {getStageLabel(box.stage)}
                     </span>
                   </div>
 
@@ -457,8 +539,8 @@ export default function BoxesPage() {
                         </div>
                       </td>
                       <td className="py-4 px-6">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-arabic ${stageColors[box.stage]}`}>
-                          {stageLabels[box.stage]}
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold font-arabic ${getStageColor(box.stage)}`}>
+                          {getStageLabel(box.stage)}
                         </span>
                       </td>
                       <td className="py-4 px-6 font-arabic text-slate-500">
@@ -513,8 +595,8 @@ export default function BoxesPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-slate-800 font-arabic">{box.name}</h4>
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-arabic ${stageColors[box.stage]}`}>
-                          {stageLabels[box.stage]}
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold font-arabic ${getStageColor(box.stage)}`}>
+                          {getStageLabel(box.stage)}
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 font-arabic mt-1 line-clamp-1">{box.description}</p>
@@ -541,9 +623,52 @@ export default function BoxesPage() {
           )}
         </AnimatePresence>
         </>
-    ) : (
-      <div className="bg-white py-20 text-center text-slate-400 font-arabic text-sm rounded-[16px] shadow-premium">
-        لا تتوفر أي حزم وبوكسات دراسية في المتجر. اضغط على الزر بالأعلى لبناء حزمة!
+    )}
+    
+    {/* Dialog for adding new stage */}
+    {showAddStageDialog && (
+      <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div className="bg-white rounded-[24px] border border-[#E7DCC2] p-6 max-w-sm w-full space-y-4 shadow-xl text-right" dir="rtl">
+          <div className="flex items-center justify-between border-b border-[#E7DCC2] pb-3">
+            <span className="font-bold text-sm text-ink font-arabic">إضافة مرحلة تعليمية جديدة</span>
+            <button type="button" onClick={() => setShowAddStageDialog(false)} className="text-slate-400 hover:text-slate-600">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          
+          <div className="space-y-3">
+            <Input
+              label="اسم المرحلة التعليمية (بالعربية)"
+              placeholder="مثال: المرحلة التمهيدية"
+              value={newStageLabel}
+              onChange={(e) => setNewStageLabel(e.target.value)}
+              required
+            />
+            <Input
+              label="رمز المرحلة (بالإنجليزي - اختياري)"
+              placeholder="مثال: prep"
+              value={newStageValue}
+              onChange={(e) => setNewStageValue(e.target.value)}
+            />
+          </div>
+          
+          <div className="flex gap-2 justify-end pt-2">
+            <button
+              type="button"
+              onClick={handleAddStage}
+              className="bg-amber hover:bg-amber-deep text-white text-xs font-bold px-4 py-2 rounded-[12px] transition-colors font-arabic"
+            >
+              حفظ وإضافة
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowAddStageDialog(false)}
+              className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-[12px] transition-colors font-arabic"
+            >
+              إلغاء
+            </button>
+          </div>
+        </div>
       </div>
     )}
     </div>
@@ -569,6 +694,8 @@ function BoxFormPage({
   catalogCategory, setCatalogCategory,
   catalogProducts,
   onCancel,
+  stages,
+  setShowAddStageDialog
 }: any) {
   return (
     <div className="space-y-6 text-right" dir="rtl">
@@ -590,12 +717,39 @@ function BoxFormPage({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="اسم البوكس" placeholder="مثال: بوكس أولى ابتدائي الممتاز" value={formName} onChange={(e: any) => setFormName(e.target.value)} required />
-            <Select label="المرحلة التعليمية" options={[
-              { value: 'kg', label: 'الروضة (KG)' },
-              { value: 'primary', label: 'المرحلة الابتدائية' },
-              { value: 'middle', label: 'المرحلة الإعدادية' },
-              { value: 'high', label: 'المرحلة الثانوية' }
-            ]} value={formStage} onChange={(e: any) => setFormStage(e.target.value)} />
+            
+            <div className="w-full flex flex-col gap-1.5 text-right">
+              <label className="text-sm font-semibold text-ink font-arabic">المرحلة التعليمية</label>
+              <div className="flex gap-2">
+                <div className="relative flex-grow">
+                  <select
+                    value={formStage}
+                    onChange={(e: any) => setFormStage(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-white border border-[#E7DCC2] text-ink rounded-[12px] font-arabic appearance-none focus:outline-none focus:border-amber focus:ring-4 focus:ring-amber/10 transition-all duration-200"
+                  >
+                    {stages.map((opt: any) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-ink">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                    </svg>
+                  </div>
+                </div>
+                
+                <button
+                  type="button"
+                  onClick={() => setShowAddStageDialog(true)}
+                  className="bg-amber hover:bg-amber-deep text-white font-bold px-3.5 rounded-[12px] transition-colors flex items-center justify-center shadow-sm"
+                  title="إضافة مرحلة تعليمية جديدة"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col gap-1.5 text-right">
@@ -604,7 +758,7 @@ function BoxFormPage({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Input label="سعر بيع البوكس للجمهور (ج.م)" type="number" value={formBasePrice} onChange={(e: any) => setFormBasePrice(Number(e.target.value))} required />
+            <Input label="سعر بيع البوكس للجمهور (ج.م)" type="number" value={formBasePrice === 0 ? '' : formBasePrice} onChange={(e: any) => setFormBasePrice(Number(e.target.value))} required />
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold text-ink font-arabic">صورة الغلاف للبوكس</span>
               <label className="border border-[#E7DCC2] hover:bg-amber-light/20 px-4 py-2 rounded-[12px] flex items-center justify-between cursor-pointer text-slate-500 mt-1">

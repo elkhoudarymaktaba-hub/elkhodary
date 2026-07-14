@@ -4,7 +4,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import { Package, ArrowLeft, GraduationCap, ChevronLeft } from 'lucide-react';
 import { getMockData } from '@/lib/mockData';
 
-export const revalidate = 0; // Fresh data on every load
+export const revalidate = 1; // Cache packages list page and revalidate every 1 second
 
 async function getBoxesData() {
   return cachedFetch('boxes-page-data', async () => {
@@ -21,7 +21,17 @@ async function getBoxesData() {
         .eq('slug', 'packages')
         .limit(1);
 
-      const [boxesRes, pageRes] = await Promise.all([boxesPromise, pagePromise]);
+      const stageSettingsPromise = supabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'custom_stages')
+        .single();
+
+      const [boxesRes, pageRes, stageSettingsRes] = await Promise.all([
+        boxesPromise,
+        pagePromise,
+        stageSettingsPromise
+      ]);
 
       let pageData = null;
       if (pageRes.data && pageRes.data.length > 0) {
@@ -30,13 +40,23 @@ async function getBoxesData() {
         pageData = getMockData.pages().find(p => p.slug === 'packages') || null;
       }
 
+      let customStages = [];
+      if (stageSettingsRes.data && stageSettingsRes.data.value) {
+        try {
+          customStages = JSON.parse(stageSettingsRes.data.value);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
       return {
         boxes: boxesRes.data || [],
         pageData,
+        customStages,
       };
     } catch (err) {
       console.error('Error fetching boxes page data:', err);
-      return { boxes: [], pageData: null };
+      return { boxes: [], pageData: null, customStages: [] };
     }
   }, 5000);
 }
@@ -50,32 +70,47 @@ export async function generateMetadata() {
   };
 }
 
-function getStageLabel(stage: string) {
-  switch (stage.toLowerCase()) {
-    case 'kg': return 'رياض الأطفال';
-    case 'primary': return 'المرحلة الابتدائية';
-    case 'middle': return 'المرحلة الإعدادية';
-    case 'high': return 'المرحلة الثانوية';
-    default: return stage;
-  }
-}
-
 export default async function BoxesPage() {
-  const { boxes, pageData } = await getBoxesData();
+  const { boxes, pageData, customStages } = await getBoxesData();
 
   const heroBlock = pageData?.blocks?.find((b: any) => b.type === 'hero');
   const pageTitle = heroBlock?.content?.title || 'تسوق حسب المرحلة الدراسية';
   const pageSubtitle = heroBlock?.content?.subtitle || 'اختر المرحلة الدراسية لطفلك ووفر الوقت، نوفر باقات مدروسة بعناية تحتوي على كافة المستلزمات لبدء الدراسة بقوة.';
 
-  const stageStages = [
+  const getStageLabel = (stage: string) => {
+    const found = customStages?.find((s: any) => s.value === stage);
+    if (found) return found.label;
+    switch (stage.toLowerCase()) {
+      case 'kg': return 'رياض الأطفال';
+      case 'primary': return 'المرحلة الابتدائية';
+      case 'middle': return 'المرحلة الإعدادية';
+      case 'high': return 'المرحلة الثانوية';
+      default: return stage;
+    }
+  };
+
+  const defaultStages = [
     { key: 'kg', label: 'رياض الأطفال (KG)', price: '320', desc: 'أقلام تلوين، كراسات رسم ومستلزمات مرحلة الروضة الأولى.', color: 'bg-amber' },
     { key: 'primary', label: 'المرحلة الابتدائية', price: '480', desc: 'كشاكيل مسطرة ومربعات، أقلام رصاص وحبر أساسية.', color: 'bg-emerald-500' },
     { key: 'middle', label: 'المرحلة الإعدادية', price: '620', desc: 'أدوات هندسية، كشاكيل سلك، أقلام تظليل وحبر ملون.', color: 'bg-sage' },
     { key: 'high', label: 'المرحلة الثانوية', price: '780', desc: 'كشاكيل جامعية كبيرة، ورق فلوسكاب، آلة حاسبة وأقلام.', color: 'bg-coral' },
   ];
 
+  const stageStages = [...defaultStages];
+  customStages?.forEach((s: any) => {
+    if (!stageStages.some(item => item.key === s.value)) {
+      stageStages.push({
+        key: s.value,
+        label: s.label,
+        price: '350',
+        desc: `باقات متكاملة مخصصة لمرحلة ${s.label}.`,
+        color: 'bg-primary'
+      });
+    }
+  });
+
   return (
-    <div className="bg-paper-dark/30 min-h-screen py-12 pt-28">
+    <div className="bg-paper-dark/30 min-h-screen py-12 pt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Page Header (Dynamic from Supabase page builder settings) */}
@@ -154,7 +189,7 @@ export default async function BoxesPage() {
 
                           <Link
                             href={`/boxes/${box.id}`}
-                            className="py-2 px-5 bg-coral hover:bg-coral-deep text-white font-bold text-xs rounded-cta transition-colors flex items-center gap-1 shadow-md shadow-coral/10"
+                            className="btn-primary py-2 px-5 text-xs transition-colors flex items-center gap-1 shadow-md"
                           >
                             <span>عرض وتعديل</span>
                             <ArrowLeft size={14} />

@@ -24,6 +24,11 @@ export default function ProductsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest'); // newest, oldest, name, price_asc, price_desc, default
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'excel' | 'csv'>('excel');
+  const [exportRange, setExportRange] = useState<'all' | 'today' | 'week' | 'month' | 'year' | 'custom'>('all');
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
 
   // نافذة الإضافة والتعديل
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -49,6 +54,11 @@ export default function ProductsPage() {
   const [formSeoTitle, setFormSeoTitle] = useState('');
   const [formSeoDesc, setFormSeoDesc] = useState('');
   const [formSeoKeywords, setFormSeoKeywords] = useState('');
+
+  // خيارات الألوان المتعددة للمنتج
+  const [formColorsEnabled, setFormColorsEnabled] = useState(false);
+  const [formColors, setFormColors] = useState<string[]>([]);
+  const [newColorInput, setNewColorInput] = useState('');
 
   // حالات ودوال السحب والإفلات لترتيب الصور
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -143,6 +153,158 @@ export default function ProductsPage() {
     setLoading(false);
   };
 
+  const handleExportProducts = () => {
+    setIsExportModalOpen(false);
+
+    let productsToExport = products.filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'all' || 
+        p.category_id === selectedCategory || 
+        (p.category_ids && p.category_ids.includes(selectedCategory));
+      return matchesSearch && matchesCategory;
+    });
+
+    if (exportRange === 'today') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      productsToExport = productsToExport.filter(p => p.created_at.startsWith(todayStr));
+    } else if (exportRange === 'week') {
+      const minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      productsToExport = productsToExport.filter(p => new Date(p.created_at) >= minDate);
+    } else if (exportRange === 'month') {
+      const minDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      productsToExport = productsToExport.filter(p => new Date(p.created_at) >= minDate);
+    } else if (exportRange === 'year') {
+      const currentYear = new Date().getFullYear();
+      productsToExport = productsToExport.filter(p => new Date(p.created_at).getFullYear() === currentYear);
+    } else if (exportRange === 'custom') {
+      if (exportStartDate) {
+        const start = new Date(exportStartDate);
+        productsToExport = productsToExport.filter(p => new Date(p.created_at) >= start);
+      }
+      if (exportEndDate) {
+        const end = new Date(exportEndDate);
+        end.setHours(23, 59, 59, 999);
+        productsToExport = productsToExport.filter(p => new Date(p.created_at) <= end);
+      }
+    }
+
+    const headers = [
+      'id',
+      'name',
+      'description',
+      'price_unit',
+      'price_box',
+      'box_qty_label',
+      'stock',
+      'is_featured',
+      'is_active',
+      'images',
+      'category_id',
+      'seo_title',
+      'seo_description',
+      'seo_keywords',
+      'badge',
+      'created_at'
+    ];
+
+    if (exportFormat === 'csv') {
+      const rows = productsToExport.map(p => {
+        const imagesStr = Array.isArray(p.images) ? p.images.join(',') : p.images || '';
+        
+        return [
+          p.id,
+          `"${(p.name || '').replace(/"/g, '""')}"`,
+          `"${(p.description || '').replace(/"/g, '""')}"`,
+          p.price_unit,
+          p.price_box,
+          `"${(p.box_qty_label || '').replace(/"/g, '""')}"`,
+          p.stock,
+          p.is_featured,
+          p.is_active,
+          `"${imagesStr.replace(/"/g, '""')}"`,
+          p.category_id,
+          `"${(p.seo_title || '').replace(/"/g, '""')}"`,
+          `"${(p.seo_description || '').replace(/"/g, '""')}"`,
+          `"${(p.seo_keywords || '').replace(/"/g, '""')}"`,
+          `"${(p.badge || '').replace(/"/g, '""')}"`,
+          p.created_at
+        ];
+      });
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `المنتجات-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      const arabicHeaders = [
+        'المعرف (ID)',
+        'الاسم',
+        'الوصف',
+        'سعر القطعة',
+        'سعر الكرتونة',
+        'تعبئة الكرتونة',
+        'المخزون',
+        'مميز',
+        'نشط',
+        'رابط الصور',
+        'معرف القسم',
+        'عنوان السيو',
+        'وصف السيو',
+        'الكلمات الدلالية',
+        'الشارة الترويجية',
+        'تاريخ الإنشاء'
+      ];
+
+      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">`;
+      html += `<head><meta charset="utf-8" /><style>table { border-collapse: collapse; } th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }</style></head>`;
+      html += `<body><table dir="rtl"><thead><tr style="background-color: #f2f2f2;">`;
+      arabicHeaders.forEach(h => {
+        html += `<th>${h}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+      
+      productsToExport.forEach(p => {
+        const imagesStr = Array.isArray(p.images) ? p.images.join(', ') : p.images || '';
+        html += `<tr>`;
+        html += `<td>${p.id}</td>`;
+        html += `<td>${p.name || ''}</td>`;
+        html += `<td>${p.description || ''}</td>`;
+        html += `<td>${p.price_unit}</td>`;
+        html += `<td>${p.price_box}</td>`;
+        html += `<td>${p.box_qty_label || ''}</td>`;
+        html += `<td>${p.stock}</td>`;
+        html += `<td>${p.is_featured ? 'نعم' : 'لا'}</td>`;
+        html += `<td>${p.is_active ? 'نعم' : 'لا'}</td>`;
+        html += `<td>${imagesStr}</td>`;
+        html += `<td>${p.category_id}</td>`;
+        html += `<td>${p.seo_title || ''}</td>`;
+        html += `<td>${p.seo_description || ''}</td>`;
+        html += `<td>${p.seo_keywords || ''}</td>`;
+        html += `<td>${p.badge || ''}</td>`;
+        html += `<td>${new Date(p.created_at).toLocaleString('ar-EG')}</td>`;
+        html += `</tr>`;
+      });
+      
+      html += `</tbody></table></body></html>`;
+
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `المنتجات-${new Date().toISOString().split('T')[0]}.xls`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
   // فتح نموذج الإضافة
   const handleAddClick = () => {
     setEditingProduct(null);
@@ -163,6 +325,9 @@ export default function ProductsPage() {
     setFormSeoTitle('');
     setFormSeoDesc('');
     setFormSeoKeywords('');
+    setFormColorsEnabled(false);
+    setFormColors([]);
+    setNewColorInput('');
     setIsFormOpen(true);
   };
 
@@ -170,7 +335,18 @@ export default function ProductsPage() {
   const handleEditClick = (product: Product) => {
     setEditingProduct(product);
     setFormName(product.name || '');
-    setFormDesc(product.description || '');
+    
+    // Parse color options from description if present
+    const desc = product.description || '';
+    const colorsMatch = desc.match(/\[COLORS\]:\s*(.+)$/m);
+    let colorsList: string[] = [];
+    let cleanDesc = desc;
+    if (colorsMatch && colorsMatch[1]) {
+      colorsList = colorsMatch[1].split(',').map(c => c.trim()).filter(Boolean);
+      cleanDesc = desc.replace(/\[COLORS\]:\s*(.+)$/m, '').trim();
+    }
+    setFormDesc(cleanDesc);
+    
     setFormCategory(product.category_id || '');
     setFormCategories(product.category_ids && product.category_ids.length > 0 ? product.category_ids : [product.category_id]);
     setFormPriceUnit(product.price_unit || 0);
@@ -186,6 +362,9 @@ export default function ProductsPage() {
     setFormSeoTitle(product.seo_title || '');
     setFormSeoDesc(product.seo_description || '');
     setFormSeoKeywords(product.seo_keywords || '');
+    setFormColorsEnabled(colorsList.length > 0);
+    setFormColors(colorsList);
+    setNewColorInput('');
     setIsFormOpen(true);
   };
 
@@ -273,15 +452,20 @@ export default function ProductsPage() {
       return;
     }
 
+    let finalDesc = formDesc.trim();
+    if (formColorsEnabled && formColors.length > 0) {
+      finalDesc += `\n\n[COLORS]: ${formColors.join(',')}`;
+    }
+
     const productPayload = {
       name: formName,
-      description: formDesc,
+      description: finalDesc,
       category_id: formCategories[0], // القسم الرئيسي الافتراضي الأول
       category_ids: formCategories,   // مصفوفة الأقسام المتعددة
       price_unit: Number(formPriceUnit),
       price_box: Number(formPriceBox),
       box_qty_label: formBoxQtyLabel,
-      stock: Number(formStock),
+      stock: 9999,
       is_featured: formIsFeatured,
       is_active: formIsActive,
       images: formImages,
@@ -426,7 +610,7 @@ export default function ProductsPage() {
           <form onSubmit={handleSaveProduct} className="space-y-5">
             <div className="grid grid-cols-1 gap-4">
               <Input
-                label="اسم المنتج (بالعربية)"
+                label="اسم المنتج"
                 placeholder="مثال: سلاح التلميذ - العلوم - الصف الخامس"
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
@@ -482,14 +666,14 @@ export default function ProductsPage() {
               <Input
                 label="السعر للقطعة الواحدة (ج.م)"
                 type="number"
-                value={formPriceUnit}
+                value={formPriceUnit === 0 ? '' : formPriceUnit}
                 onChange={(e) => setFormPriceUnit(Number(e.target.value))}
                 required
               />
               <Input
                 label="السعر للعلبة/الجملة (ج.م)"
                 type="number"
-                value={formPriceBox}
+                value={formPriceBox === 0 ? '' : formPriceBox}
                 onChange={(e) => setFormPriceBox(Number(e.target.value))}
                 required
               />
@@ -502,13 +686,18 @@ export default function ProductsPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Input
-                label="كمية المخزون المتاحة"
-                type="number"
-                value={formStock}
-                onChange={(e) => setFormStock(Number(e.target.value))}
-                required
-              />
+              {/* خيارات الألوان بدلاً من كمية المخزون */}
+              <div className="flex flex-col justify-center gap-1">
+                <span className="text-xs font-bold text-ink">خيارات الألوان</span>
+                <button
+                  type="button"
+                  onClick={() => setFormColorsEnabled(!formColorsEnabled)}
+                  className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-[#E7DCC2] rounded-[12px] bg-slate-50 hover:bg-slate-100/70 transition-colors justify-between text-slate-700"
+                >
+                  <span className="text-xs font-arabic">تفعيل اختيار الألوان لهذا المنتج</span>
+                  {formColorsEnabled ? <ToggleRight className="w-6 h-6 text-amber" /> : <ToggleLeft className="w-6 h-6 text-slate-300" />}
+                </button>
+              </div>
 
               {/* مفتاح مميز */}
               <div className="flex flex-col justify-center gap-1">
@@ -537,19 +726,95 @@ export default function ProductsPage() {
               </div>
             </div>
 
+            {/* تفاصيل إدارة الألوان إذا كانت مفعلة */}
+            {formColorsEnabled && (
+              <div className="bg-[#FBEBCB]/10 border border-[#E7DCC2] rounded-[16px] p-4 space-y-3 text-right">
+                <span className="text-xs font-bold text-ink block font-arabic">قائمة الألوان المتاحة للمنتج:</span>
+                
+                {formColors.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {formColors.map((color, index) => (
+                      <span 
+                        key={index}
+                        className="bg-white border border-[#E7DCC2] text-ink font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm"
+                      >
+                        <span>{color}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => setFormColors(prev => prev.filter((_, idx) => idx !== index))}
+                          className="text-red-500 hover:text-red-700 font-bold ml-1"
+                          title="حذف هذا اللون"
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-400 font-arabic">⚠️ لم يتم إضافة أي ألوان بعد. يرجى إضافة لون واحد على الأقل أدناه.</p>
+                )}
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="مثال: أحمر، أزرق، أسود..."
+                    value={newColorInput}
+                    onChange={(e) => setNewColorInput(e.target.value)}
+                    className="flex-grow px-3 py-1.5 bg-white border border-[#E7DCC2] text-xs rounded-[10px] focus:outline-none focus:border-amber font-arabic"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newColorInput.trim() && !formColors.includes(newColorInput.trim())) {
+                          setFormColors(prev => [...prev, newColorInput.trim()]);
+                          setNewColorInput('');
+                        }
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newColorInput.trim() && !formColors.includes(newColorInput.trim())) {
+                        setFormColors(prev => [...prev, newColorInput.trim()]);
+                        setNewColorInput('');
+                      }
+                    }}
+                    className="bg-amber hover:bg-amber-deep text-white font-bold text-xs px-4 py-1.5 rounded-[10px] transition-colors font-arabic"
+                  >
+                    إضافة
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-1 items-center pt-1.5 border-t border-dashed border-slate-100">
+                  <span className="text-[10px] text-slate-400 font-arabic ml-1">إضافة سريعة:</span>
+                  {['أحمر', 'أزرق', 'أسود', 'أخضر', 'أصفر', 'رصاصي', 'برتقالي', 'بنفسجي', 'وردي', 'بني', 'أبيض'].map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      disabled={formColors.includes(c)}
+                      onClick={() => setFormColors(prev => [...prev, c])}
+                      className="text-[10px] bg-white border border-slate-200 text-slate-600 hover:bg-amber-light/35 disabled:opacity-50 px-2 py-0.5 rounded transition-all font-arabic font-bold"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* حقول تحديد الترتيب والفرز */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-50 pt-4">
               <Input
                 label="الترتيب العام (ترقيم الترتيب العام للمنتج، الأصغر أولاً)"
                 type="number"
-                value={formSortOrderGeneral}
+                value={formSortOrderGeneral === 0 ? '' : formSortOrderGeneral}
                 onChange={(e) => setFormSortOrderGeneral(Number(e.target.value))}
                 required
               />
               <Input
                 label="الترتيب بالقسم (أولوية العرض داخل القسم المختار، الأصغر أولاً)"
                 type="number"
-                value={formSortOrderCategory}
+                value={formSortOrderCategory === 0 ? '' : formSortOrderCategory}
                 onChange={(e) => setFormSortOrderCategory(Number(e.target.value))}
                 required
               />
@@ -788,15 +1053,27 @@ export default function ProductsPage() {
           </div>
         </div>
 
-        {/* زر الإضافة */}
-        <Button 
-          variant="primary" 
-          onClick={handleAddClick}
-          className="shadow-md shadow-amber/20 font-arabic shrink-0 flex items-center justify-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          <span>إضافة منتج جديد</span>
-        </Button>
+        {/* زر الإضافة والتصدير */}
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[12px] text-xs font-bold transition-all duration-200 font-arabic shadow-sm hover:shadow h-[40px]"
+          >
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>تصدير البيانات</span>
+          </button>
+          
+          <Button 
+            variant="primary" 
+            onClick={handleAddClick}
+            className="shadow-md shadow-amber/20 font-arabic flex items-center justify-center gap-2 h-[40px]"
+          >
+            <Plus className="w-5 h-5" />
+            <span>إضافة منتج جديد</span>
+          </Button>
+        </div>
 
       </div>
 
@@ -958,6 +1235,129 @@ export default function ProductsPage() {
           </div>
         )}
       </div>
+
+      {/* 📥 نافذة تصدير البيانات (Export Configuration Modal) */}
+      {isExportModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in font-arabic">
+          <div className="bg-white rounded-[24px] border border-[#E7DCC2] shadow-premium max-w-md w-full overflow-hidden text-right">
+            
+            {/* Header */}
+            <div className="bg-[#FBEBCB]/30 px-6 py-4 border-b border-[#E7DCC2] flex items-center justify-between">
+              <span className="font-black text-sm text-ink font-arabic">تصدير بيانات المنتجات المتقدم</span>
+              <button 
+                onClick={() => setIsExportModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              
+              {/* Format selection */}
+              <div className="space-y-2">
+                <span className="block text-xs font-bold text-slate-500">1. صيغة الملف المصدر</span>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setExportFormat('excel')}
+                    className={`p-4 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all ${
+                      exportFormat === 'excel'
+                        ? 'border-amber bg-amber/5 text-amber-deep font-bold shadow-sm'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="text-xl">📊</span>
+                    <span className="text-xs font-bold font-arabic">ملف Excel (للقراءة والطباعة)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExportFormat('csv')}
+                    className={`p-4 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all ${
+                      exportFormat === 'csv'
+                        ? 'border-amber bg-amber/5 text-amber-deep font-bold shadow-sm'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="text-xl">⚙️</span>
+                    <span className="text-xs font-bold font-arabic">ملف CSV (سوبابيس)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Date range selection */}
+              <div className="space-y-2">
+                <span className="block text-xs font-bold text-slate-500">2. المدة الزمنية للبيانات</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'all', label: 'كامل البيانات' },
+                    { id: 'today', label: 'اليوم' },
+                    { id: 'week', label: 'هذا الأسبوع' },
+                    { id: 'month', label: 'هذا الشهر' },
+                    { id: 'year', label: 'هذه السنة' },
+                    { id: 'custom', label: 'تحديد مخصص' },
+                  ].map((range) => (
+                    <button
+                      key={range.id}
+                      type="button"
+                      onClick={() => setExportRange(range.id as any)}
+                      className={`py-2 px-3 rounded-lg border text-center text-[10px] font-bold font-arabic transition-all ${
+                        exportRange === range.id
+                          ? 'border-amber bg-amber/5 text-amber-deep shadow-sm'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {range.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Date Pickers (only shown if range === 'custom') */}
+              {exportRange === 'custom' && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 animate-slide-down">
+                  <CustomDatePicker
+                    value={exportStartDate}
+                    onChange={setExportStartDate}
+                    label="من تاريخ"
+                    placeholder="اختر البداية"
+                  />
+                  <CustomDatePicker
+                    value={exportEndDate}
+                    onChange={setExportEndDate}
+                    label="إلى تاريخ"
+                    placeholder="اختر النهاية"
+                  />
+                </div>
+              )}
+
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsExportModalOpen(false)}
+                className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition-all font-arabic"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleExportProducts}
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all font-arabic shadow-sm flex items-center gap-1.5"
+              >
+                <span>تنزيل الملف</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -89,7 +89,7 @@ export default function BoxBuilderClient({
           price: prod?.price_unit || 0,
           image: prod?.images?.[0] || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=150&q=80',
           categoryId: prod?.category_id || '',
-          categoryName: prod?.categories?.name || 'أدوات مدرسية',
+          categoryName: categories.find((c) => c.id === prod?.category_id)?.name || prod?.categories?.name || 'أدوات مدرسية',
           unitType: 'piece' as const,
         };
       });
@@ -127,7 +127,7 @@ export default function BoxBuilderClient({
             price: itemPrice,
             image: product.images?.[0] || 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=150&q=80',
             categoryId: product.category_id,
-            categoryName: product.categories?.name || 'أدوات مدرسية',
+            categoryName: categories.find((c) => c.id === product.category_id)?.name || product.categories?.name || 'أدوات مدرسية',
             unitType,
           },
         ];
@@ -203,7 +203,7 @@ export default function BoxBuilderClient({
   };
 
   return (
-    <div className="space-y-8 pt-28">
+    <div className="space-y-8 pt-32">
       {/* Steps Indicator */}
       <div className="flex items-center justify-center gap-6 text-xs sm:text-sm font-bold border-b border-paper-line pb-6 max-w-xl mx-auto font-cairo">
         <div className="flex items-center gap-2">
@@ -247,9 +247,9 @@ export default function BoxBuilderClient({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {[
                 { id: 'kg', name: stageSettings.kg_title, price: stageSettings.kg_price, desc: stageSettings.kg_desc, color: 'bg-amber' },
-                { id: 'primary', name: stageSettings.primary_title, price: stageSettings.primary_price, desc: stageSettings.primary_desc, color: 'bg-emerald-500' },
-                { id: 'middle', name: stageSettings.middle_title, price: stageSettings.middle_price, desc: stageSettings.middle_desc, color: 'bg-sage' },
-                { id: 'high', name: stageSettings.high_title, price: stageSettings.high_price, desc: stageSettings.high_desc, color: 'bg-coral' },
+                { id: 'primary', name: stageSettings.primary_title, price: stageSettings.primary_price, desc: stageSettings.primary_desc, color: 'bg-amber' },
+                { id: 'middle', name: stageSettings.middle_title, price: stageSettings.middle_price, desc: stageSettings.middle_desc, color: 'bg-amber' },
+                { id: 'high', name: stageSettings.high_title, price: stageSettings.high_price, desc: stageSettings.high_desc, color: 'bg-amber' },
               ].map((stage) => (
                 <button
                   key={stage.id}
@@ -442,7 +442,7 @@ export default function BoxBuilderClient({
                                 <button
                                   type="button"
                                   onClick={() => handleUpdateProductQty(prod, 1, 'box')}
-                                  className="py-1 px-3 bg-sage/5 border border-sage/35 text-sage-deep hover:bg-sage-deep hover:text-white hover:border-sage-deep text-[10px] font-bold rounded-full transition-colors flex items-center gap-1 shadow-sm"
+                                  className="py-1 px-3 bg-ink-soft/5 border border-ink-soft/30 text-ink-soft hover:bg-ink-soft hover:text-white text-[10px] font-bold rounded-full transition-all flex items-center gap-1 shadow-sm"
                                 >
                                   <Plus size={10} className="text-amber" />
                                   <span>إضافة علبة</span>
@@ -499,10 +499,10 @@ export default function BoxBuilderClient({
               <button
                 onClick={handleSaveBoxToCart}
                 disabled={added || boxItems.length === 0}
-                className={`w-full py-3.5 px-6 rounded-cta font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 ${
+                className={`w-full py-3.5 px-6 font-bold text-sm flex items-center justify-center gap-2 transition-all duration-300 ${
                   added
-                    ? 'bg-emerald-500 text-white border-emerald-500'
-                    : 'bg-coral hover:bg-coral-deep text-white shadow-glow'
+                    ? 'bg-emerald-500 text-white border-emerald-500 rounded-cta'
+                    : 'btn-primary shadow-glow'
                 }`}
               >
                 {added ? (

@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const content = fs.readFileSync('app/admin/pages/page.tsx', 'utf8');
+const content = fs.readFileSync('app/admin/boxes/page.tsx', 'utf8');
 const lines = content.split('\n');
 
 let braceCount = 0;

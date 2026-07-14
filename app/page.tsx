@@ -6,8 +6,21 @@ import { Package, Sparkles, Smile, Truck, ShieldCheck, ArrowLeft, Layers } from 
 import { PageBlock, getMockData } from '@/lib/mockData';
 import HeroCardWidget from '@/components/store/hero-card-widget';
 import BoxBuilderTeaser from '@/components/store/box-builder-teaser';
+import TestimonialsSection from '@/components/store/testimonials-section';
 
 function getStageLabel(stage: string) {
+  if (typeof window !== 'undefined') {
+    const local = localStorage.getItem('kh_custom_stages');
+    if (local) {
+      try {
+        const parsed = JSON.parse(local);
+        const found = parsed.find((s: any) => s.value === stage);
+        if (found) return found.label;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  }
   switch (stage.toLowerCase()) {
     case 'kg': return 'رياض الأطفال';
     case 'primary': return 'المرحلة الابتدائية';
@@ -17,7 +30,7 @@ function getStageLabel(stage: string) {
   }
 }
 
-export const revalidate = 0; // Fresh data on every load
+export const revalidate = 1; // Cache homepage and revalidate every 1 second
 
 async function getHomeData() {
   return cachedFetch('home-page-data', async () => {
@@ -209,14 +222,31 @@ async function getHomeData() {
 
 
 async function DynamicProductsRow({ block }: { block: PageBlock }) {
-  let query = supabase.from('products').select('*, categories(name)').eq('is_active', true);
-  if (block.content.categoryId && block.content.categoryId !== 'all') {
-    query = query.eq('category_id', block.content.categoryId);
-  } else {
-    query = query.eq('is_featured', true);
+  let products: any[] = [];
+  try {
+    let query = supabase.from('products').select('*, categories(name)').eq('is_active', true);
+    if (block.content.categoryId && block.content.categoryId !== 'all') {
+      query = query.eq('category_id', block.content.categoryId);
+    } else {
+      query = query.eq('is_featured', true);
+    }
+    const { data: rowProducts } = await query.limit(block.content.limit || 8);
+    products = rowProducts || [];
+  } catch (err) {
+    console.error('Error fetching dynamic row products from Supabase:', err);
+    products = [];
   }
-  const { data: rowProducts } = await query.limit(block.content.limit || 8);
-  const products = rowProducts || [];
+
+  if (products.length === 0) {
+    const allMock = getMockData.products();
+    let filtered = allMock;
+    if (block.content.categoryId && block.content.categoryId !== 'all') {
+      filtered = allMock.filter(p => p.category_id === block.content.categoryId);
+    } else {
+      filtered = allMock.filter(p => p.is_featured);
+    }
+    products = filtered.slice(0, block.content.limit || 8);
+  }
 
   const isGrid = block.content.layout === 'grid';
 
@@ -262,6 +292,7 @@ async function DynamicProductsRow({ block }: { block: PageBlock }) {
 
 export default async function HomePage() {
   const { featuredProducts, boxes, heroCardData, boxBuilderSettings, blocks } = await getHomeData();
+  const hasTestimonialsBlock = blocks.some((b: any) => b.type === 'testimonials');
 
   return (
     <>
@@ -313,15 +344,15 @@ export default async function HomePage() {
                         <span>{block.content.badge_text || 'عروض العودة للدراسة 2026/2027'}</span>
                       </div>
                       
-                      <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-ink leading-tight animate-rise">
+                      <h1 className="text-[28px] sm:text-4xl lg:text-6xl font-black text-ink leading-tight animate-rise">
                         {block.content.title ? (
                           <>
-                            {block.content.title.split(' ')[0]} <br />
+                            {block.content.title.split(' ')[0]} <br className="hidden sm:inline" />
                             <span className="highlighter text-coral font-black">{block.content.title.split(' ').slice(1).join(' ')}</span>
                           </>
                         ) : (
                           <>
-                            سهّلنا عليك التجهيز <br />
+                            سهّلنا عليك التجهيز <br className="hidden sm:inline" />
                             <span className="highlighter text-coral font-black">للمدرسة والتعليم!</span>
                           </>
                         )}
@@ -334,13 +365,13 @@ export default async function HomePage() {
                       <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-4">
                         <Link
                           href={block.content.ctaLink || "/boxes"}
-                          className="w-full sm:w-auto px-8 py-4 bg-coral hover:bg-coral-deep text-white font-bold text-sm rounded-cta text-center transition-all duration-300 shadow-glow hover:scale-105"
+                          className="btn-primary w-full sm:w-auto px-8 py-4 text-center transition-all duration-300 shadow-glow hover:scale-105"
                         >
                           {block.content.ctaText || "تسوق الباقات المدرسية"}
                         </Link>
                         <Link
                           href={block.content.cta2Link || "/products"}
-                          className="w-full sm:w-auto px-8 py-4 bg-white text-ink border border-paper-line hover:border-ink font-bold text-sm rounded-cta text-center transition-all duration-300 hover:bg-paper-dark hover:scale-105"
+                          className="btn-secondary w-full sm:w-auto px-8 py-4 text-center transition-all duration-300 hover:scale-105"
                         >
                           {block.content.cta2Text || "تصفح كافة المنتجات"}
                         </Link>
@@ -365,39 +396,39 @@ export default async function HomePage() {
 
           case 'stats':
             return (
-              <section key={block.id} className="bg-ink text-white py-10 border-y border-ink-soft/40 reveal animate-in fade-in duration-300">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <section key={block.id} className="bg-[#1E4D92] text-white py-8 sm:py-16 border-y border-white/10 reveal animate-in fade-in duration-300">
+                <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
+                  <div className="flex flex-row md:grid md:grid-cols-3 justify-between sm:justify-around gap-2 sm:gap-8">
                     {/* Stat 1 */}
-                    <div className="flex items-center gap-4 justify-center md:justify-start">
-                      <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0 shadow-inner border border-white/10">
-                        <span className="text-xl">{block.content.stat1_emoji || '🎓'}</span>
+                    <div className="flex items-center gap-1.5 sm:gap-4 justify-center md:justify-start flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0 shadow-inner border border-white/10">
+                        <span className="text-sm sm:text-xl">{block.content.stat1_emoji || '🎓'}</span>
                       </div>
-                      <div className="space-y-0.5">
-                        <h4 className="font-black text-lg text-amber font-numbers">{block.content.stat1_number || '+2000'}</h4>
-                        <p className="text-white/80 text-xs font-bold font-arabic">{block.content.stat1_label || 'طالب سعيد'}</p>
+                      <div className="space-y-0 text-right">
+                        <h4 className="font-black text-xs sm:text-lg text-amber font-numbers leading-tight">{block.content.stat1_number || '+2000'}</h4>
+                        <p className="text-white/80 text-[8px] sm:text-xs font-bold font-arabic leading-tight truncate">{block.content.stat1_label || 'طالب سعيد'}</p>
                       </div>
                     </div>
 
                     {/* Stat 2 */}
-                    <div className="flex items-center gap-4 justify-center md:border-r border-white/10 md:pr-8">
-                      <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0 shadow-inner border border-white/10">
-                        <span className="text-xl">{block.content.stat2_emoji || '🚚'}</span>
+                    <div className="flex items-center gap-1.5 sm:gap-4 justify-center md:border-r border-white/10 md:pr-8 flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0 shadow-inner border border-white/10">
+                        <span className="text-sm sm:text-xl">{block.content.stat2_emoji || '🚚'}</span>
                       </div>
-                      <div className="space-y-0.5">
-                        <h4 className="font-black text-lg text-amber font-numbers">{block.content.stat2_number || '+1500'}</h4>
-                        <p className="text-white/80 text-xs font-bold font-arabic">{block.content.stat2_label || 'بوكس تم تسليمه'}</p>
+                      <div className="space-y-0 text-right">
+                        <h4 className="font-black text-xs sm:text-lg text-amber font-numbers leading-tight">{block.content.stat2_number || '+1500'}</h4>
+                        <p className="text-white/80 text-[8px] sm:text-xs font-bold font-arabic leading-tight truncate">{block.content.stat2_label || 'بوكس تم تسليمه'}</p>
                       </div>
                     </div>
 
                     {/* Stat 3 */}
-                    <div className="flex items-center gap-4 justify-center md:border-r border-white/10 md:pr-8">
-                      <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0 shadow-inner border border-white/10">
-                        <span className="text-xl">{block.content.stat3_emoji || '🛡️'}</span>
+                    <div className="flex items-center gap-1.5 sm:gap-4 justify-center md:border-r border-white/10 md:pr-8 flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-white/10 flex items-center justify-center text-white shrink-0 shadow-inner border border-white/10">
+                        <span className="text-sm sm:text-xl">{block.content.stat3_emoji || '🛡️'}</span>
                       </div>
-                      <div className="space-y-0.5">
-                        <h4 className="font-black text-lg text-amber font-numbers">{block.content.stat3_number || '4.9'}</h4>
-                        <p className="text-white/80 text-xs font-bold font-arabic">{block.content.stat3_label || 'تقييم العملاء'}</p>
+                      <div className="space-y-0 text-right">
+                        <h4 className="font-black text-xs sm:text-lg text-amber font-numbers leading-tight">{block.content.stat3_number || '4.9'}</h4>
+                        <p className="text-white/80 text-[8px] sm:text-xs font-bold font-arabic leading-tight truncate">{block.content.stat3_label || 'تقييم العملاء'}</p>
                       </div>
                     </div>
                   </div>
@@ -479,7 +510,7 @@ export default async function HomePage() {
 
                                     <Link
                                       href={`/boxes/${box.id}`}
-                                      className="px-4 py-2.5 bg-amber hover:bg-amber-deep text-ink font-black text-xs rounded-cta transition-all duration-300 hover:scale-105"
+                                      className="btn-primary px-4 py-2.5 text-xs transition-all duration-300 hover:scale-105"
                                     >
                                       عرض الباقة
                                     </Link>
@@ -504,6 +535,42 @@ export default async function HomePage() {
           case 'box_builder_section':
             return null;
 
+          case 'testimonials':
+            return (
+              <TestimonialsSection 
+                key={block.id} 
+                title={block.content.title}
+                subtitle={block.content.subtitle}
+                ctaText={block.content.ctaText}
+                reviews={[
+                  {
+                    id: 'rev-1',
+                    customer_name: block.content.rev1_name || 'ندى أحمد',
+                    city: block.content.rev1_city || 'دمياط',
+                    rating: Number(block.content.rev1_rating || 5),
+                    comment: block.content.rev1_comment || 'الهدية كانت لابني في أول يوم دراسي، ملامحه وهو بيفتح العلبة وتفاصيل الأدوات لا تُقدر بثمن، متشكرة جداً.',
+                    created_at: new Date().toISOString()
+                  },
+                  {
+                    id: 'rev-2',
+                    customer_name: block.content.rev2_name || 'سارة محمد',
+                    city: block.content.rev2_city || 'القاهرة',
+                    rating: Number(block.content.rev2_rating || 5),
+                    comment: block.content.rev2_comment || 'طلبت الكتب المدرسية والمستلزمات، خامات ممتازة وتغليف فاخر ومنسق جداً، والتوصيل سريع لباب البيت.',
+                    created_at: new Date().toISOString()
+                  },
+                  {
+                    id: 'rev-3',
+                    customer_name: block.content.rev3_name || 'مريم محمود',
+                    city: block.content.rev3_city || 'الإسكندرية',
+                    rating: Number(block.content.rev3_rating || 5),
+                    comment: block.content.rev3_comment || 'الباقة المدرسية تجنن والتفاصيل والفرز نظيفة جداً. الأدوات جودتها عالية والشغل يستاهل كل قرش بجد.',
+                    created_at: new Date().toISOString()
+                  }
+                ]}
+              />
+            );
+
           case 'products_row':
             return (
               <DynamicProductsRow key={block.id} block={block} />
@@ -511,10 +578,10 @@ export default async function HomePage() {
 
           case 'text':
             return (
-              <section key={block.id} className="py-12 bg-transparent border-b border-paper-line reveal animate-in fade-in duration-300">
+              <section key={block.id} className="py-16 bg-transparent border-b border-paper-line reveal animate-in fade-in duration-300">
                 <div className="max-w-4xl mx-auto px-4 text-center space-y-4">
                   {block.content.title && (
-                    <h3 className="text-xl sm:text-2xl font-black text-ink">{block.content.title}</h3>
+                    <h2 className="text-2xl sm:text-3xl font-black text-ink mb-2">{block.content.title}</h2>
                   )}
                   <div 
                     className="text-ink-soft/80 text-xs sm:text-sm leading-relaxed max-w-2xl mx-auto font-medium font-arabic"
@@ -526,7 +593,7 @@ export default async function HomePage() {
 
           case 'image':
             return (
-              <section key={block.id} className="py-12 bg-transparent reveal animate-in fade-in duration-300">
+              <section key={block.id} className="py-16 bg-transparent reveal animate-in fade-in duration-300">
                 <div className="max-w-5xl mx-auto px-4">
                   {block.content.imageUrl && (
                     <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden border border-paper-line shadow-card bg-white">
@@ -547,7 +614,7 @@ export default async function HomePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
                     <div className={`space-y-4 text-right ${block.content.align === 'left' ? 'md:order-2' : ''}`}>
                       {block.content.title && (
-                        <h3 className="text-xl sm:text-2xl font-black text-ink">{block.content.title}</h3>
+                        <h2 className="text-2xl sm:text-3xl font-black text-ink mb-2">{block.content.title}</h2>
                       )}
                       <p className="text-ink-soft/80 text-xs sm:text-sm leading-relaxed font-arabic">
                         {block.content.text}
@@ -569,7 +636,7 @@ export default async function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
                     <div className="space-y-5 text-right font-arabic">
-                      <h3 className="text-xl sm:text-2xl font-black text-ink">{block.content.title || 'تواصل معنا في أي وقت'}</h3>
+                      <h2 className="text-2xl sm:text-3xl font-black text-ink mb-2">{block.content.title || 'تواصل معنا في أي وقت'}</h2>
                       <p className="text-ink-soft/60 text-xs leading-relaxed">
                         نحن هنا للإجابة على استفساراتكم ومساعدتكم في كل ما يخص مستلزماتكم الدراسية والتوصيل.
                       </p>
@@ -605,7 +672,7 @@ export default async function HomePage() {
                         href={block.content.ctaLink || "https://wa.me/201000000000"}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center justify-center gap-2 w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-cta shadow-md transition-all duration-300 hover:scale-105"
+                        className="btn-primary inline-flex items-center justify-center gap-2 w-full py-3.5 text-xs shadow-md transition-all duration-300 hover:scale-105"
                       >
                         <span>{block.content.ctaText || 'تواصل معنا واتساب'}</span>
                       </a>
@@ -619,6 +686,7 @@ export default async function HomePage() {
             return null;
         }
       })}
+      {!hasTestimonialsBlock && <TestimonialsSection />}
       </div>
     </>
   );

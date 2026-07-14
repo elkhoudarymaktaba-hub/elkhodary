@@ -2,7 +2,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import ProductsClient from './products-client';
 import { getMockData } from '@/lib/mockData';
 
-export const revalidate = 0; // Fresh data on every load
+export const revalidate = 1; // Cache products catalog page and revalidate every 1 second
 
 async function getProductsData() {
   return cachedFetch('products-page-data', async () => {
@@ -67,7 +67,7 @@ export default async function ProductsPage() {
   const pageSubtitle = heroBlock?.content?.subtitle || 'تصفح منتجاتنا الفردية بأسعار متميزة للقطعة والعلبة، وقم بفلترة المنتجات للوصول إلى ما تحتاجه دراستك سريعاً.';
 
   return (
-    <div className="bg-brand-bg/50 min-h-screen py-10 pt-28">
+    <div className="bg-brand-bg/50 min-h-screen py-10 pt-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header (Dynamic from Supabase page builder settings) */}

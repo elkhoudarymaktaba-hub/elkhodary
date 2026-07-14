@@ -3,7 +3,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import BoxDetailClient from './box-detail-client';
 import Link from 'next/link';
 
-export const revalidate = 0; // Fresh data on every load
+export const revalidate = 1; // Cache package details page and revalidate every 1 second
 
 interface BoxDetailPageProps {
   params: {
@@ -23,7 +23,7 @@ async function getBoxData(id: string) {
 
       if (error || !box) return null;
 
-      const boxItems = box.items as Array<{ product_id: string; qty: number }>;
+      const boxItems = (box.products || box.items || []) as Array<{ product_id: string; qty?: number; quantity?: number }>;
       if (!boxItems || boxItems.length === 0) {
         return { box, products: [], alternatives: [] };
       }

@@ -161,7 +161,7 @@ export default function ContactPage() {
 
           {/* Form */}
           <div className="lg:col-span-7 order-1 lg:order-2">
-            <div className="bg-white rounded-card shadow-card border border-paper-line p-6 sm:p-8">
+            <div className="bg-white rounded-card shadow-card border border-paper-line p-4 sm:p-8">
               <h2 className="font-extrabold text-xl text-ink mb-6 text-right">
                 {contactBlock?.content?.form_title || 'أرسل لنا رسالة'}
               </h2>
@@ -258,14 +258,14 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 px-6 bg-coral hover:bg-coral-deep text-white font-bold text-base rounded-cta transition-all flex items-center justify-center gap-2 shadow-glow"
+                    className="btn-primary w-full py-3.5 px-6 text-white font-bold text-base shadow-glow flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <span>جاري الإرسال...</span>
                     ) : (
                       <>
                         <span>{contactBlock?.content?.submit_label || 'إرسال الرسالة الآن'}</span>
-                        <Send size={16} className="text-amber" />
+                        <Send size={16} className="text-white" />
                       </>
                     )}
                   </button>

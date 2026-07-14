@@ -8,7 +8,7 @@ import BoxBuilderTeaser from '@/components/store/box-builder-teaser';
 import { Package, ArrowLeft, GraduationCap, ChevronLeft } from 'lucide-react';
 import { PageBlock, getMockData } from '@/lib/mockData';
 
-export const revalidate = 0; // Fresh data on every load
+export const revalidate = 1; // Cache custom pages and revalidate every 1 second
 
 async function getPageData(slug: string) {
   return cachedFetch(`page-data-${slug}`, async () => {
@@ -121,6 +121,18 @@ export default async function DynamicCustomPage({ params }: PageProps) {
   const blocks = (pageData.blocks || []).sort((a: any, b: any) => a.order - b.order);
 
   const getStageLabel = (stage: string) => {
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('kh_custom_stages');
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          const found = parsed.find((s: any) => s.value === stage);
+          if (found) return found.label;
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
     switch (stage.toLowerCase()) {
       case 'kg': return 'رياض الأطفال';
       case 'primary': return 'المرحلة الابتدائية';

@@ -61,6 +61,14 @@ class MockSupabaseQueryBuilder {
           ];
         }
         return [];
+      case 'supply_lists':
+        if (typeof window !== 'undefined') {
+          const stored = window.localStorage.getItem('kh_supply_lists');
+          return stored ? JSON.parse(stored) : [
+            { id: 'list-1', name: 'محمد علي', phone: '01098765432', file_url: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=600&q=80', notes: 'أحتاج أدوات مخصصة لمدرسة اللغات بمحافظة الجيزة', status: 'new', created_at: new Date(Date.now() - 3600000 * 3).toISOString() }
+          ];
+        }
+        return [];
       case 'site_settings':
         const settings = getMockData.settings();
         return Object.entries(settings).map(([key, value]) => ({ key, value }));
@@ -82,6 +90,11 @@ class MockSupabaseQueryBuilder {
       case 'contact_submissions':
         if (typeof window !== 'undefined') {
           window.localStorage.setItem('kh_contact_submissions', JSON.stringify(data));
+        }
+        break;
+      case 'supply_lists':
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('kh_supply_lists', JSON.stringify(data));
         }
         break;
       case 'site_settings':

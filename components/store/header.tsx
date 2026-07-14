@@ -69,9 +69,20 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const [animateCart, setAnimateCart] = useState(false);
+
   const cartCount = mounted
     ? items.reduce((sum, item) => sum + item.qty, 0)
     : 0;
+
+  useEffect(() => {
+    if (!mounted) return;
+    if (cartCount > 0) {
+      setAnimateCart(true);
+      const timer = setTimeout(() => setAnimateCart(false), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [cartCount, mounted]);
 
   const getPageTitle = (slug: string, defaultTitle: string) => {
     const page = pagesList.find((p) => p.slug.toLowerCase() === slug.toLowerCase());
@@ -85,6 +96,7 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
     { name: getPageTitle('home', 'الرئيسية'), path: '/' },
     { name: getPageTitle('products', 'المنتجات'), path: '/products' },
     { name: getPageTitle('packages', 'الباقات المدرسية'), path: '/boxes' },
+    { name: 'ارفع قائمتك', path: '/upload-list' },
   ];
 
   // Append any user-created custom pages dynamically
@@ -105,8 +117,8 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
   );
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 flex flex-col">
-      <div className="bg-gradient-to-r from-sage-deep to-sage text-white py-1.5 px-4 text-center text-xs font-bold shadow-sm flex items-center justify-center gap-2 relative z-50">
+    <div className="fixed top-0 left-0 right-0 z-50 flex flex-col shadow-sm">
+      <div className="bg-gradient-to-r from-ink to-ink-soft text-white py-1 px-4 text-center text-xs font-bold shadow-sm flex items-center justify-center gap-2 relative z-50">
         <Sparkles size={12} className="animate-spin text-amber" />
         <span>{currentRibbon || 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!'}</span>
       </div>
@@ -114,35 +126,51 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
       <header
         className={`w-full transition-all duration-350 border-b border-paper-line bg-white ${
           scrolled
-            ? 'shadow-brand py-3'
-            : 'py-4'
+            ? 'shadow-brand py-2.5'
+            : 'py-3.5'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
+          <div className="flex items-center justify-between md:justify-between w-full">
             
-            {/* Logo Section */}
-            <div className="flex-shrink-0">
-              <Link href="/" className="flex items-center gap-3 group">
+            {/* Mobile Hamburger Trigger (Far Right on mobile, order-1) */}
+            <div className="flex md:hidden w-12 justify-start order-1">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-full hover:bg-paper text-ink/80 border border-paper-line bg-white shadow-sm transition-all"
+                aria-label="قائمة التنقل"
+              >
+                {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+              </button>
+            </div>
+
+            {/* Logo Section (Centered on mobile, order-2; left-aligned on desktop, order-1) */}
+            <div className="flex-grow md:flex-grow-0 flex justify-center md:justify-start order-2 md:order-1">
+              <Link href="/" className="flex items-center gap-2 md:gap-3 group">
                 {currentLogo && currentLogo !== 'null' && currentLogo !== '' ? (
                   <img
                     src={currentLogo}
                     alt={currentName}
-                    className="w-10 h-10 object-contain rounded-xl shadow-brand border border-paper-line"
+                    className="w-10 h-10 md:w-14 md:h-14 object-contain rounded-full shadow-brand border border-paper-line"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-amber via-amber-deep to-coral flex items-center justify-center text-white font-black text-xl shadow-brand transform -rotate-6 group-hover:rotate-0 transition-transform duration-300 border border-amber/30">
+                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black text-lg md:text-2xl shadow-brand transform -rotate-6 group-hover:rotate-0 transition-transform duration-300 border border-amber/30">
                     خ
                   </div>
                 )}
-                <span className="text-xl font-black text-ink tracking-wide leading-none">
-                  {currentName.split(' ')[0] || 'مكتبة'} <span className="text-coral font-black">{currentName.split(' ').slice(1).join(' ') || 'الخضري'}</span>
-                </span>
+                <div className="flex flex-col text-right font-arabic">
+                  <span className="text-sm md:text-lg font-black text-ink-soft leading-tight whitespace-nowrap">
+                    مكتبة الخضري
+                  </span>
+                  <span className="text-[8px] md:text-[10px] font-bold text-amber font-english tracking-wider leading-none mt-0.5">
+                    AL-KHOUDARY
+                  </span>
+                </div>
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center gap-8">
+            {/* Desktop Navigation (Hidden on mobile) */}
+            <nav className="hidden md:flex items-center gap-8 order-2">
               {navLinks.map((link) => {
                 const isActive =
                   link.path === '/'
@@ -152,10 +180,10 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
                   <Link
                     key={link.path}
                     href={link.path}
-                    className={`text-sm font-bold relative py-1 transition-colors group ${
+                    className={`text-[15px] font-bold relative py-1 transition-colors group ${
                       isActive
-                        ? 'text-coral-deep'
-                        : 'text-ink-soft/80 hover:text-coral-deep'
+                        ? 'text-ink-soft'
+                        : 'text-ink-soft/80 hover:text-ink-soft'
                     }`}
                   >
                     {link.name}
@@ -170,32 +198,22 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
               })}
             </nav>
 
-            {/* Action Area */}
-            <div className="flex items-center gap-4">
-
-
-              {/* Shopping Cart Trigger */}
+            {/* Action Area / Cart Trigger (Far Left on mobile, order-3) */}
+            <div className="flex items-center justify-end w-12 md:w-auto order-3 md:order-3">
               <Link
                 href="/cart"
-                className="relative p-2.5 rounded-full hover:bg-paper text-ink/80 hover:text-coral-deep transition-all border border-paper-line shadow-sm bg-white"
+                className={`relative p-2.5 rounded-full hover:bg-paper text-ink/80 hover:text-ink-soft transition-all border border-paper-line shadow-sm bg-white ${
+                  animateCart ? 'animate-bounce shadow-glow scale-110 text-amber border-amber' : ''
+                }`}
                 aria-label="سلة التسوق"
               >
                 <ShoppingBag size={18} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-coral text-white text-[10px] font-bold font-numbers rounded-full w-5 h-5 flex items-center justify-center border border-white shadow-sm pulse-badge">
+                  <span className="absolute -top-1.5 -right-1.5 bg-amber text-white text-[10px] font-bold font-numbers rounded-full w-5 h-5 flex items-center justify-center border border-white shadow-sm pulse-badge">
                     {cartCount}
                   </span>
                 )}
               </Link>
-
-              {/* Mobile Drawer Trigger */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-full hover:bg-paper text-ink/80 border border-paper-line bg-white shadow-sm"
-                aria-label="قائمة التنقل"
-              >
-                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
             </div>
 
           </div>
@@ -217,8 +235,8 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
                     onClick={() => setMobileMenuOpen(false)}
                     className={`block px-4 py-2.5 rounded-xl text-sm font-bold transition-colors ${
                       isActive
-                        ? 'bg-paper text-coral-deep'
-                        : 'text-ink-soft/80 hover:bg-paper/50 hover:text-coral-deep'
+                        ? 'bg-paper text-ink-soft'
+                        : 'text-ink-soft/80 hover:bg-paper/50 hover:text-ink-soft'
                     }`}
                   >
                     {link.name}

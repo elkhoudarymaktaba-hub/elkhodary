@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+// Force Next.js compiler restart to invalidate stale cache
 const nextConfig = {
   reactStrictMode: true,
   typescript: {
