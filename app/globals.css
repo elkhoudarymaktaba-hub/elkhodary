@@ -80,12 +80,16 @@
 /* notebook lined paper style */
 .bg-notebook-lines {
   background-color: var(--paper);
-  background-image: repeating-linear-gradient(
-    var(--paper) 0px,
-    var(--paper) 35px,
-    var(--paper-line) 35px,
-    var(--paper-line) 36px
-  );
+}
+@media (min-width: 640px) {
+  .bg-notebook-lines {
+    background-image: repeating-linear-gradient(
+      var(--paper) 0px,
+      var(--paper) 35px,
+      var(--paper-line) 35px,
+      var(--paper-line) 36px
+    );
+  }
 }
 
 /* Highlighter effect behind key terms */
