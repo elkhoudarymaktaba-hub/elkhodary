@@ -180,11 +180,11 @@ export default function TestimonialsSection({ title: propTitle, subtitle: propSu
         </div>
 
         {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+        <div className="flex md:grid overflow-x-auto md:overflow-x-visible pb-4 md:pb-0 gap-6 pt-4 md:grid-cols-3 no-scrollbar snap-x" dir="rtl">
           {reviews.map((rev) => (
             <div
               key={rev.id}
-              className="bg-white rounded-card border border-paper-line p-6 shadow-card hover:border-ink-soft/40 hover:shadow-brand transition-all duration-300 flex flex-col justify-between text-right relative overflow-hidden group hover:-translate-y-1.5"
+              className="bg-white rounded-card border border-paper-line p-6 shadow-card hover:border-ink-soft/40 hover:shadow-brand transition-all duration-300 flex flex-col justify-between text-right relative overflow-hidden group hover:-translate-y-1.5 min-w-[290px] md:min-w-0 snap-start shrink-0"
             >
               {/* Quote Mark Watermark */}
               <span className="absolute -top-3 -right-2 text-paper-line/30 font-serif text-[120px] select-none pointer-events-none group-hover:text-ink-soft/10 transition-colors duration-300 leading-none">

@@ -180,7 +180,10 @@ async function getHomeData() {
       image: settings.box_builder_image || ''
     };
 
-    const featuredProducts = productsRes.data || [];
+    let featuredProducts = productsRes.data || [];
+    if (featuredProducts.length === 0) {
+      featuredProducts = getMockData.products().filter(p => p.is_featured);
+    }
     if (selectedProductRes?.data && selectedProductRes.data.length > 0) {
       const p = selectedProductRes.data[0];
       if (!featuredProducts.some((item: any) => item.id === p.id)) {
@@ -188,7 +191,10 @@ async function getHomeData() {
       }
     }
 
-    const boxes = boxesRes.data || [];
+    let boxes = boxesRes.data || [];
+    if (boxes.length === 0) {
+      boxes = getMockData.boxes();
+    }
     if (selectedBoxRes?.data && selectedBoxRes.data.length > 0) {
       const b = selectedBoxRes.data[0];
       if (!boxes.some((item: any) => item.id === b.id)) {
@@ -266,9 +272,11 @@ async function DynamicProductsRow({ block }: { block: PageBlock }) {
 
         {products.length > 0 ? (
           isGrid ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="flex sm:grid gap-6 overflow-x-auto sm:overflow-x-visible pb-4 sm:pb-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 no-scrollbar snap-x" dir="rtl">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product as any} />
+                <div key={product.id} className="min-w-[270px] sm:min-w-0 snap-start shrink-0">
+                  <ProductCard product={product as any} />
+                </div>
               ))}
             </div>
           ) : (
@@ -344,7 +352,7 @@ export default async function HomePage() {
                         <span>{block.content.badge_text || 'عروض العودة للدراسة 2026/2027'}</span>
                       </div>
                       
-                      <h1 className="text-[28px] sm:text-4xl lg:text-6xl font-black text-ink leading-tight animate-rise">
+                      <h1 className="text-2xl sm:text-4xl lg:text-6xl font-black text-ink leading-tight animate-rise">
                         {block.content.title ? (
                           <>
                             {block.content.title.split(' ')[0]} <br className="hidden sm:inline" />

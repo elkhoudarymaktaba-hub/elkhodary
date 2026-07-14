@@ -66,9 +66,11 @@ async function DynamicProductsRow({ block }: { block: PageBlock }) {
 
         {products.length > 0 ? (
           isGrid ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="flex sm:grid gap-6 overflow-x-auto sm:overflow-x-visible pb-4 sm:pb-0 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 no-scrollbar snap-x" dir="rtl">
               {products.map((product: any) => (
-                <ProductCard key={product.id} product={product as any} />
+                <div key={product.id} className="min-w-[270px] sm:min-w-0 snap-start shrink-0">
+                  <ProductCard product={product as any} />
+                </div>
               ))}
             </div>
           ) : (
