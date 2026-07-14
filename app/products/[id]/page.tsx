@@ -4,6 +4,7 @@ import ProductDetailClient from './product-detail-client';
 import ProductCard from '@/components/store/product-card';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Suspense } from 'react';
 
 export const revalidate = 1; // Cache product details page and revalidate every 1 second
 
@@ -146,7 +147,13 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
         </div>
 
         {/* Product client details */}
-        <ProductDetailClient product={product} />
+        <Suspense fallback={
+          <div className="bg-white rounded-card shadow-brand border border-paper-line p-8 text-center text-sm font-bold font-arabic text-ink">
+            جاري تحميل تفاصيل المنتج...
+          </div>
+        }>
+          <ProductDetailClient product={product} />
+        </Suspense>
 
         {/* Dynamic Promotional Box/Package Section */}
         {featuredBox && (

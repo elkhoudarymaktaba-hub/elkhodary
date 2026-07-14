@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { initPixels, trackPageView, PixelConfig } from '@/lib/tracking';
 
@@ -9,25 +9,14 @@ interface TrackingProviderProps {
   children: React.ReactNode;
 }
 
-export default function TrackingProvider({ pixels, children }: TrackingProviderProps) {
+function TrackingHandler({ pixels }: { pixels: PixelConfig[] }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const initialized = useRef(false);
-
-  // Initialize pixels once on mount
-  useEffect(() => {
-    if (!initialized.current) {
-      initPixels(pixels);
-      initialized.current = true;
-    }
-  }, [pixels]);
 
   // Track page views on route changes and trigger scroll reveal
   useEffect(() => {
-    if (initialized.current) {
-      const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
-      trackPageView(pixels, url);
-    }
+    const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
+    trackPageView(pixels, url);
 
     // Scroll Reveal (IntersectionObserver)
     const observer = new IntersectionObserver(
@@ -55,6 +44,20 @@ export default function TrackingProvider({ pixels, children }: TrackingProviderP
     };
   }, [pathname, searchParams, pixels]);
 
+  return null;
+}
+
+export default function TrackingProvider({ pixels, children }: TrackingProviderProps) {
+  const initialized = useRef(false);
+
+  // Initialize pixels once on mount
+  useEffect(() => {
+    if (!initialized.current) {
+      initPixels(pixels);
+      initialized.current = true;
+    }
+  }, [pixels]);
+
   // Expose pixels to window context so pages can access them for event firing
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -62,5 +65,12 @@ export default function TrackingProvider({ pixels, children }: TrackingProviderP
     }
   }, [pixels]);
 
-  return <>{children}</>;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <TrackingHandler pixels={pixels} />
+      </Suspense>
+      {children}
+    </>
+  );
 }
