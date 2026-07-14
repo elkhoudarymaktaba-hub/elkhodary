@@ -338,7 +338,7 @@ export default async function HomePage() {
             }
 
             return (
-              <section key={block.id} className="relative overflow-hidden pt-28 pb-16 lg:pt-36 lg:pb-24 bg-notebook-lines border-b border-paper-line text-right">
+              <section key={block.id} className="relative overflow-hidden pt-[160px] pb-16 sm:pt-28 lg:pt-36 lg:pb-24 bg-notebook-lines border-b border-paper-line text-right">
                 <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-amber/5 rounded-full blur-[140px] pointer-events-none z-10" />
                 <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-coral/5 rounded-full blur-[100px] pointer-events-none z-10" />
                 

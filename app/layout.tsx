@@ -1,10 +1,17 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Cairo, Tajawal, Inter } from 'next/font/google';
 import './globals.css';
 import { supabase, cachedFetch } from '@/lib/supabase';
 import TrackingProvider from '@/components/store/tracking-provider';
 import Header from '@/components/store/header';
 import Footer from '@/components/store/footer';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const revalidate = 1; // Cache layout and revalidate every 1 second
 
