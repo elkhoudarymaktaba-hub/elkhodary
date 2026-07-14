@@ -4,7 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Settings, Image as ImageIcon, CreditCard, ToggleLeft, ToggleRight, 
-  Save, AlertTriangle, ShieldCheck, Link2, MonitorPlay, BookOpen, Layers
+  Save, AlertTriangle, ShieldCheck, Link2, MonitorPlay, BookOpen, Layers,
+  Star, Trash2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getMockData } from '@/lib/mockData';
@@ -51,6 +52,15 @@ export default function SettingsPage() {
 
   // 3. وضع الصيانة
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+
+  // 4. إدارة التقييمات والآراء
+  const [adminReviews, setAdminReviews] = useState<any[]>([]);
+  const [selectedReviewProductId, setSelectedReviewProductId] = useState('');
+  const [newAdminReviewName, setNewAdminReviewName] = useState('');
+  const [newAdminReviewCity, setNewAdminReviewCity] = useState('');
+  const [newAdminReviewRating, setNewAdminReviewRating] = useState(5);
+  const [newAdminReviewText, setNewAdminReviewText] = useState('');
+  const [newAdminReviewVerified, setNewAdminReviewVerified] = useState(true);
 
   useEffect(() => {
     fetchSettings();
@@ -149,7 +159,112 @@ export default function SettingsPage() {
       setBoxBuilderImg5(settings.box_builder_img5 || '');
       setBoxBuilderImg6(settings.box_builder_img6 || '');
     }
+    await fetchAdminReviews();
     setLoading(false);
+  };
+
+  const fetchAdminReviews = async () => {
+    try {
+      const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false });
+      if (data) {
+        setAdminReviews(data);
+        return;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    
+    // Fallback: LocalStorage
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('kh_reviews');
+      if (local) {
+        try {
+          setAdminReviews(JSON.parse(local));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+  };
+
+  const handleAddAdminReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedReviewProductId || !newAdminReviewName.trim() || !newAdminReviewText.trim()) {
+      showToast('يرجى تحديد المنتج وكتابة اسم العميل ونص التقييم!', 'error');
+      return;
+    }
+
+    const prod = products.find(p => p.id === selectedReviewProductId);
+    const bx = boxes.find(b => b.id === selectedReviewProductId);
+    const prodName = prod ? prod.name : (bx ? bx.name : 'منتج غير معروف');
+
+    const reviewObj = {
+      id: `rev-${Date.now()}`,
+      product_id: selectedReviewProductId,
+      product_name: prodName,
+      customer_name: newAdminReviewName,
+      city: newAdminReviewCity || 'مصر',
+      rating: newAdminReviewRating,
+      comment: newAdminReviewText,
+      created_at: new Date().toISOString(),
+      is_verified: newAdminReviewVerified
+    };
+
+    try {
+      await supabase.from('reviews').insert([reviewObj]);
+    } catch (e) {
+      console.error(e);
+    }
+
+    // Save to LocalStorage
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('kh_reviews');
+      let allReviews = [];
+      if (local) {
+        try {
+          allReviews = JSON.parse(local);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      allReviews.unshift(reviewObj);
+      localStorage.setItem('kh_reviews', JSON.stringify(allReviews));
+      setAdminReviews(allReviews);
+    }
+
+    setNewAdminReviewName('');
+    setNewAdminReviewCity('');
+    setNewAdminReviewText('');
+    setNewAdminReviewRating(5);
+    setSelectedReviewProductId('');
+    showToast('تم إضافة التقييم بنجاح وعرضه على المنتج!', 'success');
+  };
+
+  const handleDeleteAdminReview = async (reviewId: string) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا التقييم؟')) return;
+
+    try {
+      await supabase.from('reviews').delete().eq('id', reviewId);
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('kh_reviews');
+      let allReviews = [];
+      if (local) {
+        try {
+          allReviews = JSON.parse(local);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      const updated = allReviews.filter((r: any) => r.id !== reviewId);
+      localStorage.setItem('kh_reviews', JSON.stringify(updated));
+      setAdminReviews(updated);
+    }
+
+    showToast('تم حذف التقييم بنجاح!', 'success');
   };
 
   // لوجو المتجر - رفع صورة وتحويلها إلى base64 لضمان العرض 100%
@@ -472,97 +587,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* 1.7. إعدادات بانر صانع الصناديق بالصفحة الرئيسية */}
-            <div className="bg-white rounded-[16px] shadow-premium border border-[#E7DCC2] p-6 space-y-4">
-              <h3 className="text-base font-bold text-ink border-r-4 border-amber pr-2 flex items-center gap-1.5">
-                <Layers className="w-5 h-5 text-amber" />
-                <span>إعدادات قسم صانع الصناديق بالصفحة الرئيسية</span>
-              </h3>
-              
-              <p className="text-xs text-slate-500 leading-relaxed font-arabic">
-                تحكم بالكامل بالعبارة الترويجية والوصف والملفات المصورة المخصصة المرافقة لقسم صانع الحقائب المدرسي التفاعلي بالصفحة الرئيسية.
-              </p>
-
-              <div className="grid grid-cols-1 gap-4">
-                <Input
-                  label="عنوان القسم"
-                  value={boxBuilderTitle}
-                  onChange={(e) => setBoxBuilderTitle(e.target.value)}
-                  required
-                />
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-2">وصف القسم</label>
-                  <textarea
-                    value={boxBuilderDesc}
-                    onChange={(e) => setBoxBuilderDesc(e.target.value)}
-                    rows={3}
-                    className="w-full rounded-[12px] border border-slate-200 bg-white px-4 py-2.5 text-xs text-right focus:border-amber focus:outline-none"
-                    required
-                  />
-                </div>
-
-                {/* خطوات العمل الثلاثة */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-dashed border-slate-100 pt-4">
-                  <Input
-                    label="الخطوة 1: النص التوضيحي"
-                    value={boxBuilderStep1}
-                    onChange={(e) => setBoxBuilderStep1(e.target.value)}
-                    required
-                  />
-                  <Input
-                    label="الخطوة 2: النص التوضيحي"
-                    value={boxBuilderStep2}
-                    onChange={(e) => setBoxBuilderStep2(e.target.value)}
-                    required
-                  />
-                  <Input
-                    label="الخطوة 3: النص التوضيحي"
-                    value={boxBuilderStep3}
-                    onChange={(e) => setBoxBuilderStep3(e.target.value)}
-                    required
-                  />
-                </div>
-
-
-
-                {/* تخصيص صور المربعات الستة */}
-                <div className="border-t border-dashed border-slate-100 pt-4 space-y-3">
-                  <span className="text-xs font-bold text-slate-700 block">تخصيص صور المربعات الستة (الجانب الأيسر الافتراضي)</span>
-                  <p className="text-[10px] text-slate-400">إذا لم تقم برفع صورة بانر بديلة أعلاه، يمكنك استبدال أرقام المربعات الستة الطائرة بصور منتجات أو أيقونات مخصصة.</p>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-                    {[1, 2, 3, 4, 5, 6].map((i) => {
-                      const img = [boxBuilderImg1, boxBuilderImg2, boxBuilderImg3, boxBuilderImg4, boxBuilderImg5, boxBuilderImg6][i - 1];
-                      const setImg = [setBoxBuilderImg1, setBoxBuilderImg2, setBoxBuilderImg3, setBoxBuilderImg4, setBoxBuilderImg5, setBoxBuilderImg6][i - 1];
-                      return (
-                        <div key={i} className="flex flex-col items-center gap-1.5 border border-slate-200 rounded-xl p-2 bg-slate-50/50">
-                          <div className="w-12 h-12 bg-white rounded-lg border flex items-center justify-center overflow-hidden relative shadow-sm shrink-0">
-                            {img ? (
-                              <img src={img} alt={`Slot ${i}`} className="w-full h-full object-cover" />
-                            ) : (
-                              <span className="text-sm font-bold text-amber font-numbers">{i}</span>
-                            )}
-                          </div>
-                          <label className="px-2 py-1 bg-white border border-slate-200 text-[9px] font-bold text-slate-600 rounded cursor-pointer hover:bg-slate-100 transition-colors">
-                            <span>رفع {i}</span>
-                            <input type="file" accept="image/*" onChange={handleSlotImageUpload(i)} className="hidden" />
-                          </label>
-                          {img && (
-                            <button
-                              type="button"
-                              onClick={() => setImg('')}
-                              className="text-[8px] text-rose-500 hover:underline"
-                            >
-                              إزالة
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* 2. وضع الصيانة (Maintenance Mode Card) */}
             <div className={`bg-white rounded-[16px] shadow-premium border p-6 space-y-4 transition-all duration-300 ${
@@ -598,6 +622,169 @@ export default function SettingsPage() {
                   </span>
                 </div>
               )}
+            </div>
+
+            {/* ⭐ إدارة التقييمات والآراء (Reviews Management Card) */}
+            <div className="bg-white rounded-[16px] shadow-premium border border-[#E7DCC2] p-6 space-y-6">
+              <h3 className="text-base font-bold text-ink border-r-4 border-amber pr-2 flex items-center gap-1.5">
+                <Star className="w-5 h-5 text-amber fill-amber" />
+                <span>إدارة وإضافة تقييمات العملاء</span>
+              </h3>
+
+              <div className="p-4 bg-slate-50 border border-slate-100 rounded-[12px] space-y-4">
+                <h4 className="text-xs font-bold text-slate-700 font-arabic">إضافة تقييم جديد يدويًا (كتقييم موثق)</h4>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1">اختر المنتج/الباقة</label>
+                    <select
+                      value={selectedReviewProductId}
+                      onChange={(e) => setSelectedReviewProductId(e.target.value)}
+                      className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none"
+                    >
+                      <option value="">-- اختر المنتج/الباقة --</option>
+                      <optgroup label="الباقات الجاهزة">
+                        {boxes.map((b) => (
+                          <option key={b.id} value={b.id}>{b.name}</option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="المنتجات الفردية">
+                        {products.map((p) => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1">اسم العميل</label>
+                    <input
+                      type="text"
+                      placeholder="مثال: يوسف أحمد"
+                      value={newAdminReviewName}
+                      onChange={(e) => setNewAdminReviewName(e.target.value)}
+                      className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none font-arabic"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1">المحافظة / المدينة</label>
+                    <input
+                      type="text"
+                      placeholder="مثال: القاهرة"
+                      value={newAdminReviewCity}
+                      onChange={(e) => setNewAdminReviewCity(e.target.value)}
+                      className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none font-arabic"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[10px] font-bold text-slate-500 block mb-1">التقييم (النجوم)</label>
+                    <select
+                      value={newAdminReviewRating}
+                      onChange={(e) => setNewAdminReviewRating(Number(e.target.value))}
+                      className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none"
+                    >
+                      <option value="5">⭐⭐⭐⭐⭐ (5 نجوم)</option>
+                      <option value="4">⭐⭐⭐⭐ (4 نجوم)</option>
+                      <option value="3">⭐⭐⭐ (3 نجوم)</option>
+                      <option value="2">⭐⭐ (نجمتان)</option>
+                      <option value="1">⭐ (نجمة واحدة)</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 h-[58px]">
+                    <span className="text-xs font-bold text-slate-700">مشتري مؤكد وعميل حقيقي</span>
+                    <button
+                      type="button"
+                      onClick={() => setNewAdminReviewVerified(!newAdminReviewVerified)}
+                    >
+                      {newAdminReviewVerified ? (
+                        <ToggleRight className="w-8 h-8 text-sage" />
+                      ) : (
+                        <ToggleLeft className="w-8 h-8 text-slate-300" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 block mb-1">نص التعليق / التقييم</label>
+                  <textarea
+                    rows={2}
+                    placeholder="اكتب تعليق التقييم هنا..."
+                    value={newAdminReviewText}
+                    onChange={(e) => setNewAdminReviewText(e.target.value)}
+                    className="w-full rounded-[12px] border border-slate-200 bg-white px-3 py-2 text-xs text-right focus:border-amber focus:outline-none resize-none"
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleAddAdminReview}
+                    className="px-5 py-2 bg-amber hover:bg-amber-deep text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                  >
+                    إضافة التقييم المعروض
+                  </button>
+                </div>
+              </div>
+
+              {/* قائمة التقييمات الحالية */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-slate-700 font-arabic">الآراء والتقييمات الحالية ({adminReviews.length})</h4>
+                
+                {adminReviews.length > 0 ? (
+                  <div className="border border-slate-100 rounded-xl overflow-hidden max-h-64 overflow-y-auto no-scrollbar">
+                    <table className="w-full text-right text-xs">
+                      <thead className="bg-slate-50 border-b border-slate-100 text-slate-500">
+                        <tr>
+                          <th className="p-3 font-bold">المنتج</th>
+                          <th className="p-3 font-bold">العميل</th>
+                          <th className="p-3 font-bold text-center">التقييم</th>
+                          <th className="p-3 font-bold">التعليق</th>
+                          <th className="p-3 font-bold text-center">إجراءات</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50">
+                        {adminReviews.map((rev) => (
+                          <tr key={rev.id} className="hover:bg-slate-50/40">
+                            <td className="p-3 font-bold truncate max-w-[120px]">{rev.product_name}</td>
+                            <td className="p-3 truncate max-w-[100px]">
+                              <div>
+                                <span className="block font-bold">{rev.customer_name}</span>
+                                {rev.city && <span className="block text-[9.5px] text-slate-400 font-bold">{rev.city}</span>}
+                              </div>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className="font-bold text-amber font-numbers">{rev.rating}</span>
+                              <span className="text-[9px] text-slate-400">/5</span>
+                            </td>
+                            <td className="p-3 text-slate-500 truncate max-w-[200px]" title={rev.comment}>
+                              {rev.comment}
+                            </td>
+                            <td className="p-3 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteAdminReview(rev.id)}
+                                className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-slate-400 text-xs">
+                    لا توجد تقييمات مضافة للمتجر حالياً.
+                  </div>
+                )}
+              </div>
             </div>
 
           </div>

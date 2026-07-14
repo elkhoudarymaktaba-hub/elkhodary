@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Phone, MessageCircle, Calendar, MapPin, Clipboard, DollarSign, Package, Share2 } from 'lucide-react';
+import { X, Phone, MessageCircle, Calendar, MapPin, Clipboard, DollarSign, Package, Download } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Select } from '../ui/select';
 import { Order, ShippingRate } from '@/lib/mockData';
@@ -43,10 +43,12 @@ export default function OrderDrawer({
   const { checkPermission } = useRole();
   const [updating, setUpdating] = useState(false);
   const [status, setStatus] = useState<string>('');
+  const [codInput, setCodInput] = useState<string>('');
 
   React.useEffect(() => {
     if (order) {
       setStatus(order.status);
+      setCodInput(String(order.total_amount));
     }
   }, [order]);
 
@@ -76,12 +78,361 @@ export default function OrderDrawer({
     }
   };
 
+  const getWhatsAppMessage = () => {
+    if (!order) return '';
+    const name = order.customer_name;
+    const orderId = order.id;
+    const total = order.total_amount;
+    const statusLabel = statusLabels[status] || status;
+
+    let messageText = '';
+    if (status === 'new') {
+      messageText = `مرحباً يا ${name}، تم استلام طلبك رقم #${orderId} بنجاح في مكتبة الخضري بقيمة ${total} ج.م وجاري تجهيزه! شكراً لاختيارك لنا.`;
+    } else if (status === 'confirmed') {
+      messageText = `أهلاً يا ${name}، يسعدنا إعلامك بأنه تم تأكيد طلبك رقم #${orderId} من مكتبة الخضري. جاري تحضير الشحنة للتوصيل!`;
+    } else if (status === 'shipping') {
+      messageText = `مرحباً يا ${name}، طلبك رقم #${orderId} تم تسليمه لشركة الشحن ومندوب التوصيل سيتواصل معك قريباً لتسليم الشحنة.`;
+    } else if (status === 'delivered') {
+      messageText = `أهلاً يا ${name}، تم تسليم طلبك رقم #${orderId} بنجاح. نتمنى أن تعجبك المنتجات، شكراً لتعاملك مع مكتبة الخضري!`;
+    } else if (status === 'cancelled') {
+      messageText = `مرحباً يا ${name}، نود إعلامك بأنه تم إلغاء طلبك رقم #${orderId}. لمزيد من التفاصيل يرجى التواصل معنا.`;
+    } else {
+      messageText = `مرحباً يا ${name}، تحديث بخصوص طلبك رقم #${orderId}: حالة الطلب الحالية هي [${statusLabel}].`;
+    }
+
+    return encodeURIComponent(messageText);
+  };
+
+  const printInvoiceAsPDF = () => {
+    if (!order) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('الرجاء السماح بالنوافذ المنبثقة لطباعة الفاتورة.');
+      return;
+    }
+
+    const itemsHtml = order.items.map(item => `
+      <tr>
+        <td style="border: 1px solid #cbd5e1; padding: 10px; font-weight: bold; text-align: right;">${item.name}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: center;">${item.quantity}</td>
+        <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: left;">${item.price} ج.م</td>
+        <td style="border: 1px solid #cbd5e1; padding: 10px; text-align: left; font-weight: bold;">${item.price * item.quantity} ج.م</td>
+      </tr>
+    `).join('');
+
+    const invoiceHtml = `
+      <html dir="rtl">
+      <head>
+        <title>فاتورة الطلب #${order.id}</title>
+        <meta charset="utf-8" />
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+        <style>
+          body { font-family: 'Cairo', sans-serif; color: #1e293b; margin: 0; padding: 40px; background-color: #fff; }
+          .invoice-box { max-w: 800px; margin: auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+          .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 20px; }
+          .header h1 { margin: 0; font-size: 28px; font-weight: 900; color: #0f172a; }
+          .header p { margin: 5px 0 0 0; font-size: 14px; color: #64748b; }
+          .meta-info { display: flex; justify-content: space-between; font-size: 12px; color: #475569; margin-top: 15px; }
+          .customer-box { background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; margin-bottom: 25px; }
+          .customer-box h3 { margin: 0 0 10px 0; font-size: 14px; font-weight: 700; color: #0f172a; }
+          .customer-box p { margin: 5px 0; font-size: 13px; color: #334155; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px; }
+          th { background-color: #f1f5f9; font-weight: 700; text-align: right; border: 1px solid #e2e8f0; padding: 10px; }
+          .footer { text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 50px; font-size: 11px; color: #94a3b8; }
+          @media print {
+            body { padding: 0; }
+            .invoice-box { border: none; box-shadow: none; padding: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-box">
+          <div class="header">
+            <h1>مكتبة الخضري</h1>
+            <p>فاتورة شراء للعميل</p>
+            <div class="meta-info">
+              <span>رقم الفاتورة: #${order.id}</span>
+              <span>التاريخ: ${new Date(order.created_at).toLocaleDateString('ar-EG', { dateStyle: 'long' })}</span>
+            </div>
+          </div>
+          
+          <div class="customer-box">
+            <h3>تفاصيل المستلم:</h3>
+            <p><strong>اسم العميل:</strong> ${order.customer_name}</p>
+            <p><strong>رقم الهاتف:</strong> ${order.customer_phone}</p>
+            <p><strong>المحافظة / العنوان:</strong> ${order.governorate}</p>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>المنتج / الباقة</th>
+                <th style="text-align: center;">الكمية</th>
+                <th style="text-align: left;">سعر القطعة</th>
+                <th style="text-align: left;">الإجمالي</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div style="display: flex; flex-direction: column; align-items: flex-end;">
+            <div style="width: 250px; font-size: 13px; color: #475569;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>إجمالي المنتجات:</span>
+                <strong>${itemsSubtotal} ج.م</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                <span>تكلفة الشحن:</span>
+                <strong>${shippingFee === 0 ? 'شحن مجاني' : `${shippingFee} ج.م`}</strong>
+              </div>
+              ${order.total_amount < itemsSubtotal + shippingFee ? `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px; color: #16a34a;">
+                  <span>الخصم (كوبون):</span>
+                  <strong>-${(itemsSubtotal + shippingFee) - order.total_amount} ج.م</strong>
+                </div>
+              ` : ''}
+              <div style="display: flex; justify-content: space-between; border-top: 1px solid #cbd5e1; padding-top: 10px; margin-top: 10px; font-size: 15px; font-weight: bold; color: #0f172a;">
+                <span>المبلغ المطلوب:</span>
+                <span style="color: #c2410c; font-size: 18px;">${order.total_amount} ج.م</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>شكراً لثقتكم واختياركم مكتبة الخضري!</p>
+            <p>info@alkhodary.eg  |  19000  |  alkhodary.eg</p>
+          </div>
+        </div>
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(invoiceHtml);
+    printWindow.document.close();
+  };
+
+  const printShippingLabel = () => {
+    if (!order) return;
+    
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('الرجاء السماح بالنوافذ المنبثقة لطباعة بوليصة الشحن.');
+      return;
+    }
+
+    const itemsSummary = order.items.map(item => `
+      <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed #e2e8f0; padding: 5px 0; font-size: 11px;">
+        <span>${item.name}</span>
+        <strong>× ${item.quantity}</strong>
+      </div>
+    `).join('');
+
+    const labelHtml = `
+      <html dir="rtl">
+      <head>
+        <title>بوليصة شحن #${order.id}</title>
+        <meta charset="utf-8" />
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+        <style>
+          body {
+            font-family: 'Cairo', sans-serif;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+          }
+          .label-container {
+            width: 380px;
+            padding: 18px;
+            border: 2px dashed #000;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #fff;
+            margin: 10px;
+          }
+          .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+          }
+          .header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 900;
+          }
+          .header p {
+            margin: 2px 0 0 0;
+            font-size: 11px;
+            color: #333;
+          }
+          .section {
+            border-bottom: 1px solid #000;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+          }
+          .section-title {
+            font-size: 10px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+          }
+          .info-row {
+            font-size: 13px;
+            margin: 3px 0;
+          }
+          .bold-info {
+            font-size: 15px;
+            font-weight: 900;
+          }
+          .cod-box {
+            background-color: #000;
+            color: #fff;
+            padding: 12px;
+            text-align: center;
+            border-radius: 6px;
+            margin: 10px 0;
+          }
+          .cod-title {
+            font-size: 11px;
+            margin: 0 0 2px 0;
+          }
+          .cod-amount {
+            font-size: 24px;
+            font-weight: 900;
+            margin: 0;
+          }
+          .barcode-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 10px 0;
+            border-bottom: 1px solid #000;
+            padding-bottom: 10px;
+          }
+          .barcode-bars {
+            display: flex;
+            height: 40px;
+            align-items: stretch;
+          }
+          .bar {
+            background-color: #000;
+            margin-right: 1px;
+          }
+          .packing-list {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            border-radius: 6px;
+          }
+          @media print {
+            body { margin: 0; padding: 0; }
+            .label-container { border: 2px dashed #000; margin: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="label-container">
+          <div class="header">
+            <h1>مكتبة الخضري</h1>
+            <p>بوليصة شحن طرد سريع</p>
+          </div>
+
+          <div class="barcode-container">
+            <div class="barcode-bars">
+              <!-- Simulated Barcode -->
+              <div class="bar" style="width: 3px;"></div>
+              <div class="bar" style="width: 1px; background-color: transparent;"></div>
+              <div class="bar" style="width: 1px;"></div>
+              <div class="bar" style="width: 2px; background-color: transparent;"></div>
+              <div class="bar" style="width: 4px;"></div>
+              <div class="bar" style="width: 1px; background-color: transparent;"></div>
+              <div class="bar" style="width: 2px;"></div>
+              <div class="bar" style="width: 3px; background-color: transparent;"></div>
+              <div class="bar" style="width: 1px;"></div>
+              <div class="bar" style="width: 2px; background-color: transparent;"></div>
+              <div class="bar" style="width: 3px;"></div>
+              <div class="bar" style="width: 1px; background-color: transparent;"></div>
+              <div class="bar" style="width: 4px;"></div>
+              <div class="bar" style="width: 2px; background-color: transparent;"></div>
+              <div class="bar" style="width: 2px;"></div>
+              <div class="bar" style="width: 1px; background-color: transparent;"></div>
+              <div class="bar" style="width: 3px;"></div>
+              <div class="bar" style="width: 2px; background-color: transparent;"></div>
+              <div class="bar" style="width: 1px;"></div>
+              <div class="bar" style="width: 4px; background-color: transparent;"></div>
+              <div class="bar" style="width: 3px;"></div>
+              <div class="bar" style="width: 1px; background-color: transparent;"></div>
+              <div class="bar" style="width: 2px;"></div>
+              <div class="bar" style="width: 1px; background-color: transparent;"></div>
+              <div class="bar" style="width: 4px;"></div>
+            </div>
+            <div style="font-family: monospace; font-size: 11px; margin-top: 4px; font-weight: bold; letter-spacing: 2px;">
+              KH-${order.id.toUpperCase()}
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">الراسل (Sender)</div>
+            <div class="info-row"><strong>مكتبة الخضري</strong></div>
+            <div class="info-row">هاتف: 19000  |  موقع: alkhodary.eg</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">المرسل إليه (Recipient)</div>
+            <div class="info-row bold-info">${order.customer_name}</div>
+            <div class="info-row bold-info">هاتف: ${order.customer_phone}</div>
+            <div class="info-row"><strong>المحافظة:</strong> ${order.governorate}</div>
+            <div class="info-row"><strong>العنوان بالتفصيل:</strong> ${order.governorate} - الاستلام من العنوان المسجل</div>
+          </div>
+
+          <div class="cod-box">
+            <div class="cod-title">المبلغ المطلوب تحصيله عند الاستلام (COD)</div>
+            <div class="cod-amount">${codInput || '0'} ج.م</div>
+          </div>
+
+          <div class="packing-list">
+            <div class="section-title" style="margin-bottom: 5px;">محتويات الشحنة (Packing List)</div>
+            ${itemsSummary}
+          </div>
+
+          <div style="text-align: center; font-size: 8px; margin-top: 15px; color: #555;">
+            تطبع بواسطة نظام إدارة مكتبة الخضري الذكي
+          </div>
+        </div>
+
+        <script>
+          window.onload = function() {
+            window.print();
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(labelHtml);
+    printWindow.document.close();
+  };
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     alert(`تم نسخ ${label} إلى الحافظة!`);
   };
 
-  const shareInvoiceAsImage = () => {
+  const downloadInvoiceAsImage = () => {
     if (!order) return;
 
     // 1. Create a canvas dynamically
@@ -267,37 +618,19 @@ export default function OrderDrawer({
     ctx.font = '9px Arial, sans-serif';
     ctx.fillText('info@alkhodary.eg  |  19000  |  alkhodary.eg', width / 2, currentY + 160);
 
-    // 9. Convert to Blob & share
-    canvas.toBlob(async (blob) => {
+    // 9. Convert to Blob & download directly
+    canvas.toBlob((blob) => {
       if (!blob) {
         alert('حدث خطأ أثناء توليد الفاتورة كصورة.');
         return;
       }
-      try {
-        const file = new File([blob], `invoice-${order.id}.png`, { type: 'image/png' });
-        
-        // Check if Web Share API is available and supports files
-        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: `فاتورة طلب مكتبة الخضري #${order.id}`,
-            text: `فاتورة شراء العميل ${order.customer_name} من مكتبة الخضري`,
-          });
-        } else {
-          // Fallback: download the image
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = `invoice-${order.id}.png`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          alert('تم تحميل صورة الفاتورة بنجاح لعدم دعم متصفحك للمشاركة المباشرة.');
-        }
-      } catch (err) {
-        console.error('Error sharing invoice:', err);
-        alert('تم إلغاء عملية مشاركة الصورة.');
-      }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `invoice-${order.id}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }, 'image/png');
   };
 
@@ -386,10 +719,10 @@ export default function OrderDrawer({
                     <Phone className="w-4 h-4" />
                   </a>
                   <a 
-                    href={`https://wa.me/2${order.customer_phone}`}
+                    href={`https://wa.me/2${order.customer_phone}?text=${getWhatsAppMessage()}`}
                     target="_blank"
                     className="p-1 text-sage bg-[#DCEEE5] rounded-[8px] hover:bg-[#4F8F73]/10 transition-colors"
-                    title="مراسلة عبر واتساب"
+                    title="إرسال تحديث حالة الطلب عبر واتساب"
                   >
                     <MessageCircle className="w-4 h-4" />
                   </a>
@@ -426,6 +759,16 @@ export default function OrderDrawer({
                         <p className="text-xs text-ink-muted font-arabic mt-1">
                           الكمية: {item.quantity} × <span className="font-english font-medium">{item.price} ج.م</span>
                         </p>
+                        {(item as any).colors && (item as any).colors.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1.5">
+                            <span className="text-[10px] text-slate-400 font-bold ml-1 font-arabic">الألوان:</span>
+                            {(item as any).colors.map((c: string, idx: number) => (
+                              <span key={idx} className="text-[9px] bg-amber/10 text-amber-deep font-bold px-1.5 py-0.5 rounded border border-amber/20 font-arabic">
+                                {c}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <span className="font-bold text-slate-800 font-english shrink-0">
@@ -474,16 +817,40 @@ export default function OrderDrawer({
               </div>
 
             </div>
+
+            {/* تعديل مبلغ التحصيل عند الاستلام */}
+            <div className="bg-[#FBEBCB]/15 p-4 rounded-[16px] border border-[#E7A537]/20 space-y-2 mt-3 text-right">
+              <span className="block text-xs font-bold text-slate-600 font-arabic">المبلغ المطلوب تحصيله عند الاستلام (COD):</span>
+              <div className="flex items-center gap-2.5">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={codInput}
+                  onChange={(e) => {
+                    const converted = e.target.value
+                      .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1632))
+                      .replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1776));
+                    const clean = converted.replace(/[^0-9]/g, '');
+                    setCodInput(clean);
+                  }}
+                  className="py-2 px-3 bg-white rounded-input border border-[#E7DCC2] focus:border-[#E7A537] focus:outline-none text-xs font-english font-bold text-slate-800 w-28 text-center"
+                />
+                <span className="text-xs font-bold text-slate-600 font-arabic">ج.م</span>
+                <span className="text-[10px] text-slate-400 font-arabic">(تغيير هذا المبلغ يؤثر على بوليصة الشحن المطبوعة فقط)</span>
+              </div>
+            </div>
+
           </div>
 
         </div>
 
-        {/* الفوتر وأزرار الطباعة */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex gap-2 flex-wrap sm:flex-nowrap">
+        {/* الفوتر وأزرار الطباعة والتنبيهات */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50 grid grid-cols-2 gap-2 shrink-0">
           <Button 
             variant="outline" 
             size="sm" 
-            className="flex-1 font-arabic text-xs py-2.5" 
+            className="font-arabic text-xs py-2.5 flex items-center justify-center gap-1.5" 
             onClick={() => copyToClipboard(`
 الطلب #${order.id}
 العميل: ${order.customer_name}
@@ -493,28 +860,51 @@ export default function OrderDrawer({
 الإجمالي: ${order.total_amount} ج.م
             `, 'بيانات الشحن')}
           >
-            <Clipboard className="w-4 h-4 ml-1.5" />
+            <Clipboard className="w-4 h-4" />
             <span>نسخ البوليصة</span>
+          </Button>
+
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="font-arabic text-xs py-2.5 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center gap-1.5"
+            onClick={() => {
+              const text = getWhatsAppMessage();
+              window.open(`https://wa.me/2${order.customer_phone}?text=${text}`, '_blank');
+            }}
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span>إرسال واتساب</span>
           </Button>
 
           <Button 
             variant="primary" 
             size="sm" 
-            className="flex-1 font-arabic text-xs py-2.5"
-            onClick={shareInvoiceAsImage}
+            className="font-arabic text-xs py-2.5 flex items-center justify-center gap-1.5"
+            onClick={downloadInvoiceAsImage}
           >
-            <Share2 className="w-4 h-4 ml-1.5" />
-            <span>مشاركة كصورة</span>
+            <Download className="w-4 h-4" />
+            <span>تنزيل كصورة</span>
           </Button>
 
           <Button 
             variant="secondary" 
             size="sm" 
-            className="flex-1 font-arabic text-xs py-2.5"
-            onClick={() => window.print()}
+            className="font-arabic text-xs py-2.5 flex items-center justify-center gap-1.5"
+            onClick={printInvoiceAsPDF}
           >
-            <DollarSign className="w-4 h-4 ml-1.5" />
-            <span>طباعة الفاتورة</span>
+            <DollarSign className="w-4 h-4" />
+            <span>طباعة PDF</span>
+          </Button>
+
+          <Button 
+            variant="primary" 
+            size="sm" 
+            className="col-span-2 font-arabic text-xs py-2.5 bg-amber hover:bg-amber-deep text-white border-amber hover:text-white flex items-center justify-center gap-1.5 shadow-sm"
+            onClick={printShippingLabel}
+          >
+            <Package className="w-4 h-4" />
+            <span>طباعة بوليصة الشحن (A6)</span>
           </Button>
         </div>
 

@@ -58,6 +58,12 @@ export default function OrdersPage() {
   // الصفحات والترتيب
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'excel' | 'csv'>('excel');
+  const [exportRange, setExportRange] = useState<'all' | 'today' | 'week' | 'month' | 'year' | 'custom'>('all');
+  const [exportStartDate, setExportStartDate] = useState('');
+  const [exportEndDate, setExportEndDate] = useState('');
+  const [dateRangeType, setDateRangeType] = useState<'all' | 'today' | 'week' | 'month' | 'year' | 'custom'>('all');
 
   useEffect(() => {
     fetchOrders();
@@ -137,11 +143,150 @@ export default function OrdersPage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + itemsPerPage);
 
+  const handleExportOrders = () => {
+    setIsExportModalOpen(false);
+
+    let ordersToExport = [...orders];
+
+    if (exportRange === 'today') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      ordersToExport = ordersToExport.filter(o => o.created_at.startsWith(todayStr));
+    } else if (exportRange === 'week') {
+      const minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      ordersToExport = ordersToExport.filter(o => new Date(o.created_at) >= minDate);
+    } else if (exportRange === 'month') {
+      const minDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      ordersToExport = ordersToExport.filter(o => new Date(o.created_at) >= minDate);
+    } else if (exportRange === 'year') {
+      const currentYear = new Date().getFullYear();
+      ordersToExport = ordersToExport.filter(o => new Date(o.created_at).getFullYear() === currentYear);
+    } else if (exportRange === 'custom') {
+      if (exportStartDate) {
+        const start = new Date(exportStartDate);
+        ordersToExport = ordersToExport.filter(o => new Date(o.created_at) >= start);
+      }
+      if (exportEndDate) {
+        const end = new Date(exportEndDate);
+        end.setHours(23, 59, 59, 999);
+        ordersToExport = ordersToExport.filter(o => new Date(o.created_at) <= end);
+      }
+    }
+
+    const headers = [
+      'معرف الطلب',
+      'اسم العميل',
+      'رقم التليفون',
+      'المحافظة',
+      'المنتجات والكميات',
+      'إجمالي المبلغ (ج.م)',
+      'حالة الطلب',
+      'تاريخ الطلب'
+    ];
+
+    if (exportFormat === 'csv') {
+      const rows = ordersToExport.map(order => {
+        const itemsString = order.items
+          ? order.items.map(item => `${item.name} (${item.quantity})`).join(' | ')
+          : '';
+        const statusLabel = statusLabels[order.status] || order.status;
+        const formattedDate = new Date(order.created_at).toLocaleString('ar-EG');
+        return [
+          order.id,
+          `"${order.customer_name.replace(/"/g, '""')}"`,
+          `'${order.customer_phone}`,
+          `"${order.governorate.replace(/"/g, '""')}"`,
+          `"${itemsString.replace(/"/g, '""')}"`,
+          order.total_amount,
+          `"${statusLabel}"`,
+          `"${formattedDate}"`
+        ];
+      });
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `الطلبات-${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } else {
+      let html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">`;
+      html += `<head><meta charset="utf-8" /><style>table { border-collapse: collapse; } th, td { border: 1px solid #ddd; padding: 8px; text-align: right; }</style></head>`;
+      html += `<body><table dir="rtl"><thead><tr style="background-color: #f2f2f2;">`;
+      headers.forEach(h => {
+        html += `<th>${h}</th>`;
+      });
+      html += `</tr></thead><tbody>`;
+      
+      ordersToExport.forEach(order => {
+        const itemsString = order.items
+          ? order.items.map(item => `${item.name} (${item.quantity})`).join(' | ')
+          : '';
+        const statusLabel = statusLabels[order.status] || order.status;
+        html += `<tr>`;
+        html += `<td>${order.id}</td>`;
+        html += `<td>${order.customer_name || ''}</td>`;
+        html += `<td>${order.customer_phone || ''}</td>`;
+        html += `<td>${order.governorate || ''}</td>`;
+        html += `<td>${itemsString}</td>`;
+        html += `<td>${order.total_amount}</td>`;
+        html += `<td>${statusLabel}</td>`;
+        html += `<td>${new Date(order.created_at).toLocaleString('ar-EG')}</td>`;
+        html += `</tr>`;
+      });
+      
+      html += `</tbody></table></body></html>`;
+
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `الطلبات-${new Date().toISOString().split('T')[0]}.xls`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const handleDateRangeTypeChange = (type: 'all' | 'today' | 'week' | 'month' | 'year' | 'custom') => {
+    setDateRangeType(type);
+    setCurrentPage(1);
+    
+    if (type === 'all') {
+      setStartDate('');
+      setEndDate('');
+    } else if (type === 'today') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      setStartDate(todayStr);
+      setEndDate(todayStr);
+    } else if (type === 'week') {
+      const start = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const end = new Date().toISOString().split('T')[0];
+      setStartDate(start);
+      setEndDate(end);
+    } else if (type === 'month') {
+      const start = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const end = new Date().toISOString().split('T')[0];
+      setStartDate(start);
+      setEndDate(end);
+    } else if (type === 'year') {
+      const start = `${new Date().getFullYear()}-01-01`;
+      const end = new Date().toISOString().split('T')[0];
+      setStartDate(start);
+      setEndDate(end);
+    }
+  };
+
   const resetFilters = () => {
     setSearchQuery('');
     setSelectedGov('all');
     setStartDate('');
     setEndDate('');
+    setDateRangeType('all');
     setCurrentPage(1);
   };
 
@@ -234,27 +379,73 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* فلاتر تاريخ مخصصة */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 bg-[#F6F1E4]/50 p-3.5 rounded-[16px] border border-[#E7DCC2]">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="w-4.5 h-4.5 text-amber" />
-            <span className="font-bold font-arabic text-xs text-ink">نطاق تاريخ التسجيل:</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <CustomDatePicker
-              value={startDate}
-              onChange={(val) => { setStartDate(val); setCurrentPage(1); }}
-              label="من تاريخ"
-              placeholder="اختر البداية"
-            />
+        {/* فلاتر تاريخ مخصصة مع اختيارات سريعة */}
+        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-600 bg-[#F6F1E4]/50 p-3.5 rounded-[16px] border border-[#E7DCC2]">
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <Calendar className="w-4.5 h-4.5 text-amber" />
+              <span className="font-bold font-arabic text-xs text-ink">نطاق تاريخ التسجيل:</span>
+            </div>
 
-            <CustomDatePicker
-              value={endDate}
-              onChange={(val) => { setEndDate(val); setCurrentPage(1); }}
-              label="إلى تاريخ"
-              placeholder="اختر النهاية"
-            />
+            {/* أزرار المدة السريعة */}
+            <div className="flex flex-wrap gap-1 bg-[#F6F1E4] p-1 rounded-full border border-[#E7DCC2] shrink-0">
+              {[
+                { id: 'all', label: 'الكل' },
+                { id: 'today', label: 'اليوم' },
+                { id: 'week', label: 'الأسبوع' },
+                { id: 'month', label: 'الشهر' },
+                { id: 'year', label: 'السنة' },
+                { id: 'custom', label: 'مخصص' },
+              ].map((pill) => (
+                <button
+                  key={pill.id}
+                  type="button"
+                  onClick={() => handleDateRangeTypeChange(pill.id as any)}
+                  className={`px-3 py-1 rounded-full text-[10px] font-bold font-arabic transition-all ${
+                    dateRangeType === pill.id
+                      ? 'bg-amber text-white shadow-sm'
+                      : 'text-ink-soft hover:bg-slate-100'
+                  }`}
+                >
+                  {pill.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-3">
+              <CustomDatePicker
+                value={startDate}
+                onChange={(val) => {
+                  setStartDate(val);
+                  setDateRangeType('custom');
+                  setCurrentPage(1);
+                }}
+                label="من تاريخ"
+                placeholder="اختر البداية"
+              />
+
+              <CustomDatePicker
+                value={endDate}
+                onChange={(val) => {
+                  setEndDate(val);
+                  setDateRangeType('custom');
+                  setCurrentPage(1);
+                }}
+                label="إلى تاريخ"
+                placeholder="اختر النهاية"
+              />
+            </div>
           </div>
+          
+          <button
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[12px] text-xs font-bold transition-all duration-200 font-arabic shadow-sm hover:shadow h-[38px]"
+          >
+            <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+            </svg>
+            <span>تصدير البيانات</span>
+          </button>
         </div>
       </div>
 
@@ -401,6 +592,133 @@ export default function OrdersPage() {
         onStatusUpdated={handleStatusUpdated}
         shippingRates={shippingRates}
       />
+
+      {/* 📥 نافذة تصدير البيانات (Export Configuration Modal) */}
+      {isExportModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in font-arabic">
+          <div className="bg-white rounded-[24px] border border-[#E7DCC2] shadow-premium max-w-md w-full text-right">
+            
+            {/* Header */}
+            <div className="bg-[#FBEBCB]/30 px-6 py-4 border-b border-[#E7DCC2] flex items-center justify-between rounded-t-[24px]">
+              <span className="font-black text-sm text-ink font-arabic">تصدير بيانات الطلبات المتقدم</span>
+              <button 
+                onClick={() => setIsExportModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              
+              {/* Format selection */}
+              <div className="space-y-2">
+                <span className="block text-xs font-bold text-slate-500">1. صيغة الملف المصدر</span>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setExportFormat('excel')}
+                    className={`p-4 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all ${
+                      exportFormat === 'excel'
+                        ? 'border-amber bg-amber/5 text-amber-deep font-bold shadow-sm'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="text-xl">📊</span>
+                    <span className="text-xs font-bold font-arabic">ملف Excel (للقراءة والطباعة)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExportFormat('csv')}
+                    className={`p-4 rounded-xl border text-center flex flex-col items-center justify-center gap-1.5 transition-all ${
+                      exportFormat === 'csv'
+                        ? 'border-amber bg-amber/5 text-amber-deep font-bold shadow-sm'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="text-xl">⚙️</span>
+                    <span className="text-xs font-bold font-arabic">ملف CSV (سوبابيس)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Date range selection */}
+              <div className="space-y-2">
+                <span className="block text-xs font-bold text-slate-500">2. المدة الزمنية للبيانات</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'all', label: 'كامل البيانات' },
+                    { id: 'today', label: 'اليوم' },
+                    { id: 'week', label: 'هذا الأسبوع' },
+                    { id: 'month', label: 'هذا الشهر' },
+                    { id: 'year', label: 'هذه السنة' },
+                    { id: 'custom', label: 'تحديد مخصص' },
+                  ].map((range) => (
+                    <button
+                      key={range.id}
+                      type="button"
+                      onClick={() => setExportRange(range.id as any)}
+                      className={`py-2 px-3 rounded-lg border text-center text-[10px] font-bold font-arabic transition-all ${
+                        exportRange === range.id
+                          ? 'border-amber bg-amber/5 text-amber-deep shadow-sm'
+                          : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      {range.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Date Pickers (only shown if range === 'custom') */}
+              {exportRange === 'custom' && (
+                <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100 animate-slide-down">
+                  <CustomDatePicker
+                    value={exportStartDate}
+                    onChange={setExportStartDate}
+                    label="من تاريخ"
+                    placeholder="اختر البداية"
+                    className="w-full"
+                    dropdownDirection="up"
+                  />
+                  <CustomDatePicker
+                    value={exportEndDate}
+                    onChange={setExportEndDate}
+                    label="إلى تاريخ"
+                    placeholder="اختر النهاية"
+                    className="w-full"
+                    dropdownDirection="up"
+                  />
+                </div>
+              )}
+
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5 rounded-b-[24px]">
+              <button
+                type="button"
+                onClick={() => setIsExportModalOpen(false)}
+                className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition-all font-arabic"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleExportOrders}
+                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all font-arabic shadow-sm flex items-center gap-1.5"
+              >
+                <span>تنزيل الملف</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );

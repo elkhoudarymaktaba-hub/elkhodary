@@ -10,6 +10,8 @@ interface CustomDatePickerProps {
   onChange: (val: string) => void;
   label: string;
   placeholder?: string;
+  className?: string;
+  dropdownDirection?: 'up' | 'down';
 }
 
 const arabicMonths = [
@@ -19,9 +21,80 @@ const arabicMonths = [
 
 const weekDays = ['أحد', 'نثن', 'ثلا', 'أرب', 'خمس', 'جمع', 'سبت'];
 
-export function CustomDatePicker({ value, onChange, label, placeholder = 'اختر التاريخ' }: CustomDatePickerProps) {
+export function CustomDatePicker({ 
+  value, 
+  onChange, 
+  label, 
+  placeholder = 'اختر التاريخ', 
+  className = 'w-44',
+  dropdownDirection = 'down'
+}: CustomDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [tempInput, setTempInput] = useState(value || '');
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setTempInput(value || '');
+    }
+  }, [value, isFocused]);
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const converted = e.target.value
+      .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1632))
+      .replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1776));
+    
+    const clean = converted.replace(/[^0-9\-/]/g, '');
+    setTempInput(clean);
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(clean)) {
+      const date = new Date(clean);
+      if (!isNaN(date.getTime())) {
+        onChange(clean);
+      }
+    }
+  };
+
+  const handleTextBlur = () => {
+    setIsFocused(false);
+    if (!tempInput) {
+      onChange('');
+      return;
+    }
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(tempInput)) {
+      const d = new Date(tempInput);
+      if (!isNaN(d.getTime())) {
+        onChange(tempInput);
+        return;
+      }
+    }
+
+    const matchDMY = tempInput.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+    if (matchDMY) {
+      const [_, d, m, y] = matchDMY;
+      const formatted = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      const date = new Date(formatted);
+      if (!isNaN(date.getTime())) {
+        onChange(formatted);
+        return;
+      }
+    }
+
+    const matchYMD = tempInput.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+    if (matchYMD) {
+      const [_, y, m, d] = matchYMD;
+      const formatted = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      const date = new Date(formatted);
+      if (!isNaN(date.getTime())) {
+        onChange(formatted);
+        return;
+      }
+    }
+
+    setTempInput(value || '');
+  };
 
   // تاريخ العرض الحالي في الكالندر
   const [currentDate, setCurrentDate] = useState(() => {
@@ -137,27 +210,39 @@ export function CustomDatePicker({ value, onChange, label, placeholder = 'اخت
     <div ref={containerRef} className="relative inline-block text-right">
       {/* حقل الإدخال المنشط */}
       <div 
-        onClick={() => setIsOpen(!isOpen)}
-        className="bg-white border border-[#E7DCC2] hover:border-[#E7A537]/50 rounded-[12px] px-3.5 py-2.5 text-xs outline-none transition-all duration-200 text-slate-700 font-arabic cursor-pointer shadow-sm flex items-center justify-between gap-3 w-44 hover:shadow-md select-none"
+        onClick={() => setIsOpen(true)}
+        className={`bg-white border border-[#E7DCC2] hover:border-[#E7A537]/50 rounded-[12px] px-3.5 py-2.5 text-xs outline-none transition-all duration-200 text-slate-700 font-arabic cursor-pointer shadow-sm flex items-center justify-between gap-3 hover:shadow-md select-none ${className}`}
       >
-        <div className="flex items-center gap-2 truncate">
+        <div className="flex items-center gap-2 truncate flex-grow">
           <CalendarIcon className="w-4 h-4 text-amber shrink-0" />
-          <span className={value ? 'text-slate-800 font-bold' : 'text-slate-400'}>
-            {getFormattedDisplay() || placeholder}
-          </span>
+          <input
+            type="text"
+            value={isFocused ? tempInput : (getFormattedDisplay() || '')}
+            placeholder={placeholder}
+            onChange={handleTextChange}
+            onFocus={() => {
+              setIsFocused(true);
+              setIsOpen(true);
+            }}
+            onBlur={handleTextBlur}
+            className={`bg-transparent border-none p-0 outline-none text-xs focus:ring-0 w-full text-right ${
+              value ? 'text-slate-800 font-bold' : 'text-slate-400'
+            }`}
+            dir={isFocused ? 'ltr' : 'rtl'}
+          />
         </div>
         {value && (
           <button 
             type="button" 
             onClick={clearDate}
-            className="p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-ink"
+            className="p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-ink shrink-0"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
-      <span className="absolute -top-2.5 right-3 bg-[#F6F1E4] px-2 text-[9px] font-bold text-ink rounded-full border border-[#E7DCC2] select-none">
+      <span className="absolute -top-2.5 right-3 bg-white px-2 text-[9px] font-bold text-ink rounded-full border border-[#E7DCC2] select-none">
         {label}
       </span>
 
@@ -165,11 +250,15 @@ export function CustomDatePicker({ value, onChange, label, placeholder = 'اخت
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            initial={{ opacity: 0, y: dropdownDirection === 'up' ? -10 : 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            exit={{ opacity: 0, y: dropdownDirection === 'up' ? -10 : 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-30 mt-2 right-0 bg-white border border-slate-100 rounded-[20px] p-4 shadow-xl w-64 select-none animate-in fade-in slide-in-from-top-2 duration-150"
+            className={`absolute z-30 right-0 bg-white border border-slate-100 rounded-[20px] p-4 shadow-xl w-64 select-none animate-in fade-in duration-150 ${
+              dropdownDirection === 'up' 
+                ? 'bottom-full mb-2 slide-in-from-bottom-2' 
+                : 'top-full mt-2 slide-in-from-top-2'
+            }`}
             style={{ boxShadow: '0 10px 30px rgba(22, 35, 63, 0.12)' }}
           >
             {/* الهيدر العلوي للتحكم بالشهور */}
