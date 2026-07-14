@@ -184,7 +184,7 @@ export default function TestimonialsSection({ title: propTitle, subtitle: propSu
           {reviews.map((rev) => (
             <div
               key={rev.id}
-              className="bg-white rounded-card border border-paper-line p-6 shadow-card hover:border-ink-soft/40 hover:shadow-brand transition-all duration-300 flex flex-col justify-between text-right relative overflow-hidden group hover:-translate-y-1.5 min-w-[290px] md:min-w-0 snap-start shrink-0"
+              className="bg-white rounded-card border border-paper-line p-6 shadow-card hover:border-ink-soft/40 hover:shadow-brand transition-all duration-300 flex flex-col justify-between text-right relative overflow-hidden group hover:-translate-y-1.5 w-[85vw] max-w-[320px] md:w-auto snap-start shrink-0"
             >
               {/* Quote Mark Watermark */}
               <span className="absolute -top-3 -right-2 text-paper-line/30 font-serif text-[120px] select-none pointer-events-none group-hover:text-ink-soft/10 transition-colors duration-300 leading-none">
