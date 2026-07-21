@@ -3,7 +3,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import BoxDetailClient from './box-detail-client';
 import Link from 'next/link';
 
-export const revalidate = 1; // Cache package details page and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 interface BoxDetailPageProps {
   params: {

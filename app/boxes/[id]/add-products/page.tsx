@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { supabase, cachedFetch } from '@/lib/supabase';
 import AddProductsClient from './add-products-client';
 
-export const revalidate = 1;
+export const dynamic = 'force-dynamic';
 
 async function getBoxData(id: string) {
   return cachedFetch(`box-detail-data-${id}`, async () => {

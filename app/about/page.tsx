@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { getMockData } from '@/lib/mockData';
 
-export const revalidate = 1; // Cache about page and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 async function getAboutData() {
   try {

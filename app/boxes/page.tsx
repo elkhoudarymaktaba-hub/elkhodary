@@ -4,7 +4,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import { Package, ArrowLeft, GraduationCap, ChevronLeft } from 'lucide-react';
 import { getMockData } from '@/lib/mockData';
 
-export const revalidate = 1; // Cache packages list page and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 async function getBoxesData() {
   return cachedFetch('boxes-page-data', async () => {

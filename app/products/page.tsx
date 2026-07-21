@@ -2,7 +2,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import ProductsClient from './products-client';
 import { getMockData } from '@/lib/mockData';
 
-export const revalidate = 1; // Cache products catalog page and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 async function getProductsData() {
   return cachedFetch('products-page-data', async () => {

@@ -13,7 +13,7 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export const revalidate = 1; // Cache layout and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 const cairo = Cairo({
   subsets: ['arabic'],

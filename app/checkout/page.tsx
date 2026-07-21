@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import CheckoutClient from './checkout-client';
 
-export const revalidate = 1; // Cache checkout page and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 async function getShippingZones() {
   try {

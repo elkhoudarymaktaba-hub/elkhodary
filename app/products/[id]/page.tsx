@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
 
-export const revalidate = 1; // Cache product details page and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 interface ProductDetailPageProps {
   params: {

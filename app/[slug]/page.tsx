@@ -8,7 +8,7 @@ import BoxBuilderTeaser from '@/components/store/box-builder-teaser';
 import { Package, ArrowLeft, GraduationCap, ChevronLeft } from 'lucide-react';
 import { PageBlock, getMockData } from '@/lib/mockData';
 
-export const revalidate = 1; // Cache custom pages and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 async function getPageData(slug: string) {
   return cachedFetch(`page-data-${slug}`, async () => {

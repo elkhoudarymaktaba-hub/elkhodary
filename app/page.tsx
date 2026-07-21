@@ -30,7 +30,7 @@ function getStageLabel(stage: string) {
   }
 }
 
-export const revalidate = 1; // Cache homepage and revalidate every 1 second
+export const dynamic = 'force-dynamic';
 
 async function getHomeData() {
   return cachedFetch('home-page-data', async () => {
