@@ -125,17 +125,6 @@ function LoginContent() {
 
         </form>
 
-        {/* بيانات الدخول الافتراضية للتجربة */}
-        <div className="bg-[#FBEBCB]/30 rounded-[16px] border border-[#E7DCC2] p-4 mt-2">
-          <div className="flex items-center gap-2 text-xs font-bold text-ink mb-1.5">
-            <KeyRound className="w-4 h-4 text-amber" />
-            <span>بيانات الدخول الافتراضية (للمحاكاة):</span>
-          </div>
-          <div className="space-y-1 text-xs text-slate-600 font-arabic">
-            <p>البريد: <code className="bg-white px-1.5 py-0.5 rounded border font-english text-[#C9862A] select-all">admin@elkhodary.com</code></p>
-            <p>كلمة المرور: <code className="bg-white px-1.5 py-0.5 rounded border font-english text-[#C9862A] select-all">admin123</code></p>
-          </div>
-        </div>
 
       </div>
     </div>
