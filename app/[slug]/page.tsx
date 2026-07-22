@@ -22,16 +22,7 @@ async function getPageData(slug: string) {
       const dbPage = pageData && pageData.length > 0 ? pageData[0] : null;
       const mockPage = getMockData.pages().find(p => p.slug.toLowerCase() === slug.toLowerCase());
 
-      let useMock = !dbPage;
-      if (dbPage && mockPage) {
-        const dbTime = dbPage.updated_at ? new Date(dbPage.updated_at).getTime() : 0;
-        const mockTime = mockPage.updated_at ? new Date(mockPage.updated_at).getTime() : 0;
-        if (mockTime > dbTime) {
-          useMock = true;
-        }
-      }
-
-      return useMock ? mockPage : dbPage;
+      return dbPage || mockPage;
     } catch (error) {
       console.error('Error fetching dynamic page data:', error);
       return null;

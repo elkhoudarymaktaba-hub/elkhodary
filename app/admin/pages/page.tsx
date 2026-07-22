@@ -7,7 +7,7 @@ import {
   Sparkles, Layers, AlignLeft, Image as ImageIcon, LayoutGrid, AlertCircle,
   Star, Heart
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, clearFetchCache } from '@/lib/supabase';
 import { getMockData, saveMockData, PageData, PageBlock } from '@/lib/mockData';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -469,6 +469,7 @@ export default function PageBuilderPage() {
 
     try {
       const { error: dbError } = await supabase.from('pages').upsert(payload);
+      clearFetchCache();
       if (dbError) {
         console.warn('Supabase page save error (RLS):', dbError.message);
       }

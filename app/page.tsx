@@ -45,17 +45,7 @@ async function getHomeData() {
     const pagesRes = await pagesPromise;
     const dbPage = pagesRes.data && pagesRes.data.length > 0 ? pagesRes.data[0] : null;
     const mockHome = getMockData.pages().find(p => p.slug === 'home');
-
-    let useMock = !dbPage;
-    if (dbPage && mockHome) {
-      const dbTime = dbPage.updated_at ? new Date(dbPage.updated_at).getTime() : 0;
-      const mockTime = mockHome.updated_at ? new Date(mockHome.updated_at).getTime() : 0;
-      if (mockTime > dbTime) {
-        useMock = true;
-      }
-    }
-
-    const homePage = useMock ? mockHome : dbPage;
+    const homePage = dbPage || mockHome;
     let blocks: any[] = homePage?.blocks || [];
     blocks = [...blocks].sort((a, b) => a.order - b.order);
 
