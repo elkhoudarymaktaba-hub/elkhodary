@@ -468,7 +468,7 @@ export default function PageBuilderPage() {
     };
 
     try {
-      const { error: dbError } = await supabase.from('pages').upsert(payload);
+      const { error: dbError } = await supabase.from('pages').upsert(payload, { onConflict: 'slug' });
       clearFetchCache();
       if (dbError) {
         console.warn('Supabase page save error (RLS):', dbError.message);
