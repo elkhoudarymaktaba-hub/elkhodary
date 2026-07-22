@@ -179,50 +179,56 @@ export default function TestimonialsSection({ title: propTitle, subtitle: propSu
           </div>
         </div>
 
-        {/* Static Clean Grid Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-4" dir="rtl">
-          {reviews.map((rev) => (
-            <div
-              key={rev.id}
-              className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm hover:shadow-md hover:border-amber/40 transition-all duration-300 flex flex-col justify-between text-right relative overflow-hidden group hover:-translate-y-1"
-            >
-              {/* Quote Mark Watermark */}
-              <span className="absolute -top-3 -right-2 text-slate-100 font-serif text-[110px] select-none pointer-events-none group-hover:text-amber/10 transition-colors duration-300 leading-none">
-                “
-              </span>
+        {/* Animated Marquee Slider Strip */}
+        <div className="relative w-full overflow-hidden py-4 group" dir="rtl">
+          {/* Gradient Edges */}
+          <div className="absolute top-0 right-0 w-16 h-full bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
 
-              <div className="space-y-3.5 relative z-10">
-                {/* Stars */}
-                <div className="flex gap-0.5 justify-start">
-                  {Array.from({ length: 5 }).map((_, starIdx) => (
-                    <Star
-                      key={starIdx}
-                      className={`w-4 h-4 ${starIdx < rev.rating ? 'text-amber fill-amber' : 'text-slate-200'}`}
-                    />
-                  ))}
-                </div>
-
-                {/* Comment */}
-                <p className="text-xs sm:text-sm text-ink/90 leading-relaxed font-tajawal font-medium min-h-[60px]">
-                  {rev.comment}
-                </p>
-              </div>
-
-              {/* Footer */}
-              <div className="border-t border-slate-100 pt-3.5 mt-5 flex items-center justify-between z-10 relative">
-                <div className="text-right">
-                  <span className="font-extrabold text-xs sm:text-sm text-ink block font-arabic">{rev.customer_name}</span>
-                  {rev.city && (
-                    <span className="text-[11px] text-slate-400 block font-tajawal font-bold mt-0.5">{rev.city}</span>
-                  )}
-                </div>
-                
-                <span className="text-amber group-hover:scale-110 transition-transform">
-                  <Heart className="w-4.5 h-4.5 fill-current" />
+          <div className="flex gap-4 w-max animate-marquee group-hover:[animation-play-state:paused]">
+            {[...reviews, ...reviews, ...reviews, ...reviews].map((rev, idx) => (
+              <div
+                key={`${rev.id}-${idx}`}
+                className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md hover:border-amber/40 transition-all duration-300 flex flex-col justify-between text-right relative overflow-hidden w-[280px] sm:w-[320px] shrink-0"
+              >
+                {/* Quote Mark Watermark */}
+                <span className="absolute -top-3 -right-2 text-slate-100 font-serif text-[100px] select-none pointer-events-none leading-none">
+                  “
                 </span>
+
+                <div className="space-y-3 relative z-10">
+                  {/* Stars */}
+                  <div className="flex gap-0.5 justify-start">
+                    {Array.from({ length: 5 }).map((_, starIdx) => (
+                      <Star
+                        key={starIdx}
+                        className={`w-3.5 h-3.5 ${starIdx < rev.rating ? 'text-amber fill-amber' : 'text-slate-200'}`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Comment */}
+                  <p className="text-xs text-ink/90 leading-relaxed font-tajawal font-medium line-clamp-3 min-h-[52px]">
+                    {rev.comment}
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="border-t border-slate-100 pt-3 mt-4 flex items-center justify-between z-10 relative">
+                  <div className="text-right">
+                    <span className="font-extrabold text-xs text-ink block font-arabic">{rev.customer_name}</span>
+                    {rev.city && (
+                      <span className="text-[10px] text-slate-400 block font-tajawal font-bold">{rev.city}</span>
+                    )}
+                  </div>
+                  
+                  <span className="text-amber">
+                    <Heart className="w-4 h-4 fill-current" />
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
       </div>
