@@ -45,8 +45,17 @@ async function getHomeData() {
     const dbPage = pagesRes.data && pagesRes.data.length > 0 ? pagesRes.data[0] : null;
     const mockHome = getMockData.pages().find(p => p.slug === 'home');
     const homePage = dbPage || mockHome;
-    let blocks: any[] = homePage?.blocks || [];
-    blocks = [...blocks].sort((a, b) => a.order - b.order);
+    let rawBlocks: any = homePage?.blocks || [];
+    if (typeof rawBlocks === 'string') {
+      try {
+        rawBlocks = JSON.parse(rawBlocks);
+      } catch (e) {
+        console.error('Error parsing blocks JSON:', e);
+        rawBlocks = [];
+      }
+    }
+    let blocks: any[] = Array.isArray(rawBlocks) ? rawBlocks : [];
+    blocks = [...blocks].sort((a, b) => (a.order || 0) - (b.order || 0));
 
     const heroBlock = blocks.find((b: any) => b.type === 'hero');
     let selectedProductId = '';

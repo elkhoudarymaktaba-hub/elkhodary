@@ -109,7 +109,16 @@ export default async function DynamicCustomPage({ params }: PageProps) {
   const boxes = boxesData || [];
   const products = productsData || [];
 
-  const blocks = (pageData.blocks || []).sort((a: any, b: any) => a.order - b.order);
+  let rawBlocks: any = pageData?.blocks || [];
+  if (typeof rawBlocks === 'string') {
+    try {
+      rawBlocks = JSON.parse(rawBlocks);
+    } catch (e) {
+      console.error('Error parsing blocks in [slug]:', e);
+      rawBlocks = [];
+    }
+  }
+  const blocks = (Array.isArray(rawBlocks) ? rawBlocks : []).sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
 
   const getStageLabel = (stage: string) => {
     if (typeof window !== 'undefined') {

@@ -113,6 +113,13 @@ export default function PageBuilderPage() {
       dbPages.forEach((p: PageData) => {
         if (p && p.slug && p.slug !== 'products' && p.slug !== 'box-builder' && !seenSlugs.has(p.slug)) {
           seenSlugs.add(p.slug);
+          if (typeof p.blocks === 'string') {
+            try {
+              p.blocks = JSON.parse(p.blocks);
+            } catch (e) {
+              p.blocks = [];
+            }
+          }
           uniqueDbPages.push(p);
         }
       });
