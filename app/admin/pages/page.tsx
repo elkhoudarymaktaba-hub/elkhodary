@@ -206,8 +206,21 @@ export default function PageBuilderPage() {
     setSelectedPage(page);
     setPageTitle(page.title);
     
-    // تحميل الكتل الخاصة بالصفحة المحددة كما حفظها المستخدم تماماً دون فرض إدراج أي كتل محذوفة
     let currentBlocks = page.blocks ? [...page.blocks].filter(b => b.type !== 'box_builder_section') : [];
+
+    // لصفحة الباقات المدرسية: إذا كانت الصفحة فارغة، تفعيل قسم الباقات المدرسية الجاهزة تلقائياً
+    if (page.slug === 'packages' && currentBlocks.length === 0) {
+      currentBlocks.push({
+        id: `block-pkg-${Date.now()}`,
+        type: 'packages_section',
+        order: 1,
+        content: {
+          title: 'الباقات المتاحة للطلب',
+          subtitle: 'اختر الباقة المناسبة لمرحلة طفلك ووفر عناء شراء كل قطعة بمفردها',
+          ctaText: 'عرض كل الباقات'
+        }
+      });
+    }
 
     setBlocks(currentBlocks.sort((a, b) => a.order - b.order));
   };
@@ -2532,8 +2545,18 @@ export default function PageBuilderPage() {
           {/* محرر الكتل (Blocks Editor) */}
           <div className="space-y-4">
             <div className="flex items-center justify-between border-b pb-2 border-slate-100 flex-wrap gap-2">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-sm font-bold text-ink font-arabic pr-2 border-r-4 border-amber">كتل المحتوى المكوّنة للصفحة</span>
+                {selectedPage?.slug === 'packages' && (
+                  <button
+                    type="button"
+                    onClick={() => addBlock('packages_section')}
+                    className="px-3.5 py-1.5 bg-amber hover:bg-amber-deep text-white text-xs font-bold rounded-full transition-all font-arabic shadow-sm flex items-center gap-1.5"
+                    title="إضافة قسم الباقات المدرسية الجاهزة"
+                  >
+                    <span>🎒 + إضافة قسم الباقات الجاهزة</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => addBlock('products_row')}
