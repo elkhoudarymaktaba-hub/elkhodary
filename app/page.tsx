@@ -1,12 +1,21 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase, cachedFetch } from '@/lib/supabase';
+import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 import ProductCard from '@/components/store/product-card';
 import { Package, Sparkles, Smile, Truck, ShieldCheck, ArrowLeft, Layers } from 'lucide-react';
 import { PageBlock, getMockData } from '@/lib/mockData';
 import HeroCardWidget from '@/components/store/hero-card-widget';
 import BoxBuilderTeaser from '@/components/store/box-builder-teaser';
 import TestimonialsSection from '@/components/store/testimonials-section';
+
+// عميل Supabase مباشر بدون أي wrapper أو cache للصفحة الرئيسية
+function getDirectSupabase() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  if (!url || !key) return null;
+  return createClient(url, key, { global: { fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }) } });
+}
 
 function getStageLabel(stage: string) {
   if (typeof window !== 'undefined') {
@@ -34,8 +43,11 @@ export const dynamic = 'force-dynamic';
 
 async function getHomeData() {
   try {
-      // 1. Fetch pages and extract hero block first to know what to pre-fetch
-      const pagesPromise = supabase
+    // استخدام عميل Supabase مباشر لضمان قراءة البيانات الحية دون أي cache
+    const directSb = getDirectSupabase();
+    const sb = directSb || supabase;
+
+    const pagesPromise = sb
       .from('pages')
       .select('*')
       .eq('slug', 'home')
