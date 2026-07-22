@@ -234,6 +234,36 @@ export default function PageBuilderPage() {
       });
     }
 
+    // تأكيد وجود كتل الهيرو والباقات لصفحة الباقات المدرسية
+    if (page.slug === 'packages') {
+      if (!currentBlocks.some(b => b.type === 'hero')) {
+        currentBlocks.unshift({
+          id: `block-hero-packages`,
+          type: 'hero',
+          order: 1,
+          content: {
+            title: 'الباقات المدرسية الذكية',
+            subtitle: 'وفرنا لك كافة مستلزمات المراحل التعليمية المختلفة في باقات مجمعة ومحسوبة بدقة.',
+            imageUrl: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=1200&auto=format&fit=crop&q=80',
+            badge_text: 'عرض العودة للمدارس',
+            ctaText: 'تصفح الباقات الآن'
+          }
+        });
+      }
+      if (!currentBlocks.some(b => b.type === 'packages_section')) {
+        currentBlocks.push({
+          id: `block-pkg-${Date.now()}`,
+          type: 'packages_section',
+          order: 2,
+          content: {
+            title: 'الباقات المتاحة للطلب',
+            subtitle: 'اختر الباقة المناسبة لمرحلة طفلك ووفر عناء شراء كل قطعة بمفردها',
+            ctaText: 'عرض كل الباقات'
+          }
+        });
+      }
+    }
+
     setBlocks(currentBlocks.sort((a, b) => a.order - b.order));
   };
 
