@@ -209,7 +209,88 @@ export default async function BoxesPage() {
           )}
         </div>
 
+        {/* Dynamic Extra Blocks (e.g., custom products rows added via admin) */}
+        {pageData?.blocks && pageData.blocks.length > 0 && (
+          <div className="space-y-12 pt-8 border-t border-dashed border-paper-line">
+            {pageData.blocks
+              .filter((b: any) => b.type !== 'hero' && b.type !== 'packages_section')
+              .map((block: any) => {
+                if (block.type === 'products_row') {
+                  return <DynamicProductsRow key={block.id} block={block} />;
+                }
+                return null;
+              })}
+          </div>
+        )}
+
       </div>
     </div>
+  );
+}
+
+async function DynamicProductsRow({ block }: { block: any }) {
+  let query = supabase.from('products').select('*, categories(name)').eq('is_active', true);
+  if (block.content?.categoryId && block.content.categoryId !== 'all') {
+    query = query.eq('category_id', block.content.categoryId);
+  } else {
+    query = query.eq('is_featured', true);
+  }
+  const { data: rowProducts } = await query.limit(block.content?.limit || 8);
+  const products = rowProducts || [];
+  const isGrid = block.content?.layout !== 'scroll';
+
+  return (
+    <section className="py-8 bg-transparent">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="text-right border-r-4 border-amber pr-3" dir="rtl">
+          <h2 className="text-xl sm:text-2xl font-black text-ink">
+            {block.content?.title || 'منتجات مخصصة'}
+          </h2>
+          {block.content?.subtitle && (
+            <p className="text-ink-soft/60 text-xs sm:text-sm mt-1">
+              {block.content.subtitle}
+            </p>
+          )}
+        </div>
+
+        {products.length > 0 ? (
+          isGrid ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 gap-4" dir="rtl">
+              {products.map((product: any) => (
+                <div key={product.id} className="bg-white p-4 rounded-xl border border-paper-line shadow-sm space-y-2">
+                  <div className="aspect-square bg-slate-50 rounded-lg overflow-hidden relative">
+                    <img src={product.images?.[0] || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400'} className="w-full h-full object-cover" />
+                  </div>
+                  <h4 className="font-bold text-xs text-ink truncate">{product.name}</h4>
+                  <div className="flex justify-between items-center text-xs font-bold pt-1">
+                    <span className="text-coral-deep">{product.price_unit} ج.م</span>
+                    <Link href={`/products/${product.id}`} className="text-amber hover:underline text-[11px]">عرض التفاصيل</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar" dir="rtl">
+              {products.map((product: any) => (
+                <div key={product.id} className="min-w-[200px] max-w-[220px] bg-white p-4 rounded-xl border border-paper-line shadow-sm space-y-2 shrink-0">
+                  <div className="aspect-square bg-slate-50 rounded-lg overflow-hidden relative">
+                    <img src={product.images?.[0] || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400'} className="w-full h-full object-cover" />
+                  </div>
+                  <h4 className="font-bold text-xs text-ink truncate">{product.name}</h4>
+                  <div className="flex justify-between items-center text-xs font-bold pt-1">
+                    <span className="text-coral-deep">{product.price_unit} ج.م</span>
+                    <Link href={`/products/${product.id}`} className="text-amber hover:underline text-[11px]">عرض التفاصيل</Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        ) : (
+          <div className="bg-white rounded-card border border-paper-line p-8 text-center shadow-card">
+            <p className="text-ink-soft/60 text-xs font-arabic">لا توجد منتجات في هذا التصنيف حالياً.</p>
+          </div>
+        )}
+      </div>
+    </section>
   );
 }

@@ -206,63 +206,8 @@ export default function PageBuilderPage() {
     setSelectedPage(page);
     setPageTitle(page.title);
     
+    // تحميل الكتل الخاصة بالصفحة المحددة كما حفظها المستخدم تماماً دون فرض إدراج أي كتل محذوفة
     let currentBlocks = page.blocks ? [...page.blocks].filter(b => b.type !== 'box_builder_section') : [];
-    
-    // إدراج قسم التقييمات تلقائياً للصفحة الرئيسية إذا لم يكن مضافاً مسبقاً
-    if (page.slug === 'home' && !currentBlocks.some(b => b.type === 'testimonials')) {
-      currentBlocks.push({
-        id: `block-testimonials-${Date.now()}`,
-        type: 'testimonials',
-        order: currentBlocks.length + 1,
-        content: {
-          title: 'آراء عائلتنا الدافئة 🎓',
-          subtitle: 'قالوا عن مكتبة الخضري',
-          ctaText: 'شاركينا تقييمك وتجربتك معنا ✍️',
-          rev1_name: 'ندى أحمد',
-          rev1_city: 'دمياط',
-          rev1_comment: 'الهدية كانت لابني في أول يوم دراسي، ملامحه وهو بيفتح العلبة وتفاصيل الأدوات لا تُقدر بثمن، متشكرة جداً.',
-          rev1_rating: 5,
-          rev2_name: 'سارة محمد',
-          rev2_city: 'القاهرة',
-          rev2_comment: 'طلبت الكتب المدرسية والمستلزمات، خامات ممتازة وتغليف فاخر ومنسق جداً، والتوصيل سريع لباب البيت.',
-          rev2_rating: 5,
-          rev3_name: 'مريم محمود',
-          rev3_city: 'الإسكندرية',
-          rev3_comment: 'الباقة المدرسية تجنن والتفاصيل والفرز نظيفة جداً. الأدوات جودتها عالية والشغل يستاهل كل قرش بجد.',
-          rev3_rating: 5
-        }
-      });
-    }
-
-    // تأكيد وجود كتل الهيرو والباقات لصفحة الباقات المدرسية
-    if (page.slug === 'packages') {
-      if (!currentBlocks.some(b => b.type === 'hero')) {
-        currentBlocks.unshift({
-          id: `block-hero-packages`,
-          type: 'hero',
-          order: 1,
-          content: {
-            title: 'الباقات المدرسية الذكية',
-            subtitle: 'وفرنا لك كافة مستلزمات المراحل التعليمية المختلفة في باقات مجمعة ومحسوبة بدقة.',
-            imageUrl: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=1200&auto=format&fit=crop&q=80',
-            badge_text: 'عرض العودة للمدارس',
-            ctaText: 'تصفح الباقات الآن'
-          }
-        });
-      }
-      if (!currentBlocks.some(b => b.type === 'packages_section')) {
-        currentBlocks.push({
-          id: `block-pkg-${Date.now()}`,
-          type: 'packages_section',
-          order: 2,
-          content: {
-            title: 'الباقات المتاحة للطلب',
-            subtitle: 'اختر الباقة المناسبة لمرحلة طفلك ووفر عناء شراء كل قطعة بمفردها',
-            ctaText: 'عرض كل الباقات'
-          }
-        });
-      }
-    }
 
     setBlocks(currentBlocks.sort((a, b) => a.order - b.order));
   };
