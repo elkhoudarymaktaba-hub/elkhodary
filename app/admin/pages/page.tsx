@@ -205,8 +205,36 @@ export default function PageBuilderPage() {
   const handlePageSelect = (page: PageData) => {
     setSelectedPage(page);
     setPageTitle(page.title);
-    // استنساخ الكتل لتجنب تعديل الأصل مباشرة واستبعاد قسم صانع الصناديق
-    setBlocks(page.blocks ? [...page.blocks].filter(b => b.type !== 'box_builder_section').sort((a, b) => a.order - b.order) : []);
+    
+    let currentBlocks = page.blocks ? [...page.blocks].filter(b => b.type !== 'box_builder_section') : [];
+    
+    // إدراج قسم التقييمات تلقائياً للصفحة الرئيسية إذا لم يكن مضافاً مسبقاً
+    if (page.slug === 'home' && !currentBlocks.some(b => b.type === 'testimonials')) {
+      currentBlocks.push({
+        id: `block-testimonials-${Date.now()}`,
+        type: 'testimonials',
+        order: currentBlocks.length + 1,
+        content: {
+          title: 'آراء عائلتنا الدافئة 🎓',
+          subtitle: 'قالوا عن مكتبة الخضري',
+          ctaText: 'شاركينا تقييمك وتجربتك معنا ✍️',
+          rev1_name: 'ندى أحمد',
+          rev1_city: 'دمياط',
+          rev1_comment: 'الهدية كانت لابني في أول يوم دراسي، ملامحه وهو بيفتح العلبة وتفاصيل الأدوات لا تُقدر بثمن، متشكرة جداً.',
+          rev1_rating: 5,
+          rev2_name: 'سارة محمد',
+          rev2_city: 'القاهرة',
+          rev2_comment: 'طلبت الكتب المدرسية والمستلزمات، خامات ممتازة وتغليف فاخر ومنسق جداً، والتوصيل سريع لباب البيت.',
+          rev2_rating: 5,
+          rev3_name: 'مريم محمود',
+          rev3_city: 'الإسكندرية',
+          rev3_comment: 'الباقة المدرسية تجنن والتفاصيل والفرز نظيفة جداً. الأدوات جودتها عالية والشغل يستاهل كل قرش بجد.',
+          rev3_rating: 5
+        }
+      });
+    }
+
+    setBlocks(currentBlocks.sort((a, b) => a.order - b.order));
   };
 
   // إضافة كتلة جديدة من أي نوع
