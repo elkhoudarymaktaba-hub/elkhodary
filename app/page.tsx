@@ -39,6 +39,16 @@ function getStageLabel(stage: string) {
   }
 }
 
+function formatLink(url?: string, defaultUrl: string = '/'): string {
+  if (!url) return defaultUrl;
+  const trimmed = url.trim();
+  if (!trimmed) return defaultUrl;
+  if (trimmed.startsWith('/') || trimmed.startsWith('#') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+  return `/${trimmed}`;
+}
+
 export const dynamic = 'force-dynamic';
 
 async function getHomeData() {
@@ -266,7 +276,8 @@ async function DynamicProductsRow({ block }: { block: PageBlock }) {
   const isGrid = block.content.layout === 'grid';
 
   return (
-    <section className="py-16 bg-transparent border-b border-paper-line reveal animate-in fade-in duration-300">
+    <section id="products" className="py-16 bg-transparent border-b border-paper-line reveal animate-in fade-in duration-300 scroll-mt-10">
+      <div id="categories" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
           <h2 className="text-2xl sm:text-3xl font-black text-ink mb-1.5">
@@ -381,13 +392,13 @@ export default async function HomePage() {
 
                       <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                         <Link
-                          href={block.content.ctaLink || "/boxes"}
+                          href={formatLink(block.content.ctaLink, "/boxes")}
                           className="btn-primary w-full sm:w-auto px-8 py-4 text-center transition-all duration-300 shadow-glow hover:scale-105"
                         >
                           {block.content.ctaText || "تسوق الباقات المدرسية"}
                         </Link>
                         <Link
-                          href={block.content.cta2Link || "/products"}
+                          href={formatLink(block.content.cta2Link, "/products")}
                           className="btn-secondary w-full sm:w-auto px-8 py-4 text-center transition-all duration-300 hover:scale-105"
                         >
                           {block.content.cta2Text || "تصفح كافة المنتجات"}
@@ -455,7 +466,8 @@ export default async function HomePage() {
 
           case 'packages_section':
             return (
-              <section key={block.id} className="py-16 bg-transparent border-b border-paper-line reveal animate-in fade-in duration-300">
+              <section id="boxes" key={block.id} className="py-16 bg-transparent border-b border-paper-line reveal animate-in fade-in duration-300 scroll-mt-10">
+                <div id="packages" />
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10">
                     <div>
@@ -554,9 +566,10 @@ export default async function HomePage() {
 
           case 'testimonials':
             return (
-              <TestimonialsSection 
-                key={block.id} 
-                title={block.content.title}
+              <div id="testimonials" key={block.id} className="scroll-mt-10">
+                <div id="reviews" />
+                <TestimonialsSection 
+                  title={block.content.title}
                 subtitle={block.content.subtitle}
                 ctaText={block.content.ctaText}
                 reviews={[

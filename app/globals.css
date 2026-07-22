@@ -31,6 +31,10 @@
   --radius-input: 12px;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 @layer base {
   body {
     @apply bg-paper text-ink font-tajawal;
