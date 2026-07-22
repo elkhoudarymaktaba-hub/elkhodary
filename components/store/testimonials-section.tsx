@@ -179,54 +179,56 @@ export default function TestimonialsSection({ title: propTitle, subtitle: propSu
           </div>
         </div>
 
-        {/* Cards Grid */}
-        <div className="flex md:grid overflow-x-auto md:overflow-x-visible pb-4 md:pb-0 gap-6 pt-4 md:grid-cols-3 no-scrollbar snap-x" dir="rtl">
-          {reviews.map((rev) => (
-            <div
-              key={rev.id}
-              className="bg-white rounded-card border border-paper-line p-6 shadow-card hover:border-ink-soft/40 hover:shadow-brand transition-all duration-300 flex flex-col justify-between text-right relative overflow-hidden group hover:-translate-y-1.5 w-[85vw] max-w-[320px] md:w-auto snap-start shrink-0"
-            >
-              {/* Quote Mark Watermark */}
-              <span className="absolute -top-3 -right-2 text-paper-line/30 font-serif text-[120px] select-none pointer-events-none group-hover:text-ink-soft/10 transition-colors duration-300 leading-none">
-                “
-              </span>
+        {/* Animated Marquee Slider Strip */}
+        <div className="relative w-full overflow-hidden py-4 group" dir="rtl">
+          {/* Gradient Edges */}
+          <div className="absolute top-0 right-0 w-16 h-full bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+          <div className="absolute top-0 left-0 w-16 h-full bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
 
-              <div className="space-y-4 relative z-10">
-                {/* Stars */}
-                <div className="flex gap-0.5 justify-start">
-                  {Array.from({ length: 5 }).map((_, idx) => (
-                    <svg
-                      key={idx}
-                      className={`w-4 h-4 ${idx < rev.rating ? 'text-ink-soft fill-ink-soft' : 'text-paper-line'}`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-
-                {/* Comment */}
-                <p className="text-xs sm:text-sm text-ink-soft/90 leading-relaxed font-tajawal font-medium min-h-[64px]">
-                  {rev.comment}
-                </p>
-              </div>
-
-              {/* Footer */}
-              <div className="border-t border-paper-line pt-4 mt-6 flex items-center justify-between z-10 relative">
-                <div className="text-right">
-                  <span className="font-extrabold text-xs text-ink block font-arabic">{rev.customer_name}</span>
-                  {rev.city && (
-                    <span className="text-[10px] text-ink/50 block font-tajawal font-bold mt-0.5">{rev.city}</span>
-                  )}
-                </div>
-                
-                <span className="text-ink-soft hover:scale-110 active:scale-90 transition-transform cursor-pointer">
-                  <Heart className="w-4.5 h-4.5 fill-current" />
+          <div className="flex gap-4 w-max animate-marquee group-hover:[animation-play-state:paused]">
+            {[...reviews, ...reviews, ...reviews, ...reviews].map((rev, idx) => (
+              <div
+                key={`${rev.id}-${idx}`}
+                className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm hover:shadow-md hover:border-amber/40 transition-all duration-300 flex flex-col justify-between text-right relative overflow-hidden w-[280px] sm:w-[320px] shrink-0"
+              >
+                {/* Quote Mark Watermark */}
+                <span className="absolute -top-3 -right-2 text-slate-100 font-serif text-[100px] select-none pointer-events-none leading-none">
+                  “
                 </span>
+
+                <div className="space-y-3 relative z-10">
+                  {/* Stars */}
+                  <div className="flex gap-0.5 justify-start">
+                    {Array.from({ length: 5 }).map((_, starIdx) => (
+                      <Star
+                        key={starIdx}
+                        className={`w-3.5 h-3.5 ${starIdx < rev.rating ? 'text-amber fill-amber' : 'text-slate-200'}`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Comment */}
+                  <p className="text-xs text-ink/90 leading-relaxed font-tajawal font-medium line-clamp-3 min-h-[52px]">
+                    {rev.comment}
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="border-t border-slate-100 pt-3 mt-4 flex items-center justify-between z-10 relative">
+                  <div className="text-right">
+                    <span className="font-extrabold text-xs text-ink block font-arabic">{rev.customer_name}</span>
+                    {rev.city && (
+                      <span className="text-[10px] text-slate-400 block font-tajawal font-bold">{rev.city}</span>
+                    )}
+                  </div>
+                  
+                  <span className="text-amber">
+                    <Heart className="w-4 h-4 fill-current" />
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
       </div>

@@ -1872,7 +1872,37 @@ export default function PageBuilderPage() {
           </div>
         );
 
-      case 'testimonials':
+      case 'testimonials': {
+        const reviewsList: any[] = Array.isArray(block.content.reviewsList)
+          ? block.content.reviewsList
+          : [
+              { id: '1', customer_name: block.content.rev1_name ?? 'ندى أحمد', city: block.content.rev1_city ?? 'دمياط', comment: block.content.rev1_comment ?? 'الهدية كانت لابني في أول يوم دراسي، ملامحه وهو بيفتح العلبة وتفاصيل الأدوات لا تُقدر بثمن، متشكرة جداً.', rating: Number(block.content.rev1_rating ?? 5) },
+              { id: '2', customer_name: block.content.rev2_name ?? 'سارة محمد', city: block.content.rev2_city ?? 'القاهرة', comment: block.content.rev2_comment ?? 'طلبت الكتب المدرسية والمستلزمات، خامات ممتازة وتغليف فاخر ومنسق جداً، والتوصيل سريع لباب البيت.', rating: Number(block.content.rev2_rating ?? 5) },
+              { id: '3', customer_name: block.content.rev3_name ?? 'مريم محمود', city: block.content.rev3_city ?? 'الإسكندرية', comment: block.content.rev3_comment ?? 'الباقة المدرسية تجنن والتفاصيل والفرز نظيفة جداً. الأدوات جودتها عالية والشغل يستاهل كل قرش بجد.', rating: Number(block.content.rev3_rating ?? 5) }
+            ];
+
+        const handleUpdateReview = (idxToUpdate: number, field: string, val: any) => {
+          const newList = [...reviewsList];
+          newList[idxToUpdate] = { ...newList[idxToUpdate], [field]: val };
+          updateBlockContent(block.id, 'reviewsList', newList);
+        };
+
+        const handleAddReview = () => {
+          const newList = [...reviewsList, {
+            id: `rev-${Date.now()}`,
+            customer_name: '',
+            city: '',
+            comment: '',
+            rating: 5
+          }];
+          updateBlockContent(block.id, 'reviewsList', newList);
+        };
+
+        const handleDeleteReview = (idxToDelete: number) => {
+          const newList = reviewsList.filter((_, i) => i !== idxToDelete);
+          updateBlockContent(block.id, 'reviewsList', newList);
+        };
+
         return (
           <div className="p-6 bg-white rounded-card border border-paper-line shadow-card text-center space-y-6" dir="rtl">
             {/* Header edit */}
@@ -1881,10 +1911,10 @@ export default function PageBuilderPage() {
                 <input
                   type="text"
                   dir="rtl"
-                  value={block.content.subtitle || 'قالوا عن مكتبة الخضري'}
+                  value={block.content.subtitle ?? ''}
                   onChange={(e) => updateBlockContent(block.id, 'subtitle', e.target.value)}
                   className="bg-transparent text-center border-b border-dashed border-amber outline-none focus:bg-amber-light/30 px-2 py-0.5 font-bold text-amber-deep"
-                  placeholder="العنوان الفرعي"
+                  placeholder="قالوا عن مكتبة الخضري"
                 />
               </span>
 
@@ -1892,10 +1922,10 @@ export default function PageBuilderPage() {
                 <input
                   type="text"
                   dir="rtl"
-                  value={block.content.title || 'آراء عائلتنا الدافئة 🎓'}
+                  value={block.content.title ?? ''}
                   onChange={(e) => updateBlockContent(block.id, 'title', e.target.value)}
                   className="w-full text-center text-xl sm:text-2xl font-black text-ink bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-amber"
-                  placeholder="العنوان الرئيسي"
+                  placeholder="آراء عائلتنا الدافئة 🎓"
                 />
               </div>
 
@@ -1903,52 +1933,78 @@ export default function PageBuilderPage() {
                 <input
                   type="text"
                   dir="rtl"
-                  value={block.content.ctaText || 'شاركينا تقييمك وتجربتك معنا ✍️'}
+                  value={block.content.ctaText ?? ''}
                   onChange={(e) => updateBlockContent(block.id, 'ctaText', e.target.value)}
                   className="inline-block text-center text-xs font-bold text-coral bg-coral-light/30 border border-coral/30 rounded-full px-4 py-1.5 outline-none focus:bg-white"
-                  placeholder="نص زر المشاركة والتقييم"
+                  placeholder="شاركينا تقييمك وتجربتك معنا ✍️"
                 />
               </div>
             </div>
 
-            {/* 3 Review Cards Visual Editing */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-              {[1, 2, 3].map((num) => {
-                const keyName = `rev${num}_name`;
-                const keyCity = `rev${num}_city`;
-                const keyComment = `rev${num}_comment`;
-                const keyRating = `rev${num}_rating`;
-                const ratingVal = Number(block.content[keyRating] || 5);
+            {/* Header Toolbar: Add new review button */}
+            <div className="flex items-center justify-between border-t border-slate-100 pt-4">
+              <span className="text-xs font-extrabold text-ink font-arabic">
+                تقييمات وآراء العملاء المعروضة في الشريط ({reviewsList.length}):
+              </span>
+              <button
+                type="button"
+                onClick={handleAddReview}
+                className="px-3.5 py-1.5 bg-amber hover:bg-amber-deep text-white text-xs font-bold rounded-full transition-all shadow-sm flex items-center gap-1 font-arabic"
+              >
+                <span>+ إضافة رأي عميل جديد</span>
+              </button>
+            </div>
+
+            {/* Dynamic Review Cards Visual Editing */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+              {reviewsList.map((rev, revIdx) => {
+                const ratingVal = Number(rev.rating || 5);
 
                 return (
                   <div
-                    key={num}
+                    key={rev.id || revIdx}
                     className="bg-slate-50 rounded-2xl border border-slate-200 p-4 text-right relative flex flex-col justify-between hover:border-amber/50 transition-all space-y-3"
                   >
-                    {/* Stars */}
-                    <div className="flex gap-1 justify-start">
-                      {Array.from({ length: 5 }).map((_, idx) => {
-                        const val = idx + 1;
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => updateBlockContent(block.id, keyRating, val)}
-                            className="hover:scale-110 transition-transform"
-                          >
-                            <Star className={`w-4 h-4 ${val <= ratingVal ? 'text-amber fill-amber' : 'text-slate-300'}`} />
-                          </button>
-                        );
-                      })}
+                    {/* Header bar: Stars & Delete button */}
+                    <div className="flex items-center justify-between">
+                      {/* Stars */}
+                      <div className="flex gap-1 justify-start">
+                        {Array.from({ length: 5 }).map((_, idx) => {
+                          const val = idx + 1;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => handleUpdateReview(revIdx, 'rating', val)}
+                              className="hover:scale-110 transition-transform"
+                            >
+                              <Star className={`w-4 h-4 ${val <= ratingVal ? 'text-amber fill-amber' : 'text-slate-300'}`} />
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Delete review button */}
+                      {reviewsList.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteReview(revIdx)}
+                          className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1 rounded-md transition-colors text-[10px] font-bold flex items-center gap-0.5"
+                          title="حذف هذا الرأي"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>حذف</span>
+                        </button>
+                      )}
                     </div>
 
                     {/* Comment text area */}
                     <textarea
                       rows={3}
                       dir="rtl"
-                      value={block.content[keyComment] || ''}
-                      onChange={(e) => updateBlockContent(block.id, keyComment, e.target.value)}
-                      placeholder={`رأي العميل ${num}...`}
+                      value={rev.comment ?? ''}
+                      onChange={(e) => handleUpdateReview(revIdx, 'comment', e.target.value)}
+                      placeholder={`رأي العميل ${revIdx + 1}...`}
                       className="w-full text-xs text-ink bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-amber resize-none leading-relaxed"
                     />
 
@@ -1959,8 +2015,8 @@ export default function PageBuilderPage() {
                         <input
                           type="text"
                           dir="rtl"
-                          value={block.content[keyName] || ''}
-                          onChange={(e) => updateBlockContent(block.id, keyName, e.target.value)}
+                          value={rev.customer_name ?? ''}
+                          onChange={(e) => handleUpdateReview(revIdx, 'customer_name', e.target.value)}
                           placeholder="الاسم"
                           className="w-full text-xs font-bold text-ink bg-white border border-slate-200 rounded-md px-2 py-1 focus:border-amber outline-none"
                         />
@@ -1970,8 +2026,8 @@ export default function PageBuilderPage() {
                         <input
                           type="text"
                           dir="rtl"
-                          value={block.content[keyCity] || ''}
-                          onChange={(e) => updateBlockContent(block.id, keyCity, e.target.value)}
+                          value={rev.city ?? ''}
+                          onChange={(e) => handleUpdateReview(revIdx, 'city', e.target.value)}
                           placeholder="المدينة"
                           className="w-full text-xs text-slate-500 bg-white border border-slate-200 rounded-md px-2 py-1 focus:border-amber outline-none"
                         />
@@ -1983,6 +2039,7 @@ export default function PageBuilderPage() {
             </div>
           </div>
         );
+      }
 
       default:
         return null;
