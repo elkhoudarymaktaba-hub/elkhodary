@@ -2665,15 +2665,6 @@ export default function PageBuilderPage() {
                             >
                               <ArrowDown className="w-3.5 h-3.5" />
                             </button>
-                            <div className="w-px h-3 bg-slate-200 mx-1" />
-                            <button
-                              type="button"
-                              onClick={() => removeBlock(block.id)}
-                              className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-bold text-rose-500 bg-rose-50 hover:bg-rose-500 hover:text-white rounded-md transition-all"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                              <span>حذف</span>
-                            </button>
                           </div>
                         </div>
                         
@@ -2730,16 +2721,6 @@ export default function PageBuilderPage() {
                           title="تحريك للأسفل"
                         >
                           <ArrowDown className="w-4 h-4" />
-                        </button>
-                        <div className="w-px h-4 bg-slate-200 mx-1" />
-                        <button
-                          type="button"
-                          onClick={() => removeBlock(block.id)}
-                          className="flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-rose-500 bg-rose-50 hover:bg-rose-500 hover:text-white rounded-[8px] transition-all"
-                          title="حذف وإزالة الكتلة"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                          <span>حذف</span>
                         </button>
                       </div>
                     </div>
