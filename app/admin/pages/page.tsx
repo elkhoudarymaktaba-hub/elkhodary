@@ -1872,6 +1872,118 @@ export default function PageBuilderPage() {
           </div>
         );
 
+      case 'testimonials':
+        return (
+          <div className="p-6 bg-white rounded-card border border-paper-line shadow-card text-center space-y-6" dir="rtl">
+            {/* Header edit */}
+            <div className="max-w-xl mx-auto space-y-3">
+              <span className="inline-block bg-amber-light/20 text-amber-deep text-xs font-bold px-3 py-1 rounded-full border border-amber/20">
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={block.content.subtitle || 'قالوا عن مكتبة الخضري'}
+                  onChange={(e) => updateBlockContent(block.id, 'subtitle', e.target.value)}
+                  className="bg-transparent text-center border-b border-dashed border-amber outline-none focus:bg-amber-light/30 px-2 py-0.5 font-bold text-amber-deep"
+                  placeholder="العنوان الفرعي"
+                />
+              </span>
+
+              <div>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={block.content.title || 'آراء عائلتنا الدافئة 🎓'}
+                  onChange={(e) => updateBlockContent(block.id, 'title', e.target.value)}
+                  className="w-full text-center text-xl sm:text-2xl font-black text-ink bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-amber"
+                  placeholder="العنوان الرئيسي"
+                />
+              </div>
+
+              <div>
+                <input
+                  type="text"
+                  dir="rtl"
+                  value={block.content.ctaText || 'شاركينا تقييمك وتجربتك معنا ✍️'}
+                  onChange={(e) => updateBlockContent(block.id, 'ctaText', e.target.value)}
+                  className="inline-block text-center text-xs font-bold text-coral bg-coral-light/30 border border-coral/30 rounded-full px-4 py-1.5 outline-none focus:bg-white"
+                  placeholder="نص زر المشاركة والتقييم"
+                />
+              </div>
+            </div>
+
+            {/* 3 Review Cards Visual Editing */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              {[1, 2, 3].map((num) => {
+                const keyName = `rev${num}_name`;
+                const keyCity = `rev${num}_city`;
+                const keyComment = `rev${num}_comment`;
+                const keyRating = `rev${num}_rating`;
+                const ratingVal = Number(block.content[keyRating] || 5);
+
+                return (
+                  <div
+                    key={num}
+                    className="bg-slate-50 rounded-2xl border border-slate-200 p-4 text-right relative flex flex-col justify-between hover:border-amber/50 transition-all space-y-3"
+                  >
+                    {/* Stars */}
+                    <div className="flex gap-1 justify-start">
+                      {Array.from({ length: 5 }).map((_, idx) => {
+                        const val = idx + 1;
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => updateBlockContent(block.id, keyRating, val)}
+                            className="hover:scale-110 transition-transform"
+                          >
+                            <Star className={`w-4 h-4 ${val <= ratingVal ? 'text-amber fill-amber' : 'text-slate-300'}`} />
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Comment text area */}
+                    <textarea
+                      rows={3}
+                      dir="rtl"
+                      value={block.content[keyComment] || ''}
+                      onChange={(e) => updateBlockContent(block.id, keyComment, e.target.value)}
+                      placeholder={`رأي العميل ${num}...`}
+                      className="w-full text-xs text-ink bg-white border border-slate-200 rounded-lg p-2 focus:outline-none focus:border-amber resize-none leading-relaxed"
+                    />
+
+                    {/* Reviewer name & city */}
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/80">
+                      <div>
+                        <label className="text-[9px] font-bold text-slate-400 block mb-0.5">اسم العميل:</label>
+                        <input
+                          type="text"
+                          dir="rtl"
+                          value={block.content[keyName] || ''}
+                          onChange={(e) => updateBlockContent(block.id, keyName, e.target.value)}
+                          placeholder="الاسم"
+                          className="w-full text-xs font-bold text-ink bg-white border border-slate-200 rounded-md px-2 py-1 focus:border-amber outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[9px] font-bold text-slate-400 block mb-0.5">المحافظة:</label>
+                        <input
+                          type="text"
+                          dir="rtl"
+                          value={block.content[keyCity] || ''}
+                          onChange={(e) => updateBlockContent(block.id, keyCity, e.target.value)}
+                          placeholder="المدينة"
+                          className="w-full text-xs text-slate-500 bg-white border border-slate-200 rounded-md px-2 py-1 focus:border-amber outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
