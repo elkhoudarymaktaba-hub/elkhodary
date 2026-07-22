@@ -102,104 +102,90 @@ export default function ProductCard({ product }: ProductCardProps) {
   const spineColor = spineColors[colorIndex];
 
   return (
-    <div className="group bg-white rounded-card overflow-hidden shadow-card border border-paper-line hover:border-amber/40 hover:shadow-brand transition-all duration-300 flex flex-col h-full relative hover:-translate-y-1.5">
-      
-      {/* Main product area */}
-      <div className="flex flex-col h-full w-full">
-        {/* Product Image Wrapper */}
-        <Link href={`/products/${product.id}`} className="relative block h-40 sm:h-48 overflow-hidden bg-slate-50/50 border-b border-paper-line">
-          <Image
-            src={mainImage}
-            alt={product.name}
-            fill
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 30vw, 20vw"
-            className="object-contain p-3 group-hover:scale-105 transition-transform duration-500"
-            priority={product.is_featured}
-          />
-          
-          {/* Category Badge */}
-          <span className="absolute top-2.5 left-2.5 bg-white/95 text-ink-soft text-[9px] font-bold px-2 py-0.5 rounded-full border border-paper-line shadow-sm">
-            {resolvedCategory}
+    <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-md hover:border-amber/50 transition-all duration-300 flex flex-col h-full relative hover:-translate-y-1">
+      {/* Product Image */}
+      <Link href={`/products/${product.id}`} className="relative block h-32 sm:h-36 overflow-hidden bg-slate-50/60 border-b border-slate-100 shrink-0">
+        <Image
+          src={mainImage}
+          alt={product.name}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
+          className="object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+          priority={product.is_featured}
+        />
+        
+        {/* Category Tag */}
+        <span className="absolute top-2 left-2 bg-white/90 backdrop-blur-sm text-slate-500 text-[8.5px] font-bold px-1.5 py-0.5 rounded-md border border-slate-200/60 shadow-2xs">
+          {resolvedCategory}
+        </span>
+
+        {/* Badge */}
+        {getProductBadge(product.badge) ? (
+          <span className={`absolute top-2 right-2 text-[8.5px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs z-10 border ${getProductBadge(product.badge)?.className}`}>
+            {getProductBadge(product.badge)?.text}
           </span>
+        ) : product.is_featured ? (
+          <span className="absolute top-2 right-2 bg-amber text-ink text-[8.5px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs z-10">
+            🔥 مميز
+          </span>
+        ) : null}
+      </Link>
 
-          {/* Featured / Custom Badge */}
-          {getProductBadge(product.badge) ? (
-            <span className={`absolute top-2.5 right-2.5 text-[9.5px] font-bold px-2 py-0.5 rounded-full shadow-sm z-30 border ${getProductBadge(product.badge)?.className}`}>
-              {getProductBadge(product.badge)?.text}
-            </span>
-          ) : product.is_featured ? (
-            <span className="absolute top-2.5 right-2.5 bg-coral text-white text-[9.5px] font-bold px-2 py-0.5 rounded-full shadow-sm z-30 animate-pulse">
-              مميز
-            </span>
-          ) : null}
-        </Link>
+      {/* Content Details */}
+      <div className="p-2.5 sm:p-3 flex flex-col flex-grow justify-between text-right" dir="rtl">
+        <div>
+          <Link href={`/products/${product.id}`} className="block group-hover:text-amber transition-colors mb-0.5">
+            <h3 className="font-extrabold text-xs sm:text-sm text-ink line-clamp-1 leading-snug">
+              {product.name}
+            </h3>
+          </Link>
 
-        {/* Content details */}
-        <div className="p-3.5 flex flex-col flex-grow justify-between">
-          <div>
-            <Link href={`/products/${product.id}`} className="block group-hover:text-coral transition-colors mb-1.5">
-              <h3 className="font-extrabold text-xs sm:text-sm text-ink line-clamp-1 leading-snug">
-                {product.name}
-              </h3>
-            </Link>
+          {product.description && (
+            <p className="text-slate-400 text-[10px] line-clamp-1 mb-2 leading-relaxed">
+              {product.description}
+            </p>
+          )}
+        </div>
 
-            {product.description && (
-              <p className="text-ink-soft/75 text-[11px] line-clamp-2 mb-3.5 leading-relaxed">
-                {product.description}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            {/* Dashed separator border */}
-            <div className="border-t border-dashed border-paper-line" />
-
-            {/* Pricing details */}
-            <div className="space-y-1 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="text-ink-soft/50 font-bold text-[10px]">سعر القطعة:</span>
-                <span className="text-coral-deep font-extrabold text-sm sm:text-base font-numbers">
-                  {product.price_unit} <span className="text-[10px] font-cairo font-normal text-ink-soft">ج.م</span>
-                </span>
-              </div>
-
-              {product.price_box ? (
-                <div className="flex items-center justify-between border-t border-slate-50 pt-1">
-                  <span className="text-ink-soft/50 font-bold text-[10px] flex items-center gap-1">
-                    <Box size={10} className="text-sage" /> سعر العلبة:
-                  </span>
-                  <span className="text-sage-deep font-extrabold text-xs sm:text-sm font-numbers">
-                    {product.price_box} <span className="text-[10px] font-cairo font-normal text-ink-soft">ج.م</span>
-                  </span>
-                </div>
-              ) : (
-                <div className="h-4" /> // Keep card heights aligned
-              )}
+        <div className="space-y-2 mt-auto">
+          {/* Pricing Row */}
+          <div className="flex items-center justify-between gap-1 pt-1.5 border-t border-slate-100">
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-xs sm:text-sm font-black text-amber-deep font-numbers">
+                {product.price_unit}
+              </span>
+              <span className="text-[9px] font-bold text-slate-400">ج.م</span>
             </div>
 
-            {/* Quick Add CTA */}
-            <button
-              onClick={handleQuickAdd}
-              disabled={added}
-              className={`w-full py-2 px-3 rounded-cta font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-300 border ${
-                added
-                  ? 'bg-emerald-500 border-emerald-500 text-white'
-                  : 'bg-white border-paper-line text-ink-soft hover:bg-ink hover:text-white hover:border-ink shadow-sm'
-              }`}
-            >
-              {added ? (
-                <>
-                  <Check size={12} />
-                  <span>تم الحفظ</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingCart size={12} className="text-amber" />
-                  <span>شراء سريع</span>
-                </>
-              )}
-            </button>
+            {product.price_box ? (
+              <span className="text-[9.5px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/50 px-1.5 py-0.5 rounded-md font-numbers">
+                العلبة {product.price_box} ج.م
+              </span>
+            ) : null}
           </div>
+
+          {/* Quick Add CTA */}
+          <button
+            onClick={handleQuickAdd}
+            disabled={added}
+            className={`w-full py-1.5 px-2 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-all duration-200 shadow-2xs ${
+              added
+                ? 'bg-emerald-600 text-white border border-emerald-600'
+                : 'bg-slate-50 border border-slate-200 text-ink hover:bg-amber hover:border-amber hover:text-white'
+            }`}
+          >
+            {added ? (
+              <>
+                <Check size={12} />
+                <span>تمت الإضافة</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={12} />
+                <span>أضف للسلة</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>
