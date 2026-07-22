@@ -11,23 +11,21 @@ import { PageBlock, getMockData } from '@/lib/mockData';
 export const dynamic = 'force-dynamic';
 
 async function getPageData(slug: string) {
-  return cachedFetch(`page-data-${slug}`, async () => {
-    try {
-      const { data: pageData } = await supabase
-        .from('pages')
-        .select('*')
-        .eq('slug', slug)
-        .limit(1);
+  try {
+    const { data: pageData } = await supabase
+      .from('pages')
+      .select('*')
+      .eq('slug', slug)
+      .limit(1);
 
-      const dbPage = pageData && pageData.length > 0 ? pageData[0] : null;
-      const mockPage = getMockData.pages().find(p => p.slug.toLowerCase() === slug.toLowerCase());
+    const dbPage = pageData && pageData.length > 0 ? pageData[0] : null;
+    const mockPage = getMockData.pages().find(p => p.slug.toLowerCase() === slug.toLowerCase());
 
-      return dbPage || mockPage;
-    } catch (error) {
-      console.error('Error fetching dynamic page data:', error);
-      return null;
-    }
-  }, 5000);
+    return dbPage || mockPage;
+  } catch (error) {
+    console.error('Error fetching dynamic page data:', error);
+    return null;
+  }
 }
 
 async function DynamicProductsRow({ block }: { block: PageBlock }) {

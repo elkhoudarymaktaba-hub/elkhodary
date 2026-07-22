@@ -33,8 +33,7 @@ function getStageLabel(stage: string) {
 export const dynamic = 'force-dynamic';
 
 async function getHomeData() {
-  return cachedFetch('home-page-data', async () => {
-    try {
+  try {
       // 1. Fetch pages and extract hero block first to know what to pre-fetch
       const pagesPromise = supabase
       .from('pages')
@@ -213,7 +212,6 @@ async function getHomeData() {
       blocks: []
     };
   }
- }, 5000);
 }
 
 
