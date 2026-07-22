@@ -534,79 +534,85 @@ export default function PageBuilderPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 py-8 px-6 bg-slate-50 rounded-[16px] border border-paper-line text-right items-center" dir="rtl">
             {/* Right side: Text Content */}
             <div className="lg:col-span-8 space-y-4">
-              <div>
-                <label className="block text-[9px] text-slate-400 mb-1">الشريط العلوي الصغير للكتلة:</label>
-                <div className="inline-flex items-center gap-2 bg-white border px-3 py-1 rounded-full text-[10px] font-bold text-ink-soft">
-                  <span className="w-1.5 h-1.5 rounded-full bg-sage animate-ping" />
-                  <span
-                    contentEditable
-                    suppressContentEditableWarning
-                    onInput={(e) => updateBlockContent(block.id, 'badge_text', e.currentTarget.innerText)}
-                    onBlur={(e) => updateBlockContent(block.id, 'badge_text', e.currentTarget.innerText)}
-                    className="outline-none focus:bg-amber/10 px-1 rounded border border-dashed border-slate-200"
-                  >
-                    {block.content.badge_text || 'عرض العودة للمدارس'}
-                  </span>
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-[9px] text-slate-400 mb-1">العنوان الرئيسي للبطل:</label>
-                <h1 
-                  contentEditable
-                  suppressContentEditableWarning
-                  onInput={(e) => updateBlockContent(block.id, 'title', e.currentTarget.innerText)}
-                  onBlur={(e) => updateBlockContent(block.id, 'title', e.currentTarget.innerText)}
-                  className="text-xl sm:text-2xl font-black text-ink leading-tight outline-none focus:bg-amber/10 p-1 rounded border border-dashed border-slate-200 hover:border-amber transition-colors w-full"
-                >
-                  {block.content.title || 'سهّلنا عليك التجهيز للمدرسة'}
-                </h1>
-              </div>
-
-              <div>
-                <label className="block text-[9px] text-slate-400 mb-1">الوصف الترحيبي:</label>
-                <p 
-                  contentEditable
-                  suppressContentEditableWarning
-                  onInput={(e) => updateBlockContent(block.id, 'subtitle', e.currentTarget.innerText)}
-                  onBlur={(e) => updateBlockContent(block.id, 'subtitle', e.currentTarget.innerText)}
-                  className="text-xs text-ink-soft leading-relaxed outline-none focus:bg-amber/10 p-1 rounded border border-dashed border-slate-200 hover:border-amber transition-colors w-full"
-                >
-                  {block.content.subtitle || 'اكتشف باقات الأدوات المدرسية المخصصة لكل مرحلة.'}
-                </p>
-              </div>
-
-              {/* Editable CTA Buttons */}
-              <div className="flex flex-wrap gap-3 pt-2 justify-start items-center">
+              <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-200">
                 <div>
-                  <label className="block text-[8px] text-slate-400 mb-1">الزر الرئيسي (اضغط للتعديل):</label>
-                  <span 
-                    contentEditable
-                    suppressContentEditableWarning
-                    onInput={(e) => updateBlockContent(block.id, 'ctaText', e.currentTarget.innerText)}
-                    onBlur={(e) => updateBlockContent(block.id, 'ctaText', e.currentTarget.innerText)}
-                    className="inline-block px-4 py-2 bg-coral text-white text-xs font-bold rounded-cta outline-none focus:bg-amber/10 border border-dashed border-transparent hover:border-white transition-colors cursor-text"
-                  >
-                    {block.content.ctaText || 'تصفح الآن'}
-                  </span>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">الشريط العلوي الصغير للكتلة:</label>
+                  <input
+                    type="text"
+                    value={block.content.badge_text ?? ''}
+                    onChange={(e) => updateBlockContent(block.id, 'badge_text', e.target.value)}
+                    placeholder="عرض العودة للمدارس"
+                    className="w-full px-3 py-1.5 border rounded-md text-xs bg-slate-50 focus:bg-white focus:border-amber outline-none font-bold text-ink"
+                  />
                 </div>
+                
                 <div>
-                  <label className="block text-[8px] text-slate-400 mb-1">الزر الثانوي (اضغط للتعديل):</label>
-                  <span 
-                    contentEditable
-                    suppressContentEditableWarning
-                    onInput={(e) => updateBlockContent(block.id, 'cta2Text', e.currentTarget.innerText)}
-                    onBlur={(e) => updateBlockContent(block.id, 'cta2Text', e.currentTarget.innerText)}
-                    className="inline-block px-4 py-2 bg-white border text-ink-soft text-xs font-bold rounded-cta outline-none focus:bg-amber/10 border border-dashed border-transparent hover:border-slate-300 transition-colors cursor-text"
-                  >
-                    {block.content.cta2Text || 'صانع الصناديق'}
-                  </span>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">العنوان الرئيسي للبطل:</label>
+                  <input
+                    type="text"
+                    value={block.content.title ?? ''}
+                    onChange={(e) => updateBlockContent(block.id, 'title', e.target.value)}
+                    placeholder="مكتبة الخضري"
+                    className="w-full px-3 py-1.5 border rounded-md text-sm font-black text-ink bg-slate-50 focus:bg-white focus:border-amber outline-none"
+                  />
                 </div>
-              </div>
-              
-              <div className="mt-4 text-[10px] text-slate-400 bg-white/70 p-3 rounded-md border border-slate-100 flex flex-col gap-2 max-w-md">
-                <div>🔗 رابط الزر الرئيسي: <input className="px-2 py-0.5 border rounded text-[10px] w-48 font-english bg-white" value={block.content.ctaLink || ''} onChange={(e) => updateBlockContent(block.id, 'ctaLink', e.target.value)} /></div>
-                <div>🔗 رابط الزر الثانوي: <input className="px-2 py-0.5 border rounded text-[10px] w-48 font-english bg-white" value={block.content.cta2Link || ''} onChange={(e) => updateBlockContent(block.id, 'cta2Link', e.target.value)} /></div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 mb-1">الوصف الترحيبي:</label>
+                  <textarea
+                    rows={2}
+                    value={block.content.subtitle ?? ''}
+                    onChange={(e) => updateBlockContent(block.id, 'subtitle', e.target.value)}
+                    placeholder="اكتشف باقات الأدوات المدرسية المخصصة لكل مرحلة."
+                    className="w-full px-3 py-1.5 border rounded-md text-xs text-ink-soft bg-slate-50 focus:bg-white focus:border-amber outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 mb-1">نص الزر الرئيسي:</label>
+                    <input
+                      type="text"
+                      value={block.content.ctaText ?? ''}
+                      onChange={(e) => updateBlockContent(block.id, 'ctaText', e.target.value)}
+                      placeholder="تصفح الكتب والبوكسات"
+                      className="w-full px-3 py-1.5 border rounded-md text-xs font-bold text-coral bg-slate-50 focus:bg-white focus:border-amber outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 mb-1">نص الزر الثانوي:</label>
+                    <input
+                      type="text"
+                      value={block.content.cta2Text ?? ''}
+                      onChange={(e) => updateBlockContent(block.id, 'cta2Text', e.target.value)}
+                      placeholder="الباقات المدرسية"
+                      className="w-full px-3 py-1.5 border rounded-md text-xs font-bold text-ink-soft bg-slate-50 focus:bg-white focus:border-amber outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 mb-1">🔗 رابط الزر الرئيسي:</label>
+                    <input
+                      type="text"
+                      value={block.content.ctaLink ?? ''}
+                      onChange={(e) => updateBlockContent(block.id, 'ctaLink', e.target.value)}
+                      placeholder="/boxes"
+                      className="w-full px-3 py-1 border rounded-md text-[11px] font-english bg-slate-50 focus:bg-white focus:border-amber outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 mb-1">🔗 رابط الزر الثانوي:</label>
+                    <input
+                      type="text"
+                      value={block.content.cta2Link ?? ''}
+                      onChange={(e) => updateBlockContent(block.id, 'cta2Link', e.target.value)}
+                      placeholder="/products"
+                      className="w-full px-3 py-1 border rounded-md text-[11px] font-english bg-slate-50 focus:bg-white focus:border-amber outline-none"
+                    />
+                  </div>
+                </div>
               </div>
 
               {/* Dynamic Left Content Selector */}
