@@ -453,6 +453,11 @@ export default function PageBuilderPage() {
   // حفظ الصفحة في سوبابيس
   const handleSavePage = async () => {
     if (!selectedPage) return;
+
+    if (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     setSavingPage(true);
 
     const payload = {
@@ -529,6 +534,7 @@ export default function PageBuilderPage() {
                   <span
                     contentEditable
                     suppressContentEditableWarning
+                    onInput={(e) => updateBlockContent(block.id, 'badge_text', e.currentTarget.innerText)}
                     onBlur={(e) => updateBlockContent(block.id, 'badge_text', e.currentTarget.innerText)}
                     className="outline-none focus:bg-amber/10 px-1 rounded border border-dashed border-slate-200"
                   >
@@ -542,6 +548,7 @@ export default function PageBuilderPage() {
                 <h1 
                   contentEditable
                   suppressContentEditableWarning
+                  onInput={(e) => updateBlockContent(block.id, 'title', e.currentTarget.innerText)}
                   onBlur={(e) => updateBlockContent(block.id, 'title', e.currentTarget.innerText)}
                   className="text-xl sm:text-2xl font-black text-ink leading-tight outline-none focus:bg-amber/10 p-1 rounded border border-dashed border-slate-200 hover:border-amber transition-colors w-full"
                 >
@@ -554,6 +561,7 @@ export default function PageBuilderPage() {
                 <p 
                   contentEditable
                   suppressContentEditableWarning
+                  onInput={(e) => updateBlockContent(block.id, 'subtitle', e.currentTarget.innerText)}
                   onBlur={(e) => updateBlockContent(block.id, 'subtitle', e.currentTarget.innerText)}
                   className="text-xs text-ink-soft leading-relaxed outline-none focus:bg-amber/10 p-1 rounded border border-dashed border-slate-200 hover:border-amber transition-colors w-full"
                 >
@@ -568,6 +576,7 @@ export default function PageBuilderPage() {
                   <span 
                     contentEditable
                     suppressContentEditableWarning
+                    onInput={(e) => updateBlockContent(block.id, 'ctaText', e.currentTarget.innerText)}
                     onBlur={(e) => updateBlockContent(block.id, 'ctaText', e.currentTarget.innerText)}
                     className="inline-block px-4 py-2 bg-coral text-white text-xs font-bold rounded-cta outline-none focus:bg-amber/10 border border-dashed border-transparent hover:border-white transition-colors cursor-text"
                   >
@@ -579,6 +588,7 @@ export default function PageBuilderPage() {
                   <span 
                     contentEditable
                     suppressContentEditableWarning
+                    onInput={(e) => updateBlockContent(block.id, 'cta2Text', e.currentTarget.innerText)}
                     onBlur={(e) => updateBlockContent(block.id, 'cta2Text', e.currentTarget.innerText)}
                     className="inline-block px-4 py-2 bg-white border text-ink-soft text-xs font-bold rounded-cta outline-none focus:bg-amber/10 border border-dashed border-transparent hover:border-slate-300 transition-colors cursor-text"
                   >
