@@ -534,11 +534,12 @@ export default function PageBuilderPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 py-8 px-6 bg-slate-50 rounded-[16px] border border-paper-line text-right items-center" dir="rtl">
             {/* Right side: Text Content */}
             <div className="lg:col-span-8 space-y-4">
-              <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-200">
+              <div className="space-y-3 bg-white p-4 rounded-xl border border-slate-200" dir="rtl">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">الشريط العلوي الصغير للكتلة:</label>
                   <input
                     type="text"
+                    dir="rtl"
                     value={block.content.badge_text ?? ''}
                     onChange={(e) => updateBlockContent(block.id, 'badge_text', e.target.value)}
                     placeholder="عرض العودة للمدارس"
@@ -550,6 +551,7 @@ export default function PageBuilderPage() {
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">العنوان الرئيسي للبطل:</label>
                   <input
                     type="text"
+                    dir="rtl"
                     value={block.content.title ?? ''}
                     onChange={(e) => updateBlockContent(block.id, 'title', e.target.value)}
                     placeholder="مكتبة الخضري"
@@ -561,6 +563,7 @@ export default function PageBuilderPage() {
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">الوصف الترحيبي:</label>
                   <textarea
                     rows={2}
+                    dir="rtl"
                     value={block.content.subtitle ?? ''}
                     onChange={(e) => updateBlockContent(block.id, 'subtitle', e.target.value)}
                     placeholder="اكتشف باقات الأدوات المدرسية المخصصة لكل مرحلة."
@@ -573,6 +576,7 @@ export default function PageBuilderPage() {
                     <label className="block text-[10px] font-bold text-slate-600 mb-1">نص الزر الرئيسي:</label>
                     <input
                       type="text"
+                      dir="rtl"
                       value={block.content.ctaText ?? ''}
                       onChange={(e) => updateBlockContent(block.id, 'ctaText', e.target.value)}
                       placeholder="تصفح الكتب والبوكسات"
@@ -583,6 +587,7 @@ export default function PageBuilderPage() {
                     <label className="block text-[10px] font-bold text-slate-600 mb-1">نص الزر الثانوي:</label>
                     <input
                       type="text"
+                      dir="rtl"
                       value={block.content.cta2Text ?? ''}
                       onChange={(e) => updateBlockContent(block.id, 'cta2Text', e.target.value)}
                       placeholder="الباقات المدرسية"
@@ -596,6 +601,7 @@ export default function PageBuilderPage() {
                     <label className="block text-[10px] font-bold text-slate-600 mb-1">🔗 رابط الزر الرئيسي:</label>
                     <input
                       type="text"
+                      dir="ltr"
                       value={block.content.ctaLink ?? ''}
                       onChange={(e) => updateBlockContent(block.id, 'ctaLink', e.target.value)}
                       placeholder="/boxes"
@@ -606,6 +612,7 @@ export default function PageBuilderPage() {
                     <label className="block text-[10px] font-bold text-slate-600 mb-1">🔗 رابط الزر الثانوي:</label>
                     <input
                       type="text"
+                      dir="ltr"
                       value={block.content.cta2Link ?? ''}
                       onChange={(e) => updateBlockContent(block.id, 'cta2Link', e.target.value)}
                       placeholder="/products"
