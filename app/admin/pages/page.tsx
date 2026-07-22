@@ -2583,8 +2583,18 @@ export default function PageBuilderPage() {
 
           {/* محرر الكتل (Blocks Editor) */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between border-b pb-2 border-slate-100">
-              <span className="text-sm font-bold text-ink font-arabic pr-2 border-r-4 border-amber">كتل المحتوى المكوّنة للصفحة</span>
+            <div className="flex items-center justify-between border-b pb-2 border-slate-100 flex-wrap gap-2">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-ink font-arabic pr-2 border-r-4 border-amber">كتل المحتوى المكوّنة للصفحة</span>
+                <button
+                  type="button"
+                  onClick={() => addBlock('products_row')}
+                  className="px-3.5 py-1.5 bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white text-xs font-bold rounded-full transition-all font-arabic shadow-sm flex items-center gap-1.5"
+                  title="إضافة قسم جديد لعرض منتجات تصنيف مخصص"
+                >
+                  <span>📦 + إضافة قسم منتجات مخصص</span>
+                </button>
+              </div>
               
               {/* تبديل وضع التعديل (Editor Mode Toggle) */}
               <div className="flex items-center gap-1.5 bg-[#FBEBCB]/30 border border-[#E7DCC2]/60 p-1 rounded-full shadow-sm">
