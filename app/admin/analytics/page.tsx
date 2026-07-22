@@ -94,7 +94,7 @@ const CustomXAxisTick = (props: any) => {
           y={idx * 14}
           dy={12}
           textAnchor="middle"
-          fill="var(--ink)"
+          fill="#94A3B8"
           fontSize={10}
           fontWeight="bold"
           fontFamily="var(--font-cairo)"
@@ -435,8 +435,8 @@ export default function AnalyticsPage() {
             {mounted && salesProgressData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={salesProgressData}>
-                  <XAxis dataKey="date" stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} dy={5} />
-                  <YAxis stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} dx={-5} />
+                  <XAxis dataKey="date" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} dy={5} />
+                  <YAxis stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} dx={-5} />
                   <Tooltip formatter={(v) => [`${v} ج.م`, 'المبيعات']} />
                   <Line type="monotone" dataKey="revenue" stroke="#0073E6" strokeWidth={2.5} dot={{ r: 3 }} />
                 </LineChart>
@@ -494,9 +494,9 @@ export default function AnalyticsPage() {
                   data={topProductsData}
                   margin={{ right: 10, left: 20, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" horizontal={false} />
-                  <XAxis type="number" stroke="#6B7796" reversed={true} tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} />
-                  <YAxis dataKey="name" type="category" stroke="#6B7796" orientation="right" tick={<CustomYAxisTick />} width={180} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#94A3B8" opacity={0.25} horizontal={false} />
+                  <XAxis type="number" stroke="#94A3B8" reversed={true} tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} />
+                  <YAxis dataKey="name" type="category" stroke="#94A3B8" orientation="right" tick={<CustomYAxisTick />} width={180} />
                   <Tooltip formatter={(v) => [`${v} قطعة`, 'الكمية']} />
                   <Bar dataKey="qty" fill="#E7A537" radius={[8, 0, 0, 8]} />
                 </RechartsBarChart>
@@ -514,9 +514,9 @@ export default function AnalyticsPage() {
             {mounted && cartEventsData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsBarChart data={cartEventsData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" />
-                  <XAxis dataKey="name" stroke="#6B7796" height={55} interval={0} tick={<CustomXAxisTick />} />
-                  <YAxis stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#94A3B8" opacity={0.25} />
+                  <XAxis dataKey="name" stroke="#94A3B8" height={55} interval={0} tick={<CustomXAxisTick />} />
+                  <YAxis stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} />
                   <Tooltip formatter={(v) => [`${v} مرة`, 'إضافة للسلة']} />
                   <Bar dataKey="count" fill="#E4573F" radius={[8, 8, 0, 0]} />
                 </RechartsBarChart>
@@ -590,9 +590,9 @@ export default function AnalyticsPage() {
               govView === 'chart' ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsBarChart data={govOrdersData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" />
-                    <XAxis dataKey="governorate" stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} />
-                    <YAxis stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#94A3B8" opacity={0.25} />
+                    <XAxis dataKey="governorate" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} />
+                    <YAxis stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} />
                     <Tooltip formatter={(v) => [`${v} طلب`, 'الطلبات']} />
                     <Bar dataKey="orders" fill="#8B5CF6" radius={[6, 6, 0, 0]} />
                   </RechartsBarChart>
@@ -643,9 +643,9 @@ export default function AnalyticsPage() {
             {mounted && avgOrderOverTime.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={avgOrderOverTime}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E7DCC2" />
-                  <XAxis dataKey="date" stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} />
-                  <YAxis stroke="#6B7796" tick={{ fill: 'var(--ink)', fontSize: 12, fontWeight: 'bold' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#94A3B8" opacity={0.25} />
+                  <XAxis dataKey="date" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold', fontFamily: 'var(--font-cairo)' }} />
+                  <YAxis stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} />
                   <Tooltip formatter={(v) => [`${v} ج.م`, 'متوسط القيمة']} />
                   <Line type="linear" dataKey="avg" stroke="#E4573F" strokeWidth={2} dot={{ fill: '#E7A537' }} />
                 </LineChart>

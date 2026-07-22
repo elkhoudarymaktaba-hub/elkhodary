@@ -273,9 +273,9 @@ export default function DashboardHome() {
                       <stop offset="95%" stopColor="#E4573F" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="#E7DCC2" strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="date" stroke="#6B7796" tick={{ fill: '#0A1931', fontSize: 12, fontWeight: 'bold' }} dy={10} />
-                  <YAxis stroke="#6B7796" tick={{ fill: '#0A1931', fontSize: 12, fontWeight: 'bold' }} dx={-10} />
+                  <CartesianGrid stroke="#94A3B8" strokeDasharray="3 3" vertical={false} opacity={0.25} />
+                  <XAxis dataKey="date" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} dy={10} />
+                  <YAxis stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} dx={-10} />
                   <Tooltip 
                     contentStyle={{ borderRadius: '12px', border: '1px solid #E7DCC2', direction: 'rtl', textAlign: 'right', backgroundColor: '#FFFFFF' }} 
                     formatter={(val) => [`${val} ج.م`, 'المبيعات']}
