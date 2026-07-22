@@ -463,6 +463,7 @@ export default function PageBuilderPage() {
       slug: selectedPage.slug,
       title: pageTitle,
       blocks: blocks,
+      content: (selectedPage as any).content || '',
       updated_at: new Date().toISOString()
     };
 
