@@ -120,7 +120,7 @@ export default function PageBuilderPage() {
       const defaultPagesList = getMockData.pages();
       const requiredSlugs = ['home', 'about', 'packages', 'contact'];
       
-      // Merge in any required default pages that are missing or outdated in Supabase
+      // Merge in any required default pages that are missing in Supabase
       requiredSlugs.forEach(slug => {
         const dbPageIdx = pagesList.findIndex(p => p.slug === slug);
         const defaultPage = defaultPagesList.find(dp => dp.slug === slug);
@@ -130,11 +130,7 @@ export default function PageBuilderPage() {
             pagesList.push(JSON.parse(JSON.stringify(defaultPage)));
           } else {
             const dbPage = pagesList[dbPageIdx];
-            const dbTime = dbPage.updated_at ? new Date(dbPage.updated_at).getTime() : 0;
-            const mockTime = defaultPage.updated_at ? new Date(defaultPage.updated_at).getTime() : 0;
-            
-            // If mock has newer timestamp OR if the database page has no blocks, use the mock page
-            if (mockTime > dbTime || !dbPage.blocks || dbPage.blocks.length === 0) {
+            if (!dbPage.blocks || dbPage.blocks.length === 0) {
               pagesList[dbPageIdx] = JSON.parse(JSON.stringify(defaultPage));
             }
           }
