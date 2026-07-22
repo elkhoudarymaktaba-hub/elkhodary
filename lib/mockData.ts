@@ -493,9 +493,8 @@ export const defaultPages: PageData[] = [
       { id: 'b1', type: 'hero', order: 1, content: { title: 'مكتبة الخضري التعليمية', subtitle: 'بوابتكم لأفضل الكتب الدراسية والبوكسات التعليمية المتكاملة لجميع المراحل المدرسية في مصر.', imageUrl: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&auto=format&fit=crop&q=80', ctaText: 'تصفح الكتب والبوكسات', ctaLink: '#categories' } },
       { id: 'b2', type: 'stats', order: 2, content: { stat1_emoji: '🎓', stat1_number: '2000+', stat1_label: 'طالب سعيد', stat2_emoji: '📦', stat2_number: '1500+', stat2_label: 'بوكس تم تسليمه', stat3_emoji: '⭐', stat3_number: '4.9', stat3_label: 'تقييم العملاء' } },
       { id: 'b3', type: 'packages_section', order: 3, content: { title: 'باقات المراحل الدراسية الجاهزة', subtitle: 'اختر الباقة المناسبة لمرحلة طفلك ووفر عناء شراء كل قطعة بمفردها', ctaText: 'عرض كل الباقات' } },
-      { id: 'b4', type: 'box_builder_section', order: 4, content: { title: 'اصنع باقتك المدرسية المخصصة بنفسك!', subtitle: 'لا تتقيد بالباقات الجاهزة. اختر الكشكول، القلم، المسطرة، وكل ما تحتاجه بالكميات التي تناسبك تماماً، ودع الباقي علينا لتعبئته وتوصيله لباب منزلك.', ctaText: 'ابدأ تصميم صندوقك الآن' } },
-      { id: 'b5', type: 'products_row', order: 5, content: { title: 'المنتجات الأكثر طلباً', subtitle: 'أفضل الأدوات المكتبية والقرطاسية المدرسية بأعلى جودة وأفضل الأسعار', categoryId: 'all', limit: 8, layout: 'scroll' } },
-      { id: 'b6', type: 'text', order: 6, content: { text: 'نهدف في مكتبة الخضري إلى تيسير العملية التعليمية على أولياء الأمور والطلاب من خلال توفير باقات وبوكسات دراسية متكاملة لكل مرحلة تعليمية، تضم كافة الكتب الخارجية المعتمدة والأدوات المكتبية الأساسية بجودة ممتازة وسعر مخفض.' } },
+      { id: 'b5', type: 'products_row', order: 4, content: { title: 'المنتجات الأكثر طلباً', subtitle: 'أفضل الأدوات المكتبية والقرطاسية المدرسية بأعلى جودة وأفضل الأسعار', categoryId: 'all', limit: 8, layout: 'scroll' } },
+      { id: 'b6', type: 'text', order: 5, content: { text: 'نهدف في مكتبة الخضري إلى تيسير العملية التعليمية على أولياء الأمور والطلاب من خلال توفير باقات وبوكسات دراسية متكاملة لكل مرحلة تعليمية، تضم كافة الكتب الخارجية المعتمدة والأدوات المكتبية الأساسية بجودة ممتازة وسعر مخفض.' } },
     ]
   },
   {

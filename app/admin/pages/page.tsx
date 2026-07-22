@@ -205,8 +205,8 @@ export default function PageBuilderPage() {
   const handlePageSelect = (page: PageData) => {
     setSelectedPage(page);
     setPageTitle(page.title);
-    // استنساخ الكتل لتجنب تعديل الأصل مباشرة
-    setBlocks(page.blocks ? [...page.blocks].sort((a, b) => a.order - b.order) : []);
+    // استنساخ الكتل لتجنب تعديل الأصل مباشرة واستبعاد قسم صانع الصناديق
+    setBlocks(page.blocks ? [...page.blocks].filter(b => b.type !== 'box_builder_section').sort((a, b) => a.order - b.order) : []);
   };
 
   // إضافة كتلة جديدة من أي نوع
@@ -3299,13 +3299,6 @@ export default function PageBuilderPage() {
                     className="px-4 py-2 bg-white hover:bg-amber hover:text-white border border-slate-200 text-xs font-bold rounded-[24px] text-slate-700 transition-all font-arabic"
                   >
                     + قسم الباقات الجاهزة
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addBlock('box_builder_section')}
-                    className="px-4 py-2 bg-white hover:bg-amber hover:text-white border border-slate-200 text-xs font-bold rounded-[24px] text-slate-700 transition-all font-arabic"
-                  >
-                    + قسم صانع الصناديق
                   </button>
                   <button
                     type="button"
