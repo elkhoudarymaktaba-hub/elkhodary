@@ -570,35 +570,36 @@ export default async function HomePage() {
                 <div id="reviews" />
                 <TestimonialsSection 
                   title={block.content.title}
-                subtitle={block.content.subtitle}
-                ctaText={block.content.ctaText}
-                reviews={[
-                  {
-                    id: 'rev-1',
-                    customer_name: block.content.rev1_name || 'ندى أحمد',
-                    city: block.content.rev1_city || 'دمياط',
-                    rating: Number(block.content.rev1_rating || 5),
-                    comment: block.content.rev1_comment || 'الهدية كانت لابني في أول يوم دراسي، ملامحه وهو بيفتح العلبة وتفاصيل الأدوات لا تُقدر بثمن، متشكرة جداً.',
-                    created_at: new Date().toISOString()
-                  },
-                  {
-                    id: 'rev-2',
-                    customer_name: block.content.rev2_name || 'سارة محمد',
-                    city: block.content.rev2_city || 'القاهرة',
-                    rating: Number(block.content.rev2_rating || 5),
-                    comment: block.content.rev2_comment || 'طلبت الكتب المدرسية والمستلزمات، خامات ممتازة وتغليف فاخر ومنسق جداً، والتوصيل سريع لباب البيت.',
-                    created_at: new Date().toISOString()
-                  },
-                  {
-                    id: 'rev-3',
-                    customer_name: block.content.rev3_name || 'مريم محمود',
-                    city: block.content.rev3_city || 'الإسكندرية',
-                    rating: Number(block.content.rev3_rating || 5),
-                    comment: block.content.rev3_comment || 'الباقة المدرسية تجنن والتفاصيل والفرز نظيفة جداً. الأدوات جودتها عالية والشغل يستاهل كل قرش بجد.',
-                    created_at: new Date().toISOString()
-                  }
-                ]}
-              />
+                  subtitle={block.content.subtitle}
+                  ctaText={block.content.ctaText}
+                  reviews={[
+                    {
+                      id: 'rev-1',
+                      customer_name: block.content.rev1_name || 'ندى أحمد',
+                      city: block.content.rev1_city || 'دمياط',
+                      rating: Number(block.content.rev1_rating || 5),
+                      comment: block.content.rev1_comment || 'الهدية كانت لابني في أول يوم دراسي، ملامحه وهو بيفتح العلبة وتفاصيل الأدوات لا تُقدر بثمن، متشكرة جداً.',
+                      created_at: new Date().toISOString()
+                    },
+                    {
+                      id: 'rev-2',
+                      customer_name: block.content.rev2_name || 'سارة محمد',
+                      city: block.content.rev2_city || 'القاهرة',
+                      rating: Number(block.content.rev2_rating || 5),
+                      comment: block.content.rev2_comment || 'طلبت الكتب المدرسية والمستلزمات، خامات ممتازة وتغليف فاخر ومنسق جداً، والتوصيل سريع لباب البيت.',
+                      created_at: new Date().toISOString()
+                    },
+                    {
+                      id: 'rev-3',
+                      customer_name: block.content.rev3_name || 'مريم محمود',
+                      city: block.content.rev3_city || 'الإسكندرية',
+                      rating: Number(block.content.rev3_rating || 5),
+                      comment: block.content.rev3_comment || 'الباقة المدرسية تجنن والتفاصيل والفرز نظيفة جداً. الأدوات جودتها عالية والشغل يستاهل كل قرش بجد.',
+                      created_at: new Date().toISOString()
+                    }
+                  ]}
+                />
+              </div>
             );
 
           case 'products_row':
