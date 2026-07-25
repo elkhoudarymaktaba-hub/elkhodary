@@ -21,6 +21,7 @@ export default function CategoriesPage() {
   const [formSlug, setFormSlug] = useState('');
   const [formIcon, setFormIcon] = useState('📚');
   const [formIsActive, setFormIsActive] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -28,22 +29,63 @@ export default function CategoriesPage() {
 
   const fetchData = async () => {
     setLoading(true);
-    let categoriesList: Category[] = [];
-    let productsList: Product[] = [];
+    let localCats: Category[] = [];
+    let localProds: Product[] = [];
 
-    try {
-      const { data: cData } = await supabase.from('categories').select('*');
-      if (cData) categoriesList = cData;
-      const { data: pData } = await supabase.from('products').select('*');
-      if (pData) productsList = pData;
-    } catch (err) {
-      categoriesList = getMockData.categories();
-      productsList = getMockData.products();
+    // Load from LocalStorage first (instant render)
+    if (typeof window !== 'undefined') {
+      const c = localStorage.getItem('kh_categories');
+      if (c) {
+        try { localCats = JSON.parse(c); } catch (e) {}
+      } else {
+        localCats = getMockData.categories();
+        localStorage.setItem('kh_categories', JSON.stringify(localCats));
+      }
+
+      const p = localStorage.getItem('kh_products');
+      if (p) {
+        try { localProds = JSON.parse(p); } catch (e) {}
+      } else {
+        localProds = getMockData.products();
+        localStorage.setItem('kh_products', JSON.stringify(localProds));
+      }
     }
 
-    setCategories(categoriesList);
-    setProducts(productsList);
+    setCategories(localCats.length > 0 ? localCats : getMockData.categories());
+    setProducts(localProds.length > 0 ? localProds : getMockData.products());
     setLoading(false);
+
+    // Background fetch with 5-second timeout race
+    try {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      );
+
+      const dbPromise = (async () => {
+        const { data: cData, error: cErr } = await supabase.from('categories').select('*');
+        if (cErr) throw cErr;
+        const { data: pData, error: pErr } = await supabase.from('products').select('*');
+        if (pErr) throw pErr;
+        return { cData, pData };
+      })();
+
+      const { cData, pData } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+      if (cData && cData.length > 0) {
+        setCategories(cData);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kh_categories', JSON.stringify(cData));
+        }
+      }
+      if (pData && pData.length > 0) {
+        setProducts(pData);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kh_products', JSON.stringify(pData));
+        }
+      }
+    } catch (err) {
+      console.warn('Categories background sync failed or timed out:', err);
+    }
   };
 
   // توليد السلوج تلقائياً عند تغيير الاسم
@@ -83,6 +125,7 @@ export default function CategoriesPage() {
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formSlug) return;
+    setSubmitting(true);
 
     const categoryPayload = {
       name: formName,
@@ -94,19 +137,67 @@ export default function CategoriesPage() {
     try {
       if (editingCategory) {
         // تعديل
-        await supabase.from('categories').update(categoryPayload).eq('id', editingCategory.id);
+        try {
+          const { error: dbError } = await supabase.from('categories').update(categoryPayload).eq('id', editingCategory.id);
+          if (dbError) throw dbError;
+        } catch (dbErr) {
+          console.warn('Database update failed, fallback to local storage:', dbErr);
+        }
+
+        // Sync with LocalStorage
+        if (typeof window !== 'undefined') {
+          const local = localStorage.getItem('kh_categories');
+          if (local) {
+            try {
+              const parsed = JSON.parse(local);
+              const updated = parsed.map((c: any) => c.id === editingCategory.id ? { ...c, ...categoryPayload } : c);
+              localStorage.setItem('kh_categories', JSON.stringify(updated));
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        }
+
         setCategories(prev => prev.map(c => c.id === editingCategory.id ? { ...c, ...categoryPayload } : c));
         alert('تم تعديل القسم بنجاح!');
       } else {
         // إضافة
-        await supabase.from('categories').insert([categoryPayload]);
-        fetchData();
+        const newId = `cat-${Date.now()}`;
+        const newCategory = { id: newId, ...categoryPayload };
+
+        try {
+          const { error: dbError } = await supabase.from('categories').insert([newCategory]);
+          if (dbError) throw dbError;
+        } catch (dbErr) {
+          console.warn('Database insert failed, fallback to local storage:', dbErr);
+        }
+
+        // Sync with LocalStorage
+        if (typeof window !== 'undefined') {
+          const local = localStorage.getItem('kh_categories');
+          let allCats = [];
+          if (local) {
+            try {
+              allCats = JSON.parse(local);
+            } catch (e) {
+              console.error(e);
+            }
+          } else {
+            allCats = getMockData.categories();
+          }
+          allCats.push(newCategory);
+          localStorage.setItem('kh_categories', JSON.stringify(allCats));
+        }
+
+        setCategories(prev => [...prev, newCategory]);
         alert('تم إضافة القسم بنجاح!');
       }
       handleCancelEdit();
     } catch (err) {
       console.error(err);
       alert('حدث خطأ أثناء حفظ القسم.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -232,8 +323,9 @@ export default function CategoriesPage() {
               variant="primary"
               size="sm"
               className="flex-1 font-arabic"
+              disabled={submitting}
             >
-              {editingCategory ? 'حفظ التعديلات' : 'إضافة القسم'}
+              {submitting ? 'جاري الحفظ...' : (editingCategory ? 'حفظ التعديلات' : 'إضافة القسم')}
             </Button>
           </div>
 

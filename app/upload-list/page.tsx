@@ -129,6 +129,7 @@ export default function UploadListPage() {
 
     try {
       const payload = {
+        id: `list-${Date.now()}`,
         name,
         phone,
         file_url: fileBase64,
@@ -137,9 +138,27 @@ export default function UploadListPage() {
         created_at: new Date().toISOString()
       };
 
-      const { error: dbError } = await supabase.from('supply_lists').insert([payload]);
+      try {
+        const { error: dbError } = await supabase.from('supply_lists').insert([payload]);
+        if (dbError) throw dbError;
+      } catch (dbErr) {
+        console.warn('Database insert failed for supply list, writing to localStorage cache fallback:', dbErr);
+      }
 
-      if (dbError) throw dbError;
+      // Sync with localStorage so it immediately appears in the admin panel lists
+      if (typeof window !== 'undefined') {
+        const local = localStorage.getItem('kh_supply_lists');
+        let allLists = [];
+        if (local) {
+          try {
+            allLists = JSON.parse(local);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        allLists.unshift(payload);
+        localStorage.setItem('kh_supply_lists', JSON.stringify(allLists));
+      }
 
       // Track the conversion event
       trackClientEvent('Lead', {

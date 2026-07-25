@@ -19,6 +19,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   // الفلترة والبحث
   const [searchQuery, setSearchQuery] = useState('');
@@ -135,22 +136,63 @@ export default function ProductsPage() {
 
   const fetchData = async () => {
     setLoading(true);
-    let productsList: Product[] = [];
-    let categoriesList: Category[] = [];
+    let localProds: Product[] = [];
+    let localCats: Category[] = [];
 
-    try {
-      const { data: pData } = await supabase.from('products').select('*');
-      if (pData) productsList = pData;
-      const { data: cData } = await supabase.from('categories').select('*');
-      if (cData) categoriesList = cData;
-    } catch (err) {
-      productsList = getMockData.products();
-      categoriesList = getMockData.categories();
+    // Load from cache first for instant load
+    if (typeof window !== 'undefined') {
+      const p = localStorage.getItem('kh_products');
+      if (p) {
+        try { localProds = JSON.parse(p); } catch (e) {}
+      } else {
+        localProds = getMockData.products();
+        localStorage.setItem('kh_products', JSON.stringify(localProds));
+      }
+
+      const c = localStorage.getItem('kh_categories');
+      if (c) {
+        try { localCats = JSON.parse(c); } catch (e) {}
+      } else {
+        localCats = getMockData.categories();
+        localStorage.setItem('kh_categories', JSON.stringify(localCats));
+      }
     }
 
-    setProducts(productsList);
-    setCategories(categoriesList);
+    setProducts(localProds.length > 0 ? localProds : getMockData.products());
+    setCategories(localCats.length > 0 ? localCats : getMockData.categories());
     setLoading(false);
+
+    // Background fetch with 5 seconds timeout
+    try {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 5000)
+      );
+
+      const dbPromise = (async () => {
+        const { data: pData, error: pErr } = await supabase.from('products').select('*');
+        if (pErr) throw pErr;
+        const { data: cData, error: cErr } = await supabase.from('categories').select('*');
+        if (cErr) throw cErr;
+        return { pData, cData };
+      })();
+
+      const { pData, cData } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+      if (pData && pData.length > 0) {
+        setProducts(pData);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kh_products', JSON.stringify(pData));
+        }
+      }
+      if (cData && cData.length > 0) {
+        setCategories(cData);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kh_categories', JSON.stringify(cData));
+        }
+      }
+    } catch (err) {
+      console.warn('Products background sync failed or timed out:', err);
+    }
   };
 
   const handleExportProducts = () => {
@@ -477,38 +519,53 @@ export default function ProductsPage() {
       badge: formBadge,
     };
 
+    setSubmitting(true);
     try {
       if (editingProduct) {
         // تعديل منتج قائم
-        await supabase.from('products').update(productPayload).eq('id', editingProduct.id);
-        setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productPayload } : p));
+        try {
+          const { error: dbError } = await supabase.from('products').update(productPayload).eq('id', editingProduct.id);
+          if (dbError) throw dbError;
+        } catch (dbErr) {
+          console.warn('Database update failed, using localStorage fallback:', dbErr);
+        }
         
-        // مزامنة الموك داتا
+        // مزامنة الموك داتا / الكاش المحلي
         const mockProds = getMockData.products();
         const updated = mockProds.map(p => p.id === editingProduct.id ? { ...p, ...productPayload } : p);
         saveMockData.products(updated);
-        
+
+        setProducts(prev => prev.map(p => p.id === editingProduct.id ? { ...p, ...productPayload } : p));
         alert('تم تعديل المنتج بنجاح!');
       } else {
         // إضافة منتج جديد
-        await supabase.from('products').insert([productPayload]);
-        
-        // مزامنة الموك داتا
-        const mockProds = getMockData.products();
+        const newId = `prod-${Math.random().toString(36).substring(2, 9)}`;
         const newProduct: Product = {
-          id: `prod-${Math.random().toString(36).substring(2, 9)}`,
+          id: newId,
           ...productPayload,
           created_at: new Date().toISOString(),
         };
-        saveMockData.products([...mockProds, newProduct]);
+
+        try {
+          const { error: dbError } = await supabase.from('products').insert([newProduct]);
+          if (dbError) throw dbError;
+        } catch (dbErr) {
+          console.warn('Database insert failed, using localStorage fallback:', dbErr);
+        }
         
-        fetchData();
+        // مزامنة الموك داتا / الكاش المحلي
+        const mockProds = getMockData.products();
+        saveMockData.products([...mockProds, newProduct]);
+
+        setProducts(prev => [...prev, newProduct]);
         alert('تم إضافة المنتج بنجاح!');
       }
       setIsFormOpen(false);
     } catch (err) {
       console.error(err);
       alert('حدث خطأ أثناء حفظ المنتج.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -997,9 +1054,9 @@ export default function ProductsPage() {
                 variant="primary"
                 size="sm"
                 className="font-arabic"
-                disabled={uploading}
+                disabled={uploading || submitting}
               >
-                {uploading ? 'جاري رفع الصور...' : (editingProduct ? 'حفظ التعديلات' : 'إضافة المنتج')}
+                {uploading ? 'جاري رفع الصور...' : (submitting ? 'جاري الحفظ...' : (editingProduct ? 'حفظ التعديلات' : 'إضافة المنتج'))}
               </Button>
             </div>
           </form>

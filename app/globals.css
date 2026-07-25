@@ -309,15 +309,27 @@ body.admin-dark .border-\[\#E7DCC2\] {
 
 body.admin-dark input,
 body.admin-dark textarea,
-body.admin-dark select {
+body.admin-dark select,
+body.admin-dark input.bg-white,
+body.admin-dark textarea.bg-white,
+body.admin-dark select.bg-white,
+body.admin-dark .bg-white input,
+body.admin-dark .bg-white textarea,
+body.admin-dark .bg-white select {
   background-color: #0F172A !important;
   color: #F8FAFC !important;
-  border-color: var(--paper-line) !important;
+  border-color: #334155 !important; /* Slate 700 - visible border in dark mode */
 }
 
 body.admin-dark input:focus,
 body.admin-dark textarea:focus,
-body.admin-dark select:focus {
+body.admin-dark select:focus,
+body.admin-dark input.bg-white:focus,
+body.admin-dark textarea.bg-white:focus,
+body.admin-dark select.bg-white:focus,
+body.admin-dark .bg-white input:focus,
+body.admin-dark .bg-white textarea:focus,
+body.admin-dark .bg-white select:focus {
   border-color: var(--ink-soft) !important;
   box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15) !important;
 }
