@@ -148,19 +148,59 @@ export default function AnalyticsPage() {
   }, [period, startDate, endDate, orders, products]);
 
   const fetchData = async () => {
-    let ordersList: Order[] = [];
-    let productsList: Product[] = [];
-    try {
-      const { data: oData } = await supabase.from('orders').select('*');
-      if (oData) ordersList = oData;
-      const { data: pData } = await supabase.from('products').select('*');
-      if (pData) productsList = pData;
-    } catch (err) {
-      ordersList = getMockData.orders();
-      productsList = getMockData.products();
+    let localOrders: Order[] = [];
+    let localProds: Product[] = [];
+
+    // Load from cache first for instant render
+    if (typeof window !== 'undefined') {
+      const o = localStorage.getItem('kh_orders');
+      if (o) {
+        try { localOrders = JSON.parse(o); } catch (e) {}
+      } else {
+        localOrders = getMockData.orders();
+        localStorage.setItem('kh_orders', JSON.stringify(localOrders));
+      }
+
+      const p = localStorage.getItem('kh_products');
+      if (p) {
+        try { localProds = JSON.parse(p); } catch (e) {}
+      } else {
+        localProds = getMockData.products();
+        localStorage.setItem('kh_products', JSON.stringify(localProds));
+      }
     }
-    setOrders(ordersList);
-    setProducts(productsList);
+
+    setOrders(localOrders.length > 0 ? localOrders : getMockData.orders());
+    setProducts(localProds.length > 0 ? localProds : getMockData.products());
+
+    // Background fetch with 5 seconds timeout
+    try {
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000));
+      const dbPromise = (async () => {
+        const { data: oData, error: oErr } = await supabase.from('orders').select('*');
+        if (oErr) throw oErr;
+        const { data: pData, error: pErr } = await supabase.from('products').select('*');
+        if (pErr) throw pErr;
+        return { oData, pData };
+      })();
+
+      const { oData, pData } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+      if (oData && oData.length > 0) {
+        setOrders(oData);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kh_orders', JSON.stringify(oData));
+        }
+      }
+      if (pData && pData.length > 0) {
+        setProducts(pData);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kh_products', JSON.stringify(pData));
+        }
+      }
+    } catch (err) {
+      console.warn('Analytics background sync failed or timed out:', err);
+    }
   };
 
   const calculateAnalytics = () => {
