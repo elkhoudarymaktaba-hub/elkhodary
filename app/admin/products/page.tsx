@@ -785,14 +785,15 @@ export default function ProductsPage() {
 
             {/* تفاصيل إدارة الألوان إذا كانت مفعلة */}
             {formColorsEnabled && (
-                <span className="text-xs font-bold text-ink block font-arabic">قائمة الألوان المتاحة للمنتج:</span>
+              <div className="bg-slate-50/50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-[16px] p-4 space-y-3 text-right transition-colors">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block font-arabic">قائمة الألوان المتاحة للمنتج:</span>
                 
                 {formColors.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {formColors.map((color, index) => (
                       <span 
                         key={index}
-                        className="bg-white border border-[#E7DCC2] text-ink font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm"
+                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm"
                       >
                         <span>{color}</span>
                         <button 
@@ -816,7 +817,7 @@ export default function ProductsPage() {
                     placeholder="مثال: أحمر، أزرق، أسود..."
                     value={newColorInput}
                     onChange={(e) => setNewColorInput(e.target.value)}
-                    className="flex-grow px-3 py-1.5 bg-white border border-[#E7DCC2] text-xs rounded-[10px] focus:outline-none focus:border-amber font-arabic"
+                    className="flex-grow px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs rounded-[10px] focus:outline-none focus:border-[#2E7FD9] font-arabic text-slate-800 dark:text-slate-100"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
@@ -835,13 +836,13 @@ export default function ProductsPage() {
                         setNewColorInput('');
                       }
                     }}
-                    className="bg-amber hover:bg-amber-deep text-white font-bold text-xs px-4 py-1.5 rounded-[10px] transition-colors font-arabic"
+                    className="bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white font-bold text-xs px-4 py-1.5 rounded-[10px] transition-colors font-arabic"
                   >
                     إضافة
                   </button>
                 </div>
 
-                <div className="flex flex-wrap gap-1 items-center pt-1.5 border-t border-dashed border-slate-100">
+                <div className="flex flex-wrap gap-1 items-center pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-700">
                   <span className="text-[10px] text-slate-400 font-arabic ml-1">إضافة سريعة:</span>
                   {['أحمر', 'أزرق', 'أسود', 'أخضر', 'أصفر', 'رصاصي', 'برتقالي', 'بنفسجي', 'وردي', 'بني', 'أبيض'].map(c => (
                     <button
@@ -849,7 +850,7 @@ export default function ProductsPage() {
                       type="button"
                       disabled={formColors.includes(c)}
                       onClick={() => setFormColors(prev => [...prev, c])}
-                      className="text-[10px] bg-white border border-slate-200 text-slate-600 hover:bg-amber-light/35 disabled:opacity-50 px-2 py-0.5 rounded transition-all font-arabic font-bold"
+                      className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-[#2E7FD9]/10 disabled:opacity-50 px-2 py-0.5 rounded transition-all font-arabic font-bold"
                     >
                       {c}
                     </button>
