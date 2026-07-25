@@ -195,10 +195,10 @@ export function CustomDatePicker({
         onClick={() => handleDaySelect(day)}
         className={`h-8 w-8 text-xs font-english font-bold rounded-full flex items-center justify-center transition-all ${
           isSelected 
-            ? 'bg-amber text-white shadow-md shadow-amber/30 font-black' 
+            ? 'bg-[#2E7FD9] text-white shadow-md font-black' 
             : isToday
-            ? 'border-2 border-ink text-ink font-black'
-            : 'text-slate-700 hover:bg-paper hover:text-ink'
+            ? 'border-2 border-[#2E7FD9] text-[#2E7FD9] font-black'
+            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
         }`}
       >
         {day}
@@ -211,10 +211,10 @@ export function CustomDatePicker({
       {/* حقل الإدخال المنشط */}
       <div 
         onClick={() => setIsOpen(true)}
-        className={`bg-white border border-[#E7DCC2] hover:border-[#E7A537]/50 rounded-[12px] px-3.5 py-2.5 text-xs outline-none transition-all duration-200 text-slate-700 font-arabic cursor-pointer shadow-sm flex items-center justify-between gap-3 hover:shadow-md select-none ${className}`}
+        className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-[#2E7FD9]/60 dark:hover:border-[#2E7FD9]/60 rounded-[12px] px-3.5 py-2 text-xs outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 font-arabic cursor-pointer shadow-sm flex items-center justify-between gap-2.5 hover:shadow-md select-none ${className}`}
       >
         <div className="flex items-center gap-2 truncate flex-grow">
-          <CalendarIcon className="w-4 h-4 text-amber shrink-0" />
+          <CalendarIcon className="w-4 h-4 text-[#2E7FD9] dark:text-[#2E7FD9] shrink-0" />
           <input
             type="text"
             value={isFocused ? tempInput : (getFormattedDisplay() || '')}
@@ -226,7 +226,7 @@ export function CustomDatePicker({
             }}
             onBlur={handleTextBlur}
             className={`bg-transparent border-none p-0 outline-none text-xs focus:ring-0 w-full text-right ${
-              value ? 'text-slate-800 font-bold' : 'text-slate-400'
+              value ? 'text-slate-800 dark:text-slate-100 font-bold' : 'text-slate-400 dark:text-slate-500'
             }`}
             dir={isFocused ? 'ltr' : 'rtl'}
           />
@@ -235,14 +235,14 @@ export function CustomDatePicker({
           <button 
             type="button" 
             onClick={clearDate}
-            className="p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-ink shrink-0"
+            className="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 shrink-0"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
-      <span className="absolute -top-2.5 right-3 bg-white px-2 text-[9px] font-bold text-ink rounded-full border border-[#E7DCC2] select-none">
+      <span className="absolute -top-2.5 right-3 bg-white dark:bg-slate-800 px-2 py-0.2 text-[9px] font-bold text-slate-700 dark:text-slate-200 rounded-full border border-slate-200 dark:border-slate-700 shadow-xs select-none">
         {label}
       </span>
 
@@ -254,25 +254,24 @@ export function CustomDatePicker({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: dropdownDirection === 'up' ? -10 : 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className={`absolute z-30 right-0 bg-white border border-slate-100 rounded-[20px] p-4 shadow-xl w-64 select-none animate-in fade-in duration-150 ${
+            className={`absolute z-30 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[20px] p-4 shadow-2xl w-64 select-none animate-in fade-in duration-150 ${
               dropdownDirection === 'up' 
                 ? 'bottom-full mb-2 slide-in-from-bottom-2' 
                 : 'top-full mt-2 slide-in-from-top-2'
             }`}
-            style={{ boxShadow: '0 10px 30px rgba(22, 35, 63, 0.12)' }}
           >
             {/* الهيدر العلوي للتحكم بالشهور */}
-            <div className="flex items-center justify-between mb-3 border-b border-slate-50 pb-2">
+            <div className="flex items-center justify-between mb-3 border-b border-slate-100 dark:border-slate-800 pb-2">
               <button 
                 type="button"
                 onClick={handlePrevMonth}
-                className="p-1 hover:bg-paper rounded-[8px] text-ink transition-colors"
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-[8px] text-slate-700 dark:text-slate-200 transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
               
               <div className="flex items-center gap-1.5 font-arabic">
-                 <span className="text-xs font-bold text-ink">
+                 <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
                    {arabicMonths[displayMonth]}
                  </span>
                  <select
@@ -281,10 +280,10 @@ export function CustomDatePicker({
                      const selectedYear = Number(e.target.value);
                      setCurrentDate(new Date(selectedYear, displayMonth, 1));
                    }}
-                   className="bg-transparent text-xs font-bold text-ink outline-none cursor-pointer border-none font-english focus:ring-0 p-0"
+                   className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-100 outline-none cursor-pointer border-none font-english focus:ring-0 p-0"
                  >
                    {Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - 10 + i).map(year => (
-                     <option key={year} value={year} className="bg-white text-slate-800 font-bold font-english">
+                     <option key={year} value={year} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold font-english">
                        {year}
                      </option>
                    ))}
@@ -294,7 +293,7 @@ export function CustomDatePicker({
               <button 
                 type="button"
                 onClick={handleNextMonth}
-                className="p-1 hover:bg-paper rounded-[8px] text-ink transition-colors"
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-[8px] text-slate-700 dark:text-slate-200 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -303,7 +302,7 @@ export function CustomDatePicker({
             {/* أيام الأسبوع */}
             <div className="grid grid-cols-7 gap-1 text-center mb-1">
               {weekDays.map((day) => (
-                <div key={day} className="text-[10px] font-bold text-slate-400 font-arabic py-1">
+                <div key={day} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-arabic py-1">
                   {day}
                 </div>
               ))}

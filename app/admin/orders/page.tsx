@@ -327,7 +327,7 @@ export default function OrdersPage() {
       </div>
 
       {/* 2. البحث والفلترة المتقدمة (Filters Bar) */}
-      <div className="bg-white p-5 rounded-b-[16px] shadow-premium border-x border-b border-[#E7DCC2] space-y-4">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-b-[16px] shadow-sm border-x border-b border-slate-200 dark:border-slate-800 space-y-4 transition-colors">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* حقل البحث */}
           <div className="relative md:col-span-2">
@@ -364,14 +364,14 @@ export default function OrdersPage() {
           <div className="flex gap-2">
             <button
               onClick={resetFilters}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-[12px] text-sm font-bold transition-all duration-200 font-arabic"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-[12px] text-sm font-bold transition-all duration-200 font-arabic"
             >
               <X className="w-4 h-4" />
               <span>تفريغ الفلاتر</span>
             </button>
             <button
               onClick={fetchOrders}
-              className="p-2.5 bg-amber-light hover:bg-amber/10 text-amber rounded-[12px] border border-amber/15 transition-all duration-200"
+              className="p-2.5 bg-[#2E7FD9]/10 hover:bg-[#2E7FD9]/20 text-[#2E7FD9] dark:text-[#2E7FD9] rounded-[12px] border border-[#2E7FD9]/20 transition-all duration-200"
               title="تحديث البيانات"
             >
               <RefreshCw className="w-5 h-5" />
@@ -380,15 +380,15 @@ export default function OrdersPage() {
         </div>
 
         {/* فلاتر تاريخ مخصصة مع اختيارات سريعة */}
-        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-600 bg-[#F6F1E4]/50 p-3.5 rounded-[16px] border border-[#E7DCC2]">
+        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-[16px] border border-slate-200/80 dark:border-slate-800/80 transition-colors">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-1.5">
-              <Calendar className="w-4.5 h-4.5 text-amber" />
-              <span className="font-bold font-arabic text-xs text-ink">نطاق تاريخ التسجيل:</span>
+              <Calendar className="w-4.5 h-4.5 text-[#2E7FD9]" />
+              <span className="font-bold font-arabic text-xs text-slate-800 dark:text-slate-100">نطاق تاريخ التسجيل:</span>
             </div>
 
             {/* أزرار المدة السريعة */}
-            <div className="flex flex-wrap gap-1 bg-[#F6F1E4] p-1 rounded-full border border-[#E7DCC2] shrink-0">
+            <div className="flex flex-wrap gap-1 bg-white dark:bg-slate-800 p-1 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
               {[
                 { id: 'all', label: 'الكل' },
                 { id: 'today', label: 'اليوم' },
@@ -403,8 +403,8 @@ export default function OrdersPage() {
                   onClick={() => handleDateRangeTypeChange(pill.id as any)}
                   className={`px-3 py-1 rounded-full text-[10px] font-bold font-arabic transition-all ${
                     dateRangeType === pill.id
-                      ? 'bg-amber text-white shadow-sm'
-                      : 'text-ink-soft hover:bg-slate-100'
+                      ? 'bg-[#2E7FD9] text-white shadow-sm font-extrabold'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/60'
                   }`}
                 >
                   {pill.label}
