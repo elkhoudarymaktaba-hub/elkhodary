@@ -496,10 +496,10 @@ export default function OrdersPage() {
       </div>
 
       {/* 3. جدول الطلبات (Orders Table Card) */}
-      <div className="bg-white rounded-[16px] shadow-premium border border-[#E7DCC2] overflow-hidden">
+      <div className="bg-white dark:bg-slate-900 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-4 text-ink">
-            <svg className="animate-spin h-8 w-8 text-amber" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <div className="py-20 flex flex-col items-center justify-center gap-4 text-ink dark:text-slate-100">
+            <svg className="animate-spin h-8 w-8 text-[#2E7FD9]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -509,7 +509,7 @@ export default function OrdersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm">
               <thead>
-                <tr className="bg-[#F6F1E4]/30 border-b border-[#E7DCC2] text-ink-soft font-arabic">
+                <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-arabic">
                   <th className="py-4 px-6 font-bold">رقم الطلب</th>
                   <th className="py-4 px-6 font-bold">اسم العميل</th>
                   <th className="py-4 px-6 font-bold">الهاتف</th>
@@ -521,33 +521,33 @@ export default function OrdersPage() {
                   <th className="py-4 px-6 font-bold text-center">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-[#E7DCC2]">
+              <tbody className="divide-y divide-dashed divide-slate-200 dark:divide-slate-800">
                 {paginatedOrders.map((order) => {
                   const productsSummary = order.items
                     .map(item => `${item.name} (${item.quantity})`)
                     .join(' - ');
 
                   return (
-                    <tr key={order.id} className="hover:bg-[#FBEBCB]/15 transition-colors group">
-                      <td className="py-4 px-6 font-bold font-english text-ink-soft text-xs">
+                    <tr key={order.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group">
+                      <td className="py-4 px-6 font-bold font-english text-[#2E7FD9] dark:text-[#5B9FE6] text-xs">
                         #{order.id}
                       </td>
-                      <td className="py-4 px-6 font-bold text-slate-800 font-arabic">
+                      <td className="py-4 px-6 font-bold text-slate-800 dark:text-slate-100 font-arabic">
                         {order.customer_name}
                       </td>
-                      <td className="py-4 px-6 font-semibold font-english text-slate-600">
+                      <td className="py-4 px-6 font-semibold font-english text-slate-600 dark:text-slate-300">
                         {order.customer_phone}
                       </td>
-                      <td className="py-4 px-6 font-arabic text-slate-600">
+                      <td className="py-4 px-6 font-arabic text-slate-600 dark:text-slate-300">
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-slate-400" />
                           {order.governorate}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-slate-500 font-arabic max-w-xs truncate" title={productsSummary}>
+                      <td className="py-4 px-6 text-slate-500 dark:text-slate-400 font-arabic max-w-xs truncate" title={productsSummary}>
                         {productsSummary}
                       </td>
-                      <td className="py-4 px-6 font-black text-coral font-english">
+                      <td className="py-4 px-6 font-black text-rose-600 dark:text-rose-400 font-english">
                         {order.total_amount} ج.م
                       </td>
                       <td className="py-4 px-6">
@@ -564,14 +564,14 @@ export default function OrdersPage() {
                           }}
                           className={`px-3 py-1.5 rounded-[12px] text-xs font-bold font-arabic focus:outline-none outline-none border cursor-pointer transition-colors ${statusColors[order.status]}`}
                         >
-                          <option value="new">جديد</option>
-                          <option value="confirmed">مؤكد</option>
-                          <option value="shipping">مع الشحن</option>
-                          <option value="delivered">تم التسليم</option>
-                          <option value="cancelled">ملغي</option>
+                          <option value="new" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">جديد</option>
+                          <option value="confirmed" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">مؤكد</option>
+                          <option value="shipping" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">مع الشحن</option>
+                          <option value="delivered" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">تم التسليم</option>
+                          <option value="cancelled" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">ملغي</option>
                         </select>
                       </td>
-                      <td className="py-4 px-6 text-xs text-slate-400 font-arabic">
+                      <td className="py-4 px-6 text-xs text-slate-400 dark:text-slate-400 font-arabic">
                         {new Date(order.created_at).toLocaleDateString('ar-EG', { dateStyle: 'medium' })}
                       </td>
                       <td className="py-4 px-6 text-center">
@@ -580,7 +580,7 @@ export default function OrdersPage() {
                             setSelectedOrder(order);
                             setIsDrawerOpen(true);
                           }}
-                          className="px-3 py-1.5 bg-amber-light text-amber hover:bg-amber hover:text-white rounded-[8px] text-xs font-bold transition-all duration-200 font-arabic flex items-center justify-center gap-1 mx-auto"
+                          className="px-3.5 py-1.5 bg-[#2E7FD9]/10 hover:bg-[#2E7FD9] text-[#2E7FD9] hover:text-white rounded-[8px] text-xs font-bold transition-all duration-200 font-arabic flex items-center justify-center gap-1.5 mx-auto"
                         >
                           <Eye className="w-4 h-4" />
                           <span>التفاصيل</span>

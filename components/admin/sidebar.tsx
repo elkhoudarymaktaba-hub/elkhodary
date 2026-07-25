@@ -50,8 +50,8 @@ export default function Sidebar() {
             📖
           </div>
           <div className="text-center">
-            <h1 className="font-bold text-lg font-arabic tracking-wide text-white">مكتبة الخضري</h1>
-            <p className="text-xs text-[#6B7796] font-arabic mt-0.5">لوحة التحكم الإدارية</p>
+            <h1 className="font-extrabold text-xl font-arabic tracking-wide text-amber-400 dark:text-amber-400 drop-shadow-sm">مكتبة الخضري</h1>
+            <p className="text-xs text-slate-300 dark:text-slate-300 font-arabic mt-1 font-bold">لوحة التحكم الإدارية</p>
           </div>
         </div>
 

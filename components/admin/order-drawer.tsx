@@ -847,10 +847,9 @@ export default function OrderDrawer({
 
         {/* الفوتر وأزرار الطباعة والتنبيهات */}
         <div className="p-4 border-t border-slate-100 bg-slate-50 grid grid-cols-2 gap-2 shrink-0">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="font-arabic text-xs py-2.5 flex items-center justify-center gap-1.5" 
+          <button 
+            type="button" 
+            className="font-arabic text-xs font-bold py-2.5 px-3 rounded-[12px] bg-slate-800 dark:bg-slate-800 text-white hover:bg-slate-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm border border-slate-700" 
             onClick={() => copyToClipboard(`
 الطلب #${order.id}
 العميل: ${order.customer_name}
@@ -860,52 +859,48 @@ export default function OrderDrawer({
 الإجمالي: ${order.total_amount} ج.م
             `, 'بيانات الشحن')}
           >
-            <Clipboard className="w-4 h-4" />
+            <Clipboard className="w-4 h-4 text-slate-300" />
             <span>نسخ البوليصة</span>
-          </Button>
+          </button>
 
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="font-arabic text-xs py-2.5 bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100 flex items-center justify-center gap-1.5"
+          <button 
+            type="button" 
+            className="font-arabic text-xs font-bold py-2.5 px-3 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 text-white transition-colors flex items-center justify-center gap-1.5 shadow-md border border-emerald-500"
             onClick={() => {
               const text = getWhatsAppMessage();
               window.open(`https://wa.me/2${order.customer_phone}?text=${text}`, '_blank');
             }}
           >
-            <MessageCircle className="w-4 h-4" />
-            <span>إرسال واتساب</span>
-          </Button>
+            <MessageCircle className="w-4 h-4 text-white" />
+            <span className="font-extrabold text-white">إرسال واتساب</span>
+          </button>
 
-          <Button 
-            variant="primary" 
-            size="sm" 
-            className="font-arabic text-xs py-2.5 flex items-center justify-center gap-1.5"
+          <button 
+            type="button" 
+            className="font-arabic text-xs font-bold py-2.5 px-3 rounded-[12px] bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white transition-colors flex items-center justify-center gap-1.5 shadow-sm"
             onClick={downloadInvoiceAsImage}
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 text-white" />
             <span>تنزيل كصورة</span>
-          </Button>
+          </button>
 
-          <Button 
-            variant="secondary" 
-            size="sm" 
-            className="font-arabic text-xs py-2.5 flex items-center justify-center gap-1.5"
+          <button 
+            type="button" 
+            className="font-arabic text-xs font-bold py-2.5 px-3 rounded-[12px] bg-slate-700 hover:bg-slate-600 text-white transition-colors flex items-center justify-center gap-1.5 shadow-sm border border-slate-600"
             onClick={printInvoiceAsPDF}
           >
-            <DollarSign className="w-4 h-4" />
+            <DollarSign className="w-4 h-4 text-white" />
             <span>طباعة PDF</span>
-          </Button>
+          </button>
 
-          <Button 
-            variant="primary" 
-            size="sm" 
-            className="col-span-2 font-arabic text-xs py-2.5 bg-amber hover:bg-amber-deep text-white border-amber hover:text-white flex items-center justify-center gap-1.5 shadow-sm"
+          <button 
+            type="button" 
+            className="col-span-2 font-arabic text-xs font-extrabold py-3 px-4 rounded-[12px] bg-amber-500 hover:bg-amber-600 text-slate-950 flex items-center justify-center gap-2 shadow-md transition-colors border border-amber-400"
             onClick={printShippingLabel}
           >
-            <Package className="w-4 h-4" />
+            <Package className="w-5 h-5 text-slate-950" />
             <span>طباعة بوليصة الشحن (A6)</span>
-          </Button>
+          </button>
         </div>
 
       </div>
