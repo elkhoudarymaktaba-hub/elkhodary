@@ -18,27 +18,31 @@ export default function AdminLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const checkAuth = async () => {
       try {
         const { data } = await supabase.auth.getSession();
         
         if (!data?.session && pathname !== '/admin/login') {
           router.replace('/admin/login');
-        } else {
+        } else if (isMounted) {
           setLoading(false);
         }
       } catch (err) {
         console.error('Error during admin layout checkAuth:', err);
         if (pathname !== '/admin/login') {
           router.replace('/admin/login');
-        } else {
+        } else if (isMounted) {
           setLoading(false);
         }
       }
     };
 
     checkAuth();
-  }, [pathname, router]);
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // استثناء صفحة تسجيل الدخول من هيكل اللي آوت العام (حتى لا يظهر الـ Sidebar هناك)
   if (pathname === '/admin/login') {

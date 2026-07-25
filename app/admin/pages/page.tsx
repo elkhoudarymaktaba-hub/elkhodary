@@ -101,105 +101,82 @@ export default function PageBuilderPage() {
   }, []);
 
   const fetchData = async () => {
-    setLoading(true);
     let pagesList: PageData[] = [];
     let categoriesList: any[] = [];
+    let boxesList: any[] = [];
+    let productsList: any[] = [];
 
-    try {
-      const { data } = await supabase.from('pages').select('*');
-      const dbPages = data || [];
-      const uniqueDbPages: PageData[] = [];
-      const seenSlugs = new Set<string>();
-      dbPages.forEach((p: PageData) => {
-        if (p && p.slug && p.slug !== 'products' && p.slug !== 'box-builder' && !seenSlugs.has(p.slug)) {
-          seenSlugs.add(p.slug);
-          if (typeof p.blocks === 'string') {
-            try {
-              p.blocks = JSON.parse(p.blocks);
-            } catch (e) {
-              p.blocks = [];
-            }
-          }
-          uniqueDbPages.push(p);
-        }
-      });
-      pagesList = uniqueDbPages;
-      const defaultPagesList = getMockData.pages();
-      const requiredSlugs = ['home', 'about', 'packages', 'contact'];
-      
-      // Merge in any required default pages that are missing in Supabase
-      requiredSlugs.forEach(slug => {
-        const dbPageIdx = pagesList.findIndex(p => p.slug === slug);
-        const defaultPage = defaultPagesList.find(dp => dp.slug === slug);
-        
-        if (defaultPage) {
-          if (dbPageIdx === -1) {
-            pagesList.push(JSON.parse(JSON.stringify(defaultPage)));
-          } else {
-            const dbPage = pagesList[dbPageIdx];
-            if (!dbPage.blocks || dbPage.blocks.length === 0) {
-              pagesList[dbPageIdx] = JSON.parse(JSON.stringify(defaultPage));
-            }
-          }
-        }
-      });
-      
-      // Sort pages by a logical order for the editor list
-      const slugOrder = ['home', 'packages', 'about', 'contact'];
-      pagesList.sort((a, b) => {
-        const indexA = slugOrder.indexOf(a.slug);
-        const indexB = slugOrder.indexOf(b.slug);
-        return (indexA !== -1 ? indexA : 99) - (indexB !== -1 ? indexB : 99);
-      });
-    } catch (err) {
-      pagesList = getMockData.pages();
+    // 1. Instant Cache Load
+    if (typeof window !== 'undefined') {
+      const p = localStorage.getItem('kh_pages');
+      if (p) { try { pagesList = JSON.parse(p); } catch (e) {} }
+      const c = localStorage.getItem('kh_categories');
+      if (c) { try { categoriesList = JSON.parse(c); } catch (e) {} }
+      const b = localStorage.getItem('kh_boxes');
+      if (b) { try { boxesList = JSON.parse(b); } catch (e) {} }
+      const pr = localStorage.getItem('kh_products');
+      if (pr) { try { productsList = JSON.parse(pr); } catch (e) {} }
     }
 
-    try {
-      const { data: catData } = await supabase.from('categories').select('id, name');
-      if (catData && catData.length > 0) {
-        categoriesList = catData;
-      } else {
-        categoriesList = getMockData.categories() || [];
-      }
-    } catch (err) {
-      categoriesList = getMockData.categories() || [];
-    }
+    if (pagesList.length === 0) pagesList = getMockData.pages();
+    if (categoriesList.length === 0) categoriesList = getMockData.categories();
+    if (boxesList.length === 0) boxesList = getMockData.boxes();
+    if (productsList.length === 0) productsList = getMockData.products();
+
+    const slugOrder = ['home', 'packages', 'products', 'about', 'contact'];
+    pagesList.sort((a, b) => {
+      const indexA = slugOrder.indexOf(a.slug);
+      const indexB = slugOrder.indexOf(b.slug);
+      return (indexA !== -1 ? indexA : 99) - (indexB !== -1 ? indexB : 99);
+    });
 
     setPages(pagesList);
     setCategories(categoriesList);
-
-    let boxesList: any[] = [];
-    try {
-      const { data: boxData } = await supabase.from('boxes').select('*').eq('is_active', true);
-      if (boxData && boxData.length > 0) {
-        boxesList = boxData;
-      } else {
-        boxesList = getMockData.boxes() || [];
-      }
-    } catch (err) {
-      boxesList = getMockData.boxes() || [];
-    }
     setBoxes(boxesList);
-
-    let productsList: any[] = [];
-    try {
-      const { data: prodData } = await supabase.from('products').select('*').eq('is_active', true);
-      if (prodData && prodData.length > 0) {
-        productsList = prodData;
-      } else {
-        productsList = getMockData.products() || [];
-      }
-    } catch (err) {
-      productsList = getMockData.products() || [];
-    }
     setProducts(productsList);
 
     if (pagesList.length > 0) {
-      // فتح الصفحة الأولى افتراضياً
       handlePageSelect(pagesList[0]);
     }
     setLoading(false);
+
+    // 2. Parallel Background Sync
+    try {
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 4000));
+      const dbPromise = Promise.all([
+        supabase.from('pages').select('*'),
+        supabase.from('categories').select('id, name'),
+        supabase.from('boxes').select('*').eq('is_active', true),
+        supabase.from('products').select('*').eq('is_active', true)
+      ]);
+
+      const [pRes, cRes, bRes, prRes] = await Promise.race([dbPromise, timeoutPromise]) as any[];
+
+      if (pRes?.data && pRes.data.length > 0) {
+        const fetchedPages = pRes.data;
+        fetchedPages.sort((a: any, b: any) => {
+          const indexA = slugOrder.indexOf(a.slug);
+          const indexB = slugOrder.indexOf(b.slug);
+          return (indexA !== -1 ? indexA : 99) - (indexB !== -1 ? indexB : 99);
+        });
+        setPages(fetchedPages);
+        if (typeof window !== 'undefined') localStorage.setItem('kh_pages', JSON.stringify(fetchedPages));
+      }
+      if (cRes?.data && cRes.data.length > 0) {
+        setCategories(cRes.data);
+        if (typeof window !== 'undefined') localStorage.setItem('kh_categories', JSON.stringify(cRes.data));
+      }
+      if (bRes?.data && bRes.data.length > 0) {
+        setBoxes(bRes.data);
+        if (typeof window !== 'undefined') localStorage.setItem('kh_boxes', JSON.stringify(bRes.data));
+      }
+      if (prRes?.data && prRes.data.length > 0) {
+        setProducts(prRes.data);
+        if (typeof window !== 'undefined') localStorage.setItem('kh_products', JSON.stringify(prRes.data));
+      }
+    } catch (err) {
+      console.warn('Pages background sync timeout:', err);
+    }
   };
 
   const handlePageSelect = (page: PageData) => {
