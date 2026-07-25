@@ -96,7 +96,6 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
     { name: getPageTitle('home', 'الرئيسية'), path: '/' },
     { name: getPageTitle('products', 'المنتجات'), path: '/products' },
     { name: getPageTitle('packages', 'الباقات المدرسية'), path: '/boxes' },
-    { name: 'ارفع قائمتك', path: '/upload-list' },
   ];
 
   // Append any user-created custom pages dynamically

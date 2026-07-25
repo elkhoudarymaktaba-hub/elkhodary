@@ -411,11 +411,85 @@ export const mockSupabase = {
 
 const actualSupabase = isSupabaseConfigured ? realSupabase! : (mockSupabase as any);
 
-// تصدير العميل الفعال مع تفريغ الكاش تلقائياً عند عمليات الكتابة
+// دالة ضغط وتحويل أي صورة مرفوعة على الموقع تلقائياً إلى صيغة WebP الخفيفة لتقليل الحجم وتسريع لوحة التحكم
+export async function compressImageToWebP(file: File, maxWidth = 1200, quality = 0.82): Promise<File> {
+  if (!file || !file.type || !file.type.startsWith('image/')) return file;
+  
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) {
+                const newName = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+                const compressedFile = new File([blob], newName, {
+                  type: 'image/webp',
+                  lastModified: Date.now(),
+                });
+                resolve(compressedFile);
+              } else {
+                resolve(file);
+              }
+            },
+            'image/webp',
+            quality
+          );
+        } else {
+          resolve(file);
+        }
+      };
+      img.onerror = () => resolve(file);
+    };
+    reader.onerror = () => resolve(file);
+  });
+}
+
+// تصدير العميل الفعال مع تفريغ الكاش تلقائياً وضغط الصور المرفوعة
 export const supabase = {
   ...actualSupabase,
   auth: actualSupabase.auth,
-  storage: actualSupabase.storage,
+  storage: {
+    from(bucket: string) {
+      const storageBuilder = actualSupabase.storage.from(bucket);
+      const origUpload = storageBuilder.upload;
+      if (origUpload) {
+        storageBuilder.upload = async function(path: string, file: any, options?: any) {
+          let fileToUpload = file;
+          if (typeof window !== 'undefined' && file instanceof File && file.type.startsWith('image/')) {
+            try {
+              fileToUpload = await compressImageToWebP(file);
+              if (!path.endsWith('.webp')) {
+                path = path.replace(/\.[^/.]+$/, '') + '.webp';
+              }
+            } catch (e) {
+              console.warn('Auto WebP compression fallback:', e);
+            }
+          }
+          return origUpload.call(this, path, fileToUpload, options);
+        };
+      }
+      return storageBuilder;
+    }
+  },
   from(table: string) {
     const builder = actualSupabase.from(table);
     

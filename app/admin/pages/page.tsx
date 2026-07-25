@@ -1000,6 +1000,17 @@ export default function PageBuilderPage() {
                   <label 
                     contentEditable
                     suppressContentEditableWarning
+                    onBlur={(e) => updateBlockContent(block.id, 'email_label', e.currentTarget.innerText)}
+                    className="text-[10px] font-bold text-ink outline-none focus:bg-amber/10 rounded block"
+                  >
+                    {block.content.email_label || 'البريد الإلكتروني (اختياري)'}
+                  </label>
+                  <div className="px-3 py-2 bg-slate-50 border rounded-md text-xs text-slate-400">مثال: user@example.com</div>
+                </div>
+                <div className="space-y-1">
+                  <label 
+                    contentEditable
+                    suppressContentEditableWarning
                     onBlur={(e) => updateBlockContent(block.id, 'message_label', e.currentTarget.innerText)}
                     className="text-[10px] font-bold text-ink outline-none focus:bg-amber/10 rounded block"
                   >

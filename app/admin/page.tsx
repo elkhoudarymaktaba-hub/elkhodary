@@ -62,22 +62,64 @@ export default function DashboardHome() {
     setMounted(true);
 
     const fetchData = async () => {
-      let ordersList: Order[] = [];
-      let shippingList: ShippingRate[] = [];
+      let localOrders: Order[] = [];
+      let localShipping: ShippingRate[] = [];
 
-      try {
-        const { data: oData } = await supabase.from('orders').select('*');
-        if (oData) ordersList = oData;
-        const { data: sData } = await supabase.from('shipping_rates').select('*');
-        if (sData) shippingList = sData;
-      } catch (err) {
-        ordersList = getMockData.orders();
-        shippingList = getMockData.shippingRates();
+      // 1. Load from cache first for instant render
+      if (typeof window !== 'undefined') {
+        const o = localStorage.getItem('kh_orders');
+        if (o) {
+          try { localOrders = JSON.parse(o); } catch (e) {}
+        } else {
+          localOrders = getMockData.orders();
+          localStorage.setItem('kh_orders', JSON.stringify(localOrders));
+        }
+
+        const s = localStorage.getItem('kh_shipping_rates');
+        if (s) {
+          try { localShipping = JSON.parse(s); } catch (e) {}
+        } else {
+          localShipping = getMockData.shippingRates();
+          localStorage.setItem('kh_shipping_rates', JSON.stringify(localShipping));
+        }
       }
 
-      setOrders(ordersList);
-      setShippingRates(shippingList);
-      calculateKPIs(ordersList);
+      const initialOrders = localOrders.length > 0 ? localOrders : getMockData.orders();
+      const initialShipping = localShipping.length > 0 ? localShipping : getMockData.shippingRates();
+
+      setOrders(initialOrders);
+      setShippingRates(initialShipping);
+      calculateKPIs(initialOrders);
+
+      // 2. Background sync with 5 seconds timeout
+      try {
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000));
+        const dbPromise = (async () => {
+          const { data: oData, error: oErr } = await supabase.from('orders').select('*');
+          if (oErr) throw oErr;
+          const { data: sData, error: sErr } = await supabase.from('shipping_rates').select('*');
+          if (sErr) throw sErr;
+          return { oData, sData };
+        })();
+
+        const { oData, sData } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+        if (oData && oData.length > 0) {
+          setOrders(oData);
+          calculateKPIs(oData);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('kh_orders', JSON.stringify(oData));
+          }
+        }
+        if (sData && sData.length > 0) {
+          setShippingRates(sData);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('kh_shipping_rates', JSON.stringify(sData));
+          }
+        }
+      } catch (err) {
+        console.warn('Dashboard background sync failed or timed out:', err);
+      }
     };
 
     fetchData();
@@ -165,6 +207,11 @@ export default function DashboardHome() {
     calculateKPIs(updated);
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status: newStatus as any });
+    }
+    
+    // Sync cache
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kh_orders', JSON.stringify(updated));
     }
   };
 

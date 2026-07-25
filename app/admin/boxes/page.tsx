@@ -700,40 +700,40 @@ function BoxFormPage({
   return (
     <div className="space-y-6 text-right" dir="rtl">
       {/* هيدر صفحة الفورم */}
-      <div className="bg-white p-5 rounded-[16px] shadow-premium border border-[#E7DCC2] flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 flex items-center justify-between transition-colors">
         <div>
-          <h3 className="text-lg font-bold text-ink font-arabic">
+          <h3 className="text-lg font-bold text-ink dark:text-slate-100 font-arabic">
             {editingBox ? 'تعديل حزمة البوكس المدرسي' : 'بناء بوكس تعليمي جديد متكامل'}
           </h3>
-          <p className="text-xs text-slate-400 font-arabic mt-1">تحديد المرحلة والمواد والسعر التنافسي للحزمة</p>
+          <p className="text-xs text-slate-400 dark:text-slate-400 font-arabic mt-1">تحديد المرحلة والمواد والسعر التنافسي للحزمة</p>
         </div>
-        <Button variant="outline" size="sm" className="font-arabic text-xs" onClick={onCancel}>
+        <Button variant="outline" size="sm" className="font-arabic text-xs dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800" onClick={onCancel}>
           العودة لقائمة البوكسات
         </Button>
       </div>
 
-      <div className="bg-white p-6 rounded-[16px] shadow-premium border border-[#E7DCC2]">
+      <div className="bg-white dark:bg-slate-900 p-6 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 transition-colors">
         <form onSubmit={handleSaveBox} className="space-y-5">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="اسم البوكس" placeholder="مثال: بوكس أولى ابتدائي الممتاز" value={formName} onChange={(e: any) => setFormName(e.target.value)} required />
             
             <div className="w-full flex flex-col gap-1.5 text-right">
-              <label className="text-sm font-semibold text-ink font-arabic">المرحلة التعليمية</label>
+              <label className="text-sm font-semibold text-ink dark:text-slate-200 font-arabic">المرحلة التعليمية</label>
               <div className="flex gap-2">
                 <div className="relative flex-grow">
                   <select
                     value={formStage}
                     onChange={(e: any) => setFormStage(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-white border border-[#E7DCC2] text-ink rounded-[12px] font-arabic appearance-none focus:outline-none focus:border-amber focus:ring-4 focus:ring-amber/10 transition-all duration-200"
+                    className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-ink dark:text-slate-100 rounded-[12px] font-arabic appearance-none focus:outline-none focus:border-[#2E7FD9] focus:ring-4 focus:ring-[#2E7FD9]/10 transition-all duration-200"
                   >
                     {stages.map((opt: any) => (
-                      <option key={opt.value} value={opt.value}>
+                      <option key={opt.value} value={opt.value} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
                         {opt.label}
                       </option>
                     ))}
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-ink">
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center px-4 text-ink dark:text-slate-200">
                     <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                       <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
                     </svg>
@@ -743,7 +743,7 @@ function BoxFormPage({
                 <button
                   type="button"
                   onClick={() => setShowAddStageDialog(true)}
-                  className="bg-amber hover:bg-amber-deep text-white font-bold px-3.5 rounded-[12px] transition-colors flex items-center justify-center shadow-sm"
+                  className="bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white font-bold px-3.5 rounded-[12px] transition-colors flex items-center justify-center shadow-sm"
                   title="إضافة مرحلة تعليمية جديدة"
                 >
                   <Plus className="w-4 h-4" />
@@ -753,45 +753,45 @@ function BoxFormPage({
           </div>
 
           <div className="flex flex-col gap-1.5 text-right">
-            <label className="text-sm font-semibold text-ink font-arabic">وصف البوكس وميزاته للعملاء</label>
-            <textarea rows={2} placeholder="اكتب ما يميز هذا البوكس ومحتوياته ليظهر لزوار المتجر..." value={formDesc} onChange={(e: any) => setFormDesc(e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[#E7DCC2] text-ink rounded-[12px] font-arabic placeholder:text-slate-400 focus:outline-none focus:border-amber" />
+            <label className="text-sm font-semibold text-ink dark:text-slate-200 font-arabic">وصف البوكس وميزاته للعملاء</label>
+            <textarea rows={2} placeholder="اكتب ما يميز هذا البوكس ومحتوياته ليظهر لزوار المتجر..." value={formDesc} onChange={(e: any) => setFormDesc(e.target.value)} className="w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-ink dark:text-slate-100 rounded-[12px] font-arabic placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2E7FD9]" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input label="سعر بيع البوكس للجمهور (ج.م)" type="number" value={formBasePrice === 0 ? '' : formBasePrice} onChange={(e: any) => setFormBasePrice(Number(e.target.value))} required />
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold text-ink font-arabic">صورة الغلاف للبوكس</span>
-              <label className="border border-[#E7DCC2] hover:bg-amber-light/20 px-4 py-2 rounded-[12px] flex items-center justify-between cursor-pointer text-slate-500 mt-1">
+              <span className="text-sm font-semibold text-ink dark:text-slate-200 font-arabic">صورة الغلاف للبوكس</span>
+              <label className="border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-2 rounded-[12px] flex items-center justify-between cursor-pointer text-slate-500 dark:text-slate-300 mt-1 transition-colors">
                 <span className="text-xs font-arabic">{formImageUrl ? 'تم اختيار صورة' : 'اختر صورة...'}</span>
                 <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                <span className="text-xs text-amber font-bold">رفع ملف</span>
+                <span className="text-xs text-[#2E7FD9] font-bold">رفع ملف</span>
               </label>
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-sm font-semibold text-ink font-arabic">حالة البوكس</span>
-              <button type="button" onClick={() => setFormIsActive(!formIsActive)} className="flex items-center gap-2 py-2 px-3 border border-amber/20 rounded-[12px] bg-slate-50 hover:bg-slate-100/70 transition-colors justify-between text-slate-700 mt-1 w-full">
+              <span className="text-sm font-semibold text-ink dark:text-slate-200 font-arabic">حالة البوكس</span>
+              <button type="button" onClick={() => setFormIsActive(!formIsActive)} className="flex items-center gap-2 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100/70 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200 mt-1 w-full">
                 <span className="text-xs font-arabic">عرض بالمتجر</span>
-                {formIsActive ? <ToggleRight className="w-6 h-6 text-sage" /> : <ToggleLeft className="w-6 h-6 text-slate-300" />}
+                {formIsActive ? <ToggleRight className="w-6 h-6 text-emerald-500" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
               </button>
             </div>
           </div>
 
           {/* منشئ المنتجات المضمنة */}
-          <div className="border border-[#E7DCC2] rounded-[16px] bg-[#FBEBCB]/5 p-4 space-y-4">
+          <div className="border border-slate-200 dark:border-slate-800 rounded-[16px] bg-slate-50/50 dark:bg-slate-900/60 p-4 space-y-4">
             <div className="flex items-center justify-between gap-3 text-right">
               <div className="space-y-1">
-                <span className="text-sm font-bold text-ink font-arabic">منشئ المنتجات المضمنة (Products Builder)</span>
-                <p className="text-[10px] text-slate-400 font-arabic">ابحث عن الكتب والأدوات المكتبية وأضفها للبوكس</p>
+                <span className="text-sm font-bold text-ink dark:text-slate-100 font-arabic">منشئ المنتجات المضمنة (Products Builder)</span>
+                <p className="text-[10px] text-slate-400 dark:text-slate-400 font-arabic">ابحث عن الكتب والأدوات المكتبية وأضفها للبوكس</p>
               </div>
-              <button type="button" onClick={() => setIsCatalogOpen(true)} className="px-3.5 py-2 bg-amber hover:bg-amber-deep text-white rounded-[12px] text-xs font-bold font-arabic flex items-center gap-1.5 shrink-0 transition-colors shadow-sm">
+              <button type="button" onClick={() => setIsCatalogOpen(true)} className="px-3.5 py-2 bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white rounded-[12px] text-xs font-bold font-arabic flex items-center gap-1.5 shrink-0 transition-colors shadow-sm">
                 <BookOpen className="w-4 h-4" />
                 <span>تصفح كتالوج المتجر 🛒</span>
               </button>
             </div>
 
-            <div className="bg-[#F6F1E4] p-3 border border-[#E7DCC2] rounded-[12px] flex items-start gap-2 text-[10px] text-ink leading-relaxed">
-              <ShieldAlert className="w-4 h-4 text-amber shrink-0 mt-0.5" />
-              <div><strong className="block mb-0.5">سرية تسعير السلع للعملاء:</strong>المنتجات لن يظهر سعرها الفردي للمشترين، سيظهر إجمالي سعر الحزمة فقط.</div>
+            <div className="bg-amber-500/10 dark:bg-amber-500/10 p-3 border border-amber-500/20 dark:border-amber-500/20 rounded-[12px] flex items-start gap-2 text-[10px] text-slate-800 dark:text-slate-200 leading-relaxed">
+              <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div><strong className="block mb-0.5 text-amber-600 dark:text-amber-400">سرية تسعير السلع للعملاء:</strong>المنتجات لن يظهر سعرها الفردي للمشترين، سيظهر إجمالي سعر الحزمة فقط.</div>
             </div>
 
             <div className="relative">
@@ -800,11 +800,11 @@ function BoxFormPage({
                 <Search className="absolute left-3.5 bottom-3.5 w-5 h-5 text-slate-400 pointer-events-none" />
               </div>
               {showSearchResults && searchResults.length > 0 && (
-                <div className="absolute top-full right-0 left-0 bg-white border border-[#E7DCC2] rounded-[12px] shadow-lg mt-1 overflow-hidden z-20 divide-y divide-[#E7DCC2] text-right">
+                <div className="absolute top-full right-0 left-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[12px] shadow-lg mt-1 overflow-hidden z-20 divide-y divide-slate-100 dark:divide-slate-800 text-right">
                   {searchResults.map((prod: any) => (
-                    <button key={prod.id} type="button" onClick={() => addProductToBox(prod)} className="w-full px-4 py-2.5 hover:bg-slate-50 text-sm font-arabic font-bold text-slate-700 flex items-center justify-between">
+                    <button key={prod.id} type="button" onClick={() => addProductToBox(prod)} className="w-full px-4 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-arabic font-bold text-slate-700 dark:text-slate-200 flex items-center justify-between">
                       <span>{prod.name}</span>
-                      <span className="text-xs font-english text-amber bg-[#FBEBCB]/30 px-2 py-0.5 rounded">{prod.price_unit} ج.م</span>
+                      <span className="text-xs font-english text-[#2E7FD9] bg-[#2E7FD9]/10 px-2 py-0.5 rounded">{prod.price_unit} ج.م</span>
                     </button>
                   ))}
                 </div>
@@ -812,16 +812,16 @@ function BoxFormPage({
             </div>
 
             {boxProducts.length > 0 ? (
-              <div className="divide-y divide-dashed divide-[#E7DCC2] bg-white border border-[#E7DCC2] rounded-[12px] overflow-hidden">
+              <div className="divide-y divide-dashed divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[12px] overflow-hidden">
                 {boxProducts.map((item: any, idx: number) => {
                   const p = products.find((prod: any) => prod.id === item.product_id);
                   if (!p) return null;
                   return (
                     <div key={item.product_id} className="p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-arabic">
                       <div className="flex items-center gap-3 flex-1">
-                        <img src={p.images?.[0]} alt={p.name} className="w-10 h-10 rounded-[8px] object-cover border border-[#E7DCC2] shrink-0" />
+                        <img src={p.images?.[0]} alt={p.name} className="w-10 h-10 rounded-[8px] object-cover border border-slate-200 dark:border-slate-800 shrink-0" />
                         <div>
-                          <span className="font-bold text-slate-700 block">{p.name}</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-100 block">{p.name}</span>
                           <span className="text-slate-400 text-[10px]">الترتيب في البوكس: #{idx + 1}</span>
                         </div>
                       </div>

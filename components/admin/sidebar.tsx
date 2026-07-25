@@ -15,7 +15,6 @@ const menuItems = [
   { label: 'الرئيسية', path: '/admin', icon: Home },
   { label: 'التحليلات', path: '/admin/analytics', icon: BarChart3 },
   { label: 'الطلبات', path: '/admin/orders', icon: ClipboardList },
-  { label: 'قوائم المدارس', path: '/admin/supply-lists', icon: FileText },
   { label: 'المنتجات', path: '/admin/products', icon: Package },
   { label: 'الأقسام', path: '/admin/categories', icon: FolderOpen },
   { label: 'الباقات والبوكسات', path: '/admin/boxes', icon: Box },
