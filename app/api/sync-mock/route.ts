@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { clearFetchCache } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -23,6 +24,9 @@ export async function POST(request: Request) {
 
     db[key] = data;
     fs.writeFileSync(filePath, JSON.stringify(db, null, 2), 'utf8');
+
+    // Invalidate the in-memory server cache
+    clearFetchCache();
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Search, Plus, Star, StarOff, Edit2, Trash2, ToggleLeft, 
-  ToggleRight, Check, AlertCircle, Upload, X, ChevronLeft, ChevronRight, Image as ImageIcon
+  ToggleRight, Check, AlertCircle, Upload, X, ChevronLeft, ChevronRight, Image as ImageIcon, Sparkles
 } from 'lucide-react';
 import { supabase, compressImageToWebP } from '@/lib/supabase';
 import { getMockData, saveMockData, Product, Category } from '@/lib/mockData';
@@ -34,6 +34,13 @@ export default function ProductsPage() {
   // نافذة الإضافة والتعديل
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
+  // نافذة التعديل الجماعي للأسعار
+  const [isBulkPriceModalOpen, setIsBulkPriceModalOpen] = useState(false);
+  const [bulkTargetCategory, setBulkTargetCategory] = useState('all');
+  const [bulkAdjustmentType, setBulkAdjustmentType] = useState('increase'); // 'increase' | 'decrease'
+  const [bulkPercentage, setBulkPercentage] = useState(5);
+  const [bulkRounding, setBulkRounding] = useState('none'); // 'none' | 'half' | 'integer'
 
   // حقول نموذج المنتج
   const [formName, setFormName] = useState('');
@@ -438,10 +445,12 @@ export default function ProductsPage() {
     setFormImages(prev => [...prev, ...objectUrls]);
 
     // الخطوة 2: حاول الرفع على سوبابيس في الخلفية وابدل الـ URL
-    const finalUrls: string[] = [...objectUrls];
+    const finalUrls: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
       let file = files[i];
+      let url = objectUrls[i]; // الافتراضي هو مسار العرض المؤقت
+      
       try {
         // تحويل وضغط الصورة تلقائياً لصيغة WebP فائقة الخفة
         try {
@@ -466,14 +475,7 @@ export default function ProductsPage() {
           .getPublicUrl(filePath);
 
         if (publicData?.publicUrl && publicData.publicUrl.startsWith('http')) {
-          // ابدل الـ object URL بالـ Supabase URL الحقيقي
-          finalUrls[i] = publicData.publicUrl;
-          setFormImages(prev => {
-            const updated = [...prev];
-            const idx = updated.indexOf(objectUrls[i]);
-            if (idx !== -1) updated[idx] = publicData.publicUrl;
-            return updated;
-          });
+          url = publicData.publicUrl;
         }
       } catch (err) {
         // لو فشل الرفع على سوبابيس، نحول الـ Object URL إلى base64 للحفظ الدائم
@@ -483,18 +485,27 @@ export default function ProductsPage() {
             reader.onloadend = () => resolve(reader.result as string);
             reader.readAsDataURL(file);
           });
-          finalUrls[i] = base64;
-          setFormImages(prev => {
-            const updated = [...prev];
-            const idx = updated.indexOf(objectUrls[i]);
-            if (idx !== -1) updated[idx] = base64;
-            return updated;
-          });
+          url = base64;
         } catch {
           // ابقى على الـ object URL للعرض المؤقت
         }
       }
+      finalUrls.push(url);
     }
+
+    // استبدال مسارات المعاينة بالمسارات النهائية (مرفوعة أو base64) دفعة واحدة لتفادي تضارب تحديث الحالة
+    setFormImages(prev => {
+      const updated = [...prev];
+      objectUrls.forEach((objUrl, idx) => {
+        const index = updated.indexOf(objUrl);
+        if (index !== -1) {
+          updated[index] = finalUrls[idx];
+        } else {
+          updated.push(finalUrls[idx]);
+        }
+      });
+      return updated;
+    });
 
     setSuccessMsg('تم رفع الصور بنجاح!');
     setTimeout(() => setSuccessMsg(''), 3000);
@@ -588,6 +599,106 @@ export default function ProductsPage() {
     } catch (err) {
       console.error(err);
       alert('حدث خطأ أثناء حفظ المنتج.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // التعديل الجماعي للأسعار للمنتجات
+  const handleApplyBulkPriceUpdate = async () => {
+    if (!checkPermission(['product_manager'], 'التعديل الجماعي للأسعار')) return;
+    
+    if (bulkPercentage <= 0) {
+      alert('الرجاء إدخال نسبة مئوية أكبر من الصفر!');
+      return;
+    }
+
+    const factor = bulkAdjustmentType === 'increase' ? (1 + bulkPercentage / 100) : (1 - bulkPercentage / 100);
+    
+    // فلترة المنتجات المستهدفة
+    const targetProducts = products.filter(p => 
+      bulkTargetCategory === 'all' || 
+      p.category_id === bulkTargetCategory || 
+      (p.category_ids && p.category_ids.includes(bulkTargetCategory))
+    );
+    
+    if (targetProducts.length === 0) {
+      alert('لا توجد منتجات مطابقة للقسم المختار!');
+      return;
+    }
+    
+    const confirmMsg = `هل أنت متأكد من ${bulkAdjustmentType === 'increase' ? 'زيادة' : 'تخفيض'} أسعار ${targetProducts.length} منتج بنسبة ${bulkPercentage}%؟`;
+    if (!window.confirm(confirmMsg)) return;
+    
+    setSubmitting(true);
+    let successCount = 0;
+    
+    try {
+      const updatedProductsList = [...products];
+      
+      for (const prod of targetProducts) {
+        let newPriceUnit = prod.price_unit * factor;
+        let newPriceBox = prod.price_box ? prod.price_box * factor : null;
+        
+        // التقريب
+        if (bulkRounding === 'half') {
+          newPriceUnit = Math.round(newPriceUnit * 2) / 2;
+          if (newPriceBox !== null) newPriceBox = Math.round(newPriceBox * 2) / 2;
+        } else if (bulkRounding === 'integer') {
+          newPriceUnit = Math.round(newPriceUnit);
+          if (newPriceBox !== null) newPriceBox = Math.round(newPriceBox);
+        } else {
+          newPriceUnit = Math.round(newPriceUnit * 100) / 100;
+          if (newPriceBox !== null) newPriceBox = Math.round(newPriceBox * 100) / 100;
+        }
+        
+        const updatePayload = {
+          price_unit: newPriceUnit,
+          price_box: newPriceBox
+        };
+        
+        // تحديث قاعدة البيانات الفعلية (سوبابيس)
+        try {
+          const { error: dbError } = await supabase.from('products').update(updatePayload).eq('id', prod.id);
+          if (dbError) throw dbError;
+        } catch (dbErr) {
+          console.warn(`Failed database update for product ${prod.id}:`, dbErr);
+        }
+        
+        // تحديث القائمة المحلية
+        const idx = updatedProductsList.findIndex(p => p.id === prod.id);
+        if (idx !== -1) {
+          updatedProductsList[idx] = {
+            ...updatedProductsList[idx],
+            ...updatePayload
+          };
+        }
+        
+        successCount++;
+      }
+      
+      // حفظ التغييرات محلياً ومزامنتها مع الموك داتا
+      saveMockData.products(updatedProductsList);
+      setProducts(updatedProductsList);
+      
+      // إرسال التحديث لملف mock_db.json بالخلفية
+      try {
+        await fetch('/api/sync-mock', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ key: 'kh_products', data: updatedProductsList }),
+        });
+      } catch (syncErr) {
+        console.error('Mock data sync failed:', syncErr);
+      }
+      
+      alert(`تم تعديل أسعار ${successCount} منتج بنجاح!`);
+      setIsBulkPriceModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      alert('حدث خطأ أثناء تعديل الأسعار جماعياً.');
     } finally {
       setSubmitting(false);
     }
@@ -984,21 +1095,18 @@ export default function ProductsPage() {
               </div>
             )}
 
-            {/* حقول تحديد الترتيب والفرز */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-50 pt-4">
               <Input
                 label="الترتيب العام (ترقيم الترتيب العام للمنتج، الأصغر أولاً)"
                 type="number"
                 value={formSortOrderGeneral === 0 ? '' : formSortOrderGeneral}
                 onChange={(e) => setFormSortOrderGeneral(Number(e.target.value))}
-                required
               />
               <Input
                 label="الترتيب بالقسم (أولوية العرض داخل القسم المختار، الأصغر أولاً)"
                 type="number"
                 value={formSortOrderCategory === 0 ? '' : formSortOrderCategory}
                 onChange={(e) => setFormSortOrderCategory(Number(e.target.value))}
-                required
               />
             </div>
 
@@ -1245,6 +1353,14 @@ export default function ProductsPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
             </svg>
             <span>تصدير البيانات</span>
+          </button>
+
+          <button
+            onClick={() => setIsBulkPriceModalOpen(true)}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-[12px] text-xs font-bold transition-all duration-200 font-arabic border border-amber-200/60 shadow-sm h-[40px]"
+          >
+            <Sparkles className="w-4 h-4 text-amber-700" />
+            <span>تعديل جماعي للأسعار</span>
           </button>
           
           <Button 
@@ -1534,6 +1650,134 @@ export default function ProductsPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                 </svg>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* ⚙️ نافذة التعديل الجماعي للأسعار (Bulk Price Update Modal) */}
+      {isBulkPriceModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in font-arabic">
+          <div className="bg-white rounded-[24px] border border-[#E7DCC2] shadow-premium max-w-md w-full overflow-hidden text-right">
+            
+            {/* Header */}
+            <div className="bg-[#FBEBCB]/30 px-6 py-4 border-b border-[#E7DCC2] flex items-center justify-between">
+              <span className="font-black text-sm text-ink font-arabic flex items-center gap-1.5">
+                <Sparkles className="w-5 h-5 text-amber-600 animate-pulse" />
+                <span>تعديل جماعي لأسعار المنتجات</span>
+              </span>
+              <button 
+                onClick={() => setIsBulkPriceModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              
+              {/* Category selection */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-500">1. القسم المستهدف بالتعديل</label>
+                <select
+                  value={bulkTargetCategory}
+                  onChange={(e) => setBulkTargetCategory(e.target.value)}
+                  className="w-full rounded-[12px] border border-[#E7DCC2] bg-white px-4 py-2.5 text-xs text-right focus:border-amber focus:outline-none font-arabic cursor-pointer"
+                >
+                  <option value="all">كل الأقسام والمستلزمات</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Adjustment Type selection */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-500">2. نوع التعديل على السعر</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setBulkAdjustmentType('increase')}
+                    className={`py-2.5 px-4 rounded-xl border text-center text-xs font-bold font-arabic transition-all ${
+                      bulkAdjustmentType === 'increase'
+                        ? 'border-amber bg-amber/5 text-amber-900 font-extrabold shadow-sm'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    📈 زيادة الأسعار
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setBulkAdjustmentType('decrease')}
+                    className={`py-2.5 px-4 rounded-xl border text-center text-xs font-bold font-arabic transition-all ${
+                      bulkAdjustmentType === 'decrease'
+                        ? 'border-amber bg-amber/5 text-amber-900 font-extrabold shadow-sm'
+                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    📉 تخفيض الأسعار (خصم)
+                  </button>
+                </div>
+              </div>
+
+              {/* Percentage input */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-500">3. نسبة التعديل (%)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={bulkPercentage}
+                    onChange={(e) => setBulkPercentage(Math.max(1, Number(e.target.value)))}
+                    className="w-full rounded-[12px] border border-[#E7DCC2] bg-white px-4 py-2.5 text-xs text-center focus:border-amber focus:outline-none font-numbers font-bold"
+                  />
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                </div>
+              </div>
+
+              {/* Rounding option */}
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-slate-500">4. استراتيجية تقريب الأسعار</label>
+                <select
+                  value={bulkRounding}
+                  onChange={(e) => setBulkRounding(e.target.value)}
+                  className="w-full rounded-[12px] border border-[#E7DCC2] bg-white px-4 py-2.5 text-xs text-right focus:border-amber focus:outline-none font-arabic cursor-pointer"
+                >
+                  <option value="none">لا تقريب (حساب النسبة الدقيقة)</option>
+                  <option value="half">تقريب لأقرب 50 قرش (أمثلة: 14.50 ، 15.00)</option>
+                  <option value="integer">تقريب لأقرب جنيه كامل (أمثلة: 14.00 ، 15.00)</option>
+                </select>
+              </div>
+
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <button
+                type="button"
+                onClick={() => setIsBulkPriceModalOpen(false)}
+                className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition-all font-arabic"
+              >
+                إلغاء
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyBulkPriceUpdate}
+                disabled={submitting}
+                className="px-5 py-2 bg-amber hover:bg-amber-deep text-white rounded-xl text-xs font-bold transition-all font-arabic shadow-sm flex items-center gap-1.5"
+              >
+                {submitting ? (
+                  <span>جاري التعديل...</span>
+                ) : (
+                  <>
+                    <span>تطبيق التعديل الآن</span>
+                    <Sparkles className="w-4 h-4" />
+                  </>
+                )}
               </button>
             </div>
 

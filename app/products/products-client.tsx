@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import ProductCard, { Product } from '@/components/store/product-card';
 import { Search, SlidersHorizontal, Trash2, HelpCircle } from 'lucide-react';
+import { isSupabaseConfigured } from '@/lib/supabase';
 
 interface Category {
   id: string;
@@ -16,11 +17,32 @@ interface ProductsClientProps {
 }
 
 export default function ProductsClient({ categories, initialProducts }: ProductsClientProps) {
+  const [categoriesList, setCategoriesList] = useState<Category[]>(categories);
+  const [productsList, setProductsList] = useState<Product[]>(initialProducts);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [maxPrice, setMaxPrice] = useState<number>(1000);
   const [minPrice, setMinPrice] = useState<number>(0);
   const [showFilters, setShowFilters] = useState(false);
+
+  // Sync with localStorage when in mock mode
+  useEffect(() => {
+    if (!isSupabaseConfigured && typeof window !== 'undefined') {
+      try {
+        const localCats = localStorage.getItem('kh_categories');
+        const localProds = localStorage.getItem('kh_products');
+        if (localCats) {
+          setCategoriesList(JSON.parse(localCats));
+        }
+        if (localProds) {
+          const allProds: Product[] = JSON.parse(localProds);
+          setProductsList(allProds.filter(p => p.is_active));
+        }
+      } catch (err) {
+        console.error('Error loading mock data from localStorage:', err);
+      }
+    }
+  }, [initialProducts, categories]);
 
   // Reset filters
   const handleResetFilters = () => {
@@ -32,7 +54,7 @@ export default function ProductsClient({ categories, initialProducts }: Products
 
   // Live filter logic
   const filteredProducts = useMemo(() => {
-    return initialProducts.filter((product) => {
+    return productsList.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         product.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -45,7 +67,7 @@ export default function ProductsClient({ categories, initialProducts }: Products
 
       return matchesSearch && matchesCategory && matchesPrice;
     });
-  }, [initialProducts, searchTerm, selectedCategory, minPrice, maxPrice]);
+  }, [productsList, searchTerm, selectedCategory, minPrice, maxPrice]);
 
   return (
     <div className="space-y-8">
@@ -131,7 +153,7 @@ export default function ProductsClient({ categories, initialProducts }: Products
         >
           الكل
         </button>
-        {categories.map((cat) => (
+        {categoriesList.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
