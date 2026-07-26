@@ -2,7 +2,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import ProductsClient from './products-client';
 import { getMockData } from '@/lib/mockData';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 10;
 
 async function getProductsData() {
   return cachedFetch('products-page-data', async () => {

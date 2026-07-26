@@ -13,7 +13,7 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 10;
 
 const cairo = Cairo({
   subsets: ['arabic'],

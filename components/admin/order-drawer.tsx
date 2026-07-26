@@ -44,6 +44,7 @@ export default function OrderDrawer({
   const [updating, setUpdating] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [codInput, setCodInput] = useState<string>('');
+  const [downloadedImagePreview, setDownloadedImagePreview] = useState<string | null>(null);
 
   React.useEffect(() => {
     if (order) {
@@ -625,6 +626,7 @@ export default function OrderDrawer({
         return;
       }
       const url = URL.createObjectURL(blob);
+      setDownloadedImagePreview(url); // Save for visual preview
       const a = document.createElement('a');
       a.href = url;
       a.download = `invoice-${order.id}.png`;
@@ -1027,6 +1029,35 @@ export default function OrderDrawer({
         </div>
       </div>
 
-    </div>
+      {/* مودال معاينة الصورة المنزلة */}
+      {downloadedImagePreview && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-[#E7DCC2] dark:border-slate-800 p-6 max-w-sm w-full space-y-4 shadow-xl text-right" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#E7DCC2] dark:border-slate-800 pb-3">
+              <span className="font-bold text-sm text-ink dark:text-slate-100 font-arabic">معاينة الفاتورة المنزلة</span>
+              <button type="button" onClick={() => setDownloadedImagePreview(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold font-arabic">✔ تم تنزيل الفاتورة بنجاح كصورة على جهازك!</p>
+            
+            <div className="border border-[#E7DCC2] dark:border-slate-800 rounded-[16px] overflow-hidden max-h-[45vh] overflow-y-auto bg-slate-50 dark:bg-slate-950">
+              <img src={downloadedImagePreview} alt="Invoice Preview" className="w-full h-auto" />
+            </div>
+            
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setDownloadedImagePreview(null)}
+                className="bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white text-xs font-bold px-6 py-2.5 rounded-[12px] transition-colors font-arabic"
+              >
+                حسناً، إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
   );
 }

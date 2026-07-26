@@ -3,7 +3,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import BoxDetailClient from './box-detail-client';
 import Link from 'next/link';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 10;
 
 interface BoxDetailPageProps {
   params: {

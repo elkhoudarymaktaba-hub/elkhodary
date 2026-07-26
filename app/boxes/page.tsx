@@ -4,7 +4,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import { Package, ArrowLeft, GraduationCap, ChevronLeft } from 'lucide-react';
 import { getMockData } from '@/lib/mockData';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 10;
 
 async function getBoxesData() {
   return cachedFetch('boxes-page-data', async () => {

@@ -8,7 +8,7 @@ import BoxBuilderTeaser from '@/components/store/box-builder-teaser';
 import { Package, ArrowLeft, GraduationCap, ChevronLeft } from 'lucide-react';
 import { PageBlock, getMockData } from '@/lib/mockData';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 10;
 
 async function getPageData(slug: string) {
   try {

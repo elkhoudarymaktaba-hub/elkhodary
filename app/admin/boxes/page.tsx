@@ -248,7 +248,9 @@ export default function BoxesPage() {
   // المنتجات المفلترة للكتالوج المفتوح داخل البوكس
   const catalogProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(catalogSearch.toLowerCase());
-    const matchesCat = catalogCategory === 'all' || p.category_id === catalogCategory;
+    const matchesCat = catalogCategory === 'all' || 
+      p.category_id === catalogCategory || 
+      (p.category_ids && p.category_ids.includes(catalogCategory));
     return matchesSearch && matchesCat;
   });
 
@@ -327,33 +329,81 @@ export default function BoxesPage() {
 
   if (isFormOpen) {
     return (
-      <BoxFormPage
-        editingBox={editingBox}
-        formName={formName} setFormName={setFormName}
-        formStage={formStage} setFormStage={setFormStage}
-        formBasePrice={formBasePrice} setFormBasePrice={setFormBasePrice}
-        formDesc={formDesc} setFormDesc={setFormDesc}
-        formImageUrl={formImageUrl}
-        formIsActive={formIsActive} setFormIsActive={setFormIsActive}
-        boxProducts={boxProducts} setBoxProducts={setBoxProducts}
-        products={products} categories={categories}
-        handleImageUpload={handleImageUpload}
-        handleSaveBox={handleSaveBox}
-        searchProductQuery={searchProductQuery} setSearchProductQuery={setSearchProductQuery}
-        showSearchResults={showSearchResults} setShowSearchResults={setShowSearchResults}
-        searchResults={searchResults}
-        addProductToBox={addProductToBox}
-        removeProductFromBox={removeProductFromBox}
-        updateProductQty={updateProductQty}
-        runningTotalPrice={runningTotalPrice}
-        isCatalogOpen={isCatalogOpen} setIsCatalogOpen={setIsCatalogOpen}
-        catalogSearch={catalogSearch} setCatalogSearch={setCatalogSearch}
-        catalogCategory={catalogCategory} setCatalogCategory={setCatalogCategory}
-        catalogProducts={catalogProducts}
-        onCancel={() => setIsFormOpen(false)}
-        stages={stages}
-        setShowAddStageDialog={setShowAddStageDialog}
-      />
+      <>
+        <BoxFormPage
+          editingBox={editingBox}
+          formName={formName} setFormName={setFormName}
+          formStage={formStage} setFormStage={setFormStage}
+          formBasePrice={formBasePrice} setFormBasePrice={setFormBasePrice}
+          formDesc={formDesc} setFormDesc={setFormDesc}
+          formImageUrl={formImageUrl}
+          formIsActive={formIsActive} setFormIsActive={setFormIsActive}
+          boxProducts={boxProducts} setBoxProducts={setBoxProducts}
+          products={products} categories={categories}
+          handleImageUpload={handleImageUpload}
+          handleSaveBox={handleSaveBox}
+          searchProductQuery={searchProductQuery} setSearchProductQuery={setSearchProductQuery}
+          showSearchResults={showSearchResults} setShowSearchResults={setShowSearchResults}
+          searchResults={searchResults}
+          addProductToBox={addProductToBox}
+          removeProductFromBox={removeProductFromBox}
+          updateProductQty={updateProductQty}
+          runningTotalPrice={runningTotalPrice}
+          isCatalogOpen={isCatalogOpen} setIsCatalogOpen={setIsCatalogOpen}
+          catalogSearch={catalogSearch} setCatalogSearch={setCatalogSearch}
+          catalogCategory={catalogCategory} setCatalogCategory={setCatalogCategory}
+          catalogProducts={catalogProducts}
+          onCancel={() => setIsFormOpen(false)}
+          stages={stages}
+          setShowAddStageDialog={setShowAddStageDialog}
+        />
+        {/* Dialog for adding new stage */}
+        {showAddStageDialog && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+            <div className="bg-white rounded-[24px] border border-[#E7DCC2] p-6 max-w-sm w-full space-y-4 shadow-xl text-right" dir="rtl">
+              <div className="flex items-center justify-between border-b border-[#E7DCC2] pb-3">
+                <span className="font-bold text-sm text-ink font-arabic">إضافة مرحلة تعليمية جديدة</span>
+                <button type="button" onClick={() => setShowAddStageDialog(false)} className="text-slate-400 hover:text-slate-600">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              <div className="space-y-3">
+                <Input
+                  label="اسم المرحلة التعليمية (بالعربية)"
+                  placeholder="مثال: المرحلة التمهيدية"
+                  value={newStageLabel}
+                  onChange={(e) => setNewStageLabel(e.target.value)}
+                  required
+                />
+                <Input
+                  label="رمز المرحلة (بالإنجليزي - اختياري)"
+                  placeholder="مثال: prep"
+                  value={newStageValue}
+                  onChange={(e) => setNewStageValue(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex gap-2 justify-end pt-2">
+                <button
+                  type="button"
+                  onClick={handleAddStage}
+                  className="bg-[#D4AF37] hover:bg-[#B89324] text-white text-xs font-bold px-4 py-2 rounded-[12px] transition-colors font-arabic"
+                >
+                  حفظ وإضافة
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddStageDialog(false)}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-[12px] transition-colors font-arabic"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </>
     );
   }
 
@@ -878,12 +928,42 @@ function BoxFormPage({
             {catalogProducts.map((prod: any) => {
               const alreadyAdded = boxProducts.some((bp: any) => bp.product_id === prod.id);
               return (
-                <button key={prod.id} type="button" onClick={() => { if (!alreadyAdded) { addProductToBox(prod); } }} disabled={alreadyAdded} className={`border rounded-[12px] overflow-hidden text-right transition-all ${alreadyAdded ? 'opacity-50 cursor-not-allowed border-emerald-300 bg-emerald-50' : 'hover:border-amber hover:shadow-md border-slate-200 bg-white'}`}>
+                <button
+                  key={prod.id}
+                  type="button"
+                  onClick={() => {
+                    if (alreadyAdded) {
+                      removeProductFromBox(prod.id);
+                    } else {
+                      addProductToBox(prod);
+                    }
+                  }}
+                  className={`relative border rounded-[12px] overflow-hidden text-right transition-all ${
+                    alreadyAdded 
+                      ? 'border-[#D4AF37] bg-[#FAF1D7]/20 ring-2 ring-[#D4AF37]' 
+                      : 'hover:border-[#D4AF37] hover:shadow-md border-slate-200 bg-white'
+                  }`}
+                >
                   <img src={prod.images?.[0] || ''} alt={prod.name} className="w-full h-28 object-cover" />
+                  
+                  {/* Indicator Box top-left */}
+                  <div 
+                    className="absolute top-2 left-2 w-5 h-5 rounded-md flex items-center justify-center border transition-all"
+                    style={{ 
+                      backgroundColor: alreadyAdded ? '#D4AF37' : '#fff', 
+                      borderColor: alreadyAdded ? '#D4AF37' : '#cbd5e1' 
+                    }}
+                  >
+                    {alreadyAdded && (
+                      <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+
                   <div className="p-2.5">
                     <p className="text-[10px] font-bold text-slate-700 font-arabic line-clamp-2 leading-snug">{prod.name}</p>
                     <p className="text-xs text-coral font-english font-black mt-1">{prod.price_unit} ج.م</p>
-                    {alreadyAdded && <span className="text-[9px] text-emerald-600 font-bold">✔ مضاف للبوكس</span>}
                   </div>
                 </button>
               );
