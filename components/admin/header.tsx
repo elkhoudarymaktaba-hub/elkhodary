@@ -157,6 +157,9 @@ export default function Header() {
           <a
             href="/"
             target="_blank"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-[12px] bg-[#2E7FD9] text-white text-xs font-bold hover:bg-[#1B4F8A] transition-all duration-200 shadow-sm"
+            title="فتح المتجر الرئيسي في نافذة جديدة"
+          >
             <span className="hidden md:inline">زيارة المتجر</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
@@ -164,10 +167,10 @@ export default function Header() {
           {/* زر وضع الليل / النهار */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-[12px] bg-[#F6F1E4]/30 hover:bg-[#F6F1E4] border border-[#E7DCC2] text-ink transition-all flex items-center justify-center shrink-0"
+            className="p-2 rounded-[12px] bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition-all flex items-center justify-center shrink-0"
             title={isDark ? 'التبديل إلى الوضع النهاري' : 'التبديل إلى الوضع الليلي'}
           >
-            {isDark ? <Sun className="w-4 h-4 text-amber-deep" /> : <Moon className="w-4 h-4 text-ink" />}
+            {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
 
           {/* التنبيهات المنبثقة التفاعلية */}
