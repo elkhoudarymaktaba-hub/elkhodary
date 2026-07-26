@@ -22,8 +22,10 @@ export default function Header() {
       setIsDark(isDarkStored);
       if (isDarkStored) {
         document.body.classList.add('admin-dark');
+        document.documentElement.classList.add('dark');
       } else {
         document.body.classList.remove('admin-dark');
+        document.documentElement.classList.remove('dark');
       }
     }
   }, []);
@@ -35,8 +37,10 @@ export default function Header() {
       localStorage.setItem('admin_dark_mode', String(newDark));
       if (newDark) {
         document.body.classList.add('admin-dark');
+        document.documentElement.classList.add('dark');
       } else {
         document.body.classList.remove('admin-dark');
+        document.documentElement.classList.remove('dark');
       }
     }
   };

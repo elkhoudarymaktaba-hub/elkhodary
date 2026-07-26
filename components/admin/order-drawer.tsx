@@ -640,27 +640,27 @@ export default function OrderDrawer({
     <div className="fixed inset-0 z-50 flex justify-start p-0 overflow-hidden" dir="rtl">
       {/* الخلفية المظلمة */}
       <div 
-        className="fixed inset-0 bg-[#16233F]/45 backdrop-blur-sm transition-opacity duration-300"
+        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300"
         onClick={onClose}
       />
 
       {/* لوحة الدرج الجانبي */}
-      <div className="relative w-full max-w-lg bg-white h-full shadow-[0_4px_32px_rgba(22,35,63,0.18)] flex flex-col border-r border-[#E7DCC2] animate-in slide-in-from-left duration-300 z-10">
+      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 h-full shadow-2xl flex flex-col border-r border-slate-200 dark:border-slate-800 animate-in slide-in-from-left duration-300 z-10 transition-colors">
         
         {/* الهيدر */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100 bg-[#F6F1E4]/40">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/60">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-lg font-bold text-ink font-arabic">تفاصيل الطلب</h3>
-              <span className="text-sm font-english text-ink-muted font-bold">#{order.id}</span>
+              <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 font-arabic">تفاصيل الطلب</h3>
+              <span className="text-sm font-english text-[#2E7FD9] dark:text-[#5B9FE6] font-bold">#{order.id}</span>
             </div>
-            <p className="text-xs text-ink-muted font-arabic mt-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-arabic mt-1">
               تم التسجيل في {new Date(order.created_at).toLocaleString('ar-EG', { dateStyle: 'medium', timeStyle: 'short' })}
             </p>
           </div>
           <button 
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-100 transition-colors"
+            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -670,9 +670,9 @@ export default function OrderDrawer({
         <div className="flex-1 overflow-y-auto p-6 space-y-6 text-right scrollbar-thin">
           
           {/* حالة الطلب وتغييرها */}
-          <div className="bg-[#FBEBCB]/15 p-4 rounded-[16px] border border-[#E7A537]/20 flex flex-col gap-3">
+          <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-[16px] border border-slate-200 dark:border-slate-700 flex flex-col gap-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-ink font-arabic">حالة الطلب الحالية</span>
+              <span className="text-sm font-bold text-slate-800 dark:text-slate-100 font-arabic">حالة الطلب الحالية</span>
               <span className={`px-3 py-1 rounded-full text-xs font-bold font-arabic ${statusColors[status]}`}>
                 {statusLabels[status]}
               </span>
