@@ -1111,13 +1111,13 @@ export default function ProductsPage() {
             </div>
 
             {/* شارة المنتج الترويجية */}
-            <div className="grid grid-cols-1 gap-4 border-t border-slate-50 pt-4">
-              <div>
-                <label className="text-xs font-bold text-ink block mb-2 font-arabic">شارة المنتج الترويجية (Badge)</label>
+            <div className="grid grid-cols-1 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-800 dark:text-slate-100 block font-arabic">شارة المنتج الترويجية (Badge)</label>
                 <select
                   value={formBadge}
                   onChange={(e) => setFormBadge(e.target.value)}
-                  className="w-full rounded-[12px] border border-[#E7DCC2] bg-white px-4 py-2.5 text-xs text-right focus:border-amber focus:outline-none font-arabic"
+                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-slate-800 dark:text-slate-100 font-bold focus:border-[#2E7FD9] focus:outline-none font-arabic"
                 >
                   <option value="">-- بدون شارة --</option>
                   <option value="bestseller">🔥 الأكثر طلباً</option>
@@ -1659,18 +1659,18 @@ export default function ProductsPage() {
 
       {/* ⚙️ نافذة التعديل الجماعي للأسعار (Bulk Price Update Modal) */}
       {isBulkPriceModalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in font-arabic">
-          <div className="bg-white rounded-[24px] border border-[#E7DCC2] shadow-premium max-w-md w-full overflow-hidden text-right">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in font-arabic">
+          <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden text-right transition-colors">
             
             {/* Header */}
-            <div className="bg-[#FBEBCB]/30 px-6 py-4 border-b border-[#E7DCC2] flex items-center justify-between">
-              <span className="font-black text-sm text-ink font-arabic flex items-center gap-1.5">
-                <Sparkles className="w-5 h-5 text-amber-600 animate-pulse" />
+            <div className="bg-slate-50 dark:bg-slate-800/80 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+              <span className="font-black text-sm text-slate-800 dark:text-slate-100 font-arabic flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#2E7FD9]" />
                 <span>تعديل جماعي لأسعار المنتجات</span>
               </span>
               <button 
                 onClick={() => setIsBulkPriceModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 transition-colors p-1"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-1"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1681,11 +1681,11 @@ export default function ProductsPage() {
               
               {/* Category selection */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-500">1. القسم المستهدف بالتعديل</label>
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">1. القسم المستهدف بالتعديل</label>
                 <select
                   value={bulkTargetCategory}
                   onChange={(e) => setBulkTargetCategory(e.target.value)}
-                  className="w-full rounded-[12px] border border-[#E7DCC2] bg-white px-4 py-2.5 text-xs text-right focus:border-amber focus:outline-none font-arabic cursor-pointer"
+                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-slate-800 dark:text-slate-100 font-bold focus:border-[#2E7FD9] focus:outline-none font-arabic cursor-pointer"
                 >
                   <option value="all">كل الأقسام والمستلزمات</option>
                   {categories.map(c => (
@@ -1696,15 +1696,15 @@ export default function ProductsPage() {
 
               {/* Adjustment Type selection */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-500">2. نوع التعديل على السعر</label>
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">2. نوع التعديل على السعر</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setBulkAdjustmentType('increase')}
                     className={`py-2.5 px-4 rounded-xl border text-center text-xs font-bold font-arabic transition-all ${
                       bulkAdjustmentType === 'increase'
-                        ? 'border-amber bg-amber/5 text-amber-900 font-extrabold shadow-sm'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-[#2E7FD9] bg-[#2E7FD9]/10 text-[#2E7FD9] dark:text-[#5B9FE6] font-extrabold shadow-xs'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
                     📈 زيادة الأسعار
@@ -1714,8 +1714,8 @@ export default function ProductsPage() {
                     onClick={() => setBulkAdjustmentType('decrease')}
                     className={`py-2.5 px-4 rounded-xl border text-center text-xs font-bold font-arabic transition-all ${
                       bulkAdjustmentType === 'decrease'
-                        ? 'border-amber bg-amber/5 text-amber-900 font-extrabold shadow-sm'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-400 font-extrabold shadow-xs'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                     }`}
                   >
                     📉 تخفيض الأسعار (خصم)
@@ -1725,7 +1725,7 @@ export default function ProductsPage() {
 
               {/* Percentage input */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-500">3. نسبة التعديل (%)</label>
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">3. نسبة التعديل (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -1733,7 +1733,7 @@ export default function ProductsPage() {
                     max="100"
                     value={bulkPercentage}
                     onChange={(e) => setBulkPercentage(Math.max(1, Number(e.target.value)))}
-                    className="w-full rounded-[12px] border border-[#E7DCC2] bg-white px-4 py-2.5 text-xs text-center focus:border-amber focus:outline-none font-numbers font-bold"
+                    className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-center text-slate-800 dark:text-slate-100 focus:border-[#2E7FD9] focus:outline-none font-numbers font-bold"
                   />
                   <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
                 </div>
@@ -1741,11 +1741,11 @@ export default function ProductsPage() {
 
               {/* Rounding option */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-500">4. استراتيجية تقريب الأسعار</label>
+                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">4. استراتيجية تقريب الأسعار</label>
                 <select
                   value={bulkRounding}
                   onChange={(e) => setBulkRounding(e.target.value)}
-                  className="w-full rounded-[12px] border border-[#E7DCC2] bg-white px-4 py-2.5 text-xs text-right focus:border-amber focus:outline-none font-arabic cursor-pointer"
+                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-slate-800 dark:text-slate-100 font-bold focus:border-[#2E7FD9] focus:outline-none font-arabic cursor-pointer"
                 >
                   <option value="none">لا تقريب (حساب النسبة الدقيقة)</option>
                   <option value="half">تقريب لأقرب 50 قرش (أمثلة: 14.50 ، 15.00)</option>
@@ -1756,11 +1756,11 @@ export default function ProductsPage() {
             </div>
 
             {/* Footer Buttons */}
-            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-2.5">
+            <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2.5">
               <button
                 type="button"
                 onClick={() => setIsBulkPriceModalOpen(false)}
-                className="px-4 py-2 border border-slate-200 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition-all font-arabic"
+                className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-xs font-bold transition-all font-arabic"
               >
                 إلغاء
               </button>
@@ -1768,7 +1768,7 @@ export default function ProductsPage() {
                 type="button"
                 onClick={handleApplyBulkPriceUpdate}
                 disabled={submitting}
-                className="px-5 py-2 bg-amber hover:bg-amber-deep text-white rounded-xl text-xs font-bold transition-all font-arabic shadow-sm flex items-center gap-1.5"
+                className="px-5 py-2 bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white rounded-xl text-xs font-bold transition-all font-arabic shadow-sm flex items-center gap-1.5"
               >
                 {submitting ? (
                   <span>جاري التعديل...</span>

@@ -340,12 +340,13 @@ export default function OrdersPage() {
     <div className="space-y-6" dir="rtl">
       
       {/* 1. أشرطة تبويب الحالات (Status Tabs) */}
-      <div className="w-full overflow-x-auto scrollbar-none flex border-b border-[#E7DCC2] gap-2 bg-white px-4 pt-2 rounded-t-[16px] shadow-sm">
+      <div className="w-full overflow-x-auto scrollbar-none flex border-b border-slate-200/80 dark:border-slate-800 gap-2 bg-white dark:bg-slate-900 px-4 pt-2 rounded-t-[16px] shadow-sm transition-colors">
         {statusTabs.map((tab) => {
           const tabCount = tab.id === 'all' 
             ? orders.length 
             : orders.filter(o => o.status === tab.id).length;
           
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
@@ -353,17 +354,17 @@ export default function OrdersPage() {
                 setActiveTab(tab.id);
                 setCurrentPage(1);
               }}
-              className={`pb-4 px-4 text-sm font-semibold transition-all duration-200 border-b-2 font-arabic whitespace-nowrap flex items-center gap-1.5 ${
-                activeTab === tab.id
-                  ? 'border-[#E7A537] text-ink font-bold'
-                  : 'border-transparent text-ink-muted hover:text-ink'
+              className={`pb-3.5 px-4 text-sm font-bold transition-all duration-200 border-b-2 font-arabic whitespace-nowrap flex items-center gap-2 ${
+                isActive
+                  ? 'border-[#2E7FD9] text-[#2E7FD9] dark:text-[#5B9FE6] font-black'
+                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
               <span>{tab.label}</span>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold font-english ${
-                activeTab === tab.id 
-                  ? 'bg-amber text-white' 
-                  : 'bg-[#F6F1E4] text-ink-soft'
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold font-english ${
+                isActive 
+                  ? 'bg-amber-500 text-white shadow-sm' 
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700'
               }`}>
                 {tabCount}
               </span>

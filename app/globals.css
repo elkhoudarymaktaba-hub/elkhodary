@@ -3,31 +3,31 @@
 @tailwind utilities;
 
 :root {
-  --ink: #0A1931;             /* كحلي داكن ناصع للنصوص المقروءة */
-  --ink-soft: #1E90FF;        /* أزرق سماوي أساسي للهوية */
-  --ink-muted: #77B5FE;       /* أزرق سماوي ناعم */
-  --paper: #FFFFFF;           /* تغيير الخلفية بالكامل إلى أبيض نظيف */
-  --paper-line: #E2E8F0;      /* حدود رمادية فاتحة ناعمة بدلاً من البيج */
-  --paper-dark: #F8FAFC;      /* خلفية تبادلية رمادي خفيف جداً */
-  --white: #FFFFFF;           /* خلفية الكروت بيضاء */
+  --ink: #0F172A;             /* كحلي/أسود داكن ناصع للنصوص المقروءة 100% */
+  --ink-soft: #2E7FD9;        /* أزرق أساسي تفاعلي للأزرار والعناوين والروابط */
+  --ink-muted: #64748B;       /* رمادي ناعم للنصوص الفرعية */
+  --paper: #F7F8FA;           /* خلفية الصفحة الرئيسية (رمادي فاتح جداً ناعم لتبرز الكروت البيضاء) */
+  --paper-line: #E2E8F0;      /* حدود رمادية ناعمة جداً */
+  --paper-dark: #EDF0F5;      /* خلفيات تبادلية ناعمة */
+  --white: #FFFFFF;           /* خلفية الكروت بيضاء نقية 100% */
   
-  --amber: #D4AF37;           /* لون ذهبي أساسي للبراند */
-  --amber-deep: #B89324;      /* درجة غامقة للذهبي */
-  --amber-light: #FAF1D7;     /* درجة فاتحة للذهبي */
+  --amber: #E7A537;           /* لون ذهبي فاخر للعناصر المميزة فقط */
+  --amber-deep: #D97706;      /* درجة غامقة للذهبي */
+  --amber-light: #FEF3C7;     /* درجة فاتحة للذهبي */
   
-  --coral: #D4AF37;           /* تحويل المرجاني بالكامل للذهبي */
-  --coral-deep: #B89324;
-  --coral-light: #FAF1D7;
+  --coral: #E7A537;
+  --coral-deep: #D97706;
+  --coral-light: #FEF3C7;
   
-  --sage: #1E90FF;            /* تحويل السيج بالكامل للأزرق السماوي */
-  --sage-deep: #0073E6;
-  --sage-light: #E6F2FF;
+  --sage: #2E7FD9;
+  --sage-deep: #1B4F8A;
+  --sage-light: #EFF6FF;
   
-  --plum: #1E90FF;            /* تحويل البنفسجي للأزرق السماوي */
-  --plum-light: #E6F2FF;
+  --plum: #2E7FD9;
+  --plum-light: #EFF6FF;
 
   --radius-card: 16px;
-  --radius-button: 9999px;    /* توحيد الأزرار لتكون دائرية بالكامل */
+  --radius-button: 12px;
   --radius-input: 12px;
 }
 
@@ -46,12 +46,12 @@ html {
 
 @layer base {
   body {
-    @apply bg-paper text-ink font-tajawal;
+    @apply bg-[#F7F8FA] text-slate-900 font-tajawal;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-cairo text-ink font-bold;
+    @apply font-cairo text-slate-900 font-bold;
   }
 
   /* Font helper mappings */
@@ -73,12 +73,12 @@ html {
   }
 }
 
-/* Glassmorphism utility with ink-tinted backdrop shadow */
+/* Glassmorphism utility */
 .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(14, 51, 80, 0.08);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
 }
 
 /* Hide scrollbar */
@@ -92,17 +92,7 @@ html {
 
 /* notebook lined paper style */
 .bg-notebook-lines {
-  background-color: var(--paper);
-}
-@media (min-width: 640px) {
-  .bg-notebook-lines {
-    background-image: repeating-linear-gradient(
-      var(--paper) 0px,
-      var(--paper) 35px,
-      var(--paper-line) 35px,
-      var(--paper-line) 36px
-    );
-  }
+  background-color: #F7F8FA;
 }
 
 /* Highlighter effect behind key terms */
@@ -117,7 +107,7 @@ html {
   right: 0;
   width: 100%;
   height: 35%;
-  background-color: rgba(217, 175, 86, 0.25);
+  background-color: rgba(231, 165, 55, 0.25);
   z-index: -1;
   transform-origin: right;
   transform: scaleX(0);
@@ -190,188 +180,14 @@ html {
   transform: translateY(0);
 }
 
-/* Pulsing Cart Counter Badge */
-.pulse-badge {
-  animation: pulseBadge 2.4s ease-in-out infinite;
-}
-@keyframes pulseBadge {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.18);
-  }
-}
-
-/* Respect user prefers-reduced-motion */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-delay: 0s !important;
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  .reveal {
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-
-/* 🌙 Dark Mode / Night Mode for Admin Panel */
+/* 🌙 Dark Mode / Night Mode variables for Admin Panel */
 body.admin-dark {
-  --ink: #F8FAFC;             /* Slate 50 (Very light gray) */
-  --ink-soft: #60A5FA;        /* Sky blue / accent blue */
-  --ink-muted: #94A3B8;       /* Slate 400 (Muted gray) */
-  --paper: #0F172A;           /* Slate 900 (Main dark background) */
-  --paper-line: #1E293B;      /* Slate 800 (Borders) */
-  --paper-dark: #1E293B;      /* Slate 800 */
-  --white: #1E293B;           /* Slate 800 (Card background) */
-  
-  --amber: #F59E0B;
-  --amber-deep: #D97706;
-  --amber-light: #1E1B4B;     /* Slate-related dark amber */
-  
-  --coral: #EF4444;
-  --coral-deep: #DC2626;
-  --coral-light: #7F1D1D;
-  
-  --sage: #10B981;
-  --sage-deep: #059669;
-  --sage-light: #064E3B;
-}
-
-/* Global resets for admin dark mode components */
-body.admin-dark {
-  background-color: var(--paper) !important;
-  color: var(--ink) !important;
-}
-
-body.admin-dark .bg-white {
-  background-color: var(--white) !important;
-}
-
-body.admin-dark .bg-slate-50 {
-  background-color: #1E293B !important;
-}
-
-body.admin-dark .bg-slate-100 {
-  background-color: #0F172A !important;
-}
-
-body.admin-dark .bg-[#F6F1E4] {
-  background-color: #0F172A !important;
-}
-
-body.admin-dark .bg-[#F6F1E4]\/30 {
-  background-color: rgba(15, 23, 42, 0.3) !important;
-}
-
-body.admin-dark .bg-[#FBEBCB]\/15 {
-  background-color: rgba(245, 158, 11, 0.08) !important;
-}
-
-body.admin-dark .bg-[#FBEBCB]\/5 {
-  background-color: rgba(245, 158, 11, 0.03) !important;
-}
-
-body.admin-dark .text-slate-800 {
-  color: #F8FAFC !important;
-}
-
-body.admin-dark .text-slate-700 {
-  color: #E2E8F0 !important;
-}
-
-body.admin-dark .text-slate-600 {
-  color: #CBD5E1 !important;
-}
-
-body.admin-dark .text-slate-500 {
-  color: #94A3B8 !important;
-}
-
-body.admin-dark .text-slate-400 {
-  color: #64748B !important;
-}
-
-body.admin-dark .border-slate-100 {
-  border-color: var(--paper-line) !important;
-}
-
-body.admin-dark .border-slate-200 {
-  border-color: var(--paper-line) !important;
-}
-
-body.admin-dark .border-\[\#E7DCC2\] {
-  border-color: var(--paper-line) !important;
-}
-
-body.admin-dark input,
-body.admin-dark textarea,
-body.admin-dark select,
-body.admin-dark input.bg-white,
-body.admin-dark textarea.bg-white,
-body.admin-dark select.bg-white,
-body.admin-dark .bg-white input,
-body.admin-dark .bg-white textarea,
-body.admin-dark .bg-white select {
-  background-color: #0F172A !important;
-  color: #F8FAFC !important;
-  border-color: #334155 !important; /* Slate 700 - visible border in dark mode */
-}
-
-body.admin-dark input:focus,
-body.admin-dark textarea:focus,
-body.admin-dark select:focus,
-body.admin-dark input.bg-white:focus,
-body.admin-dark textarea.bg-white:focus,
-body.admin-dark select.bg-white:focus,
-body.admin-dark .bg-white input:focus,
-body.admin-dark .bg-white textarea:focus,
-body.admin-dark .bg-white select:focus {
-  border-color: var(--ink-soft) !important;
-  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15) !important;
-}
-
-body.admin-dark table {
-  color: #E2E8F0 !important;
-}
-
-body.admin-dark table tr:hover {
-  background-color: rgba(255, 255, 255, 0.03) !important;
-}
-
-body.admin-dark table th {
-  color: #94A3B8 !important;
-}
-
-/* Sidebar overrides for admin dark mode */
-body.admin-dark aside {
-  background-color: #0F172A !important;
-  border-left-color: var(--paper-line) !important;
-}
-
-body.admin-dark aside a {
-  color: #94A3B8 !important;
-}
-
-body.admin-dark aside a.active,
-body.admin-dark aside a:hover {
-  background-color: #1E293B !important;
-  color: #60A5FA !important;
-}
-
-/* Dialog wrapper overrides */
-body.admin-dark [role="dialog"] {
-  background-color: #0F172A !important;
-  border-color: var(--paper-line) !important;
-  color: #F8FAFC !important;
-}
-
-body.admin-dark [role="dialog"] h2,
-body.admin-dark [role="dialog"] h3 {
-  color: #F8FAFC !important;
+  --paper: #0F172A;
+  --paper-line: #1E293B;
+  --white: #1E293B;
+  background-color: #0F172A;
+  color: #F8FAFC;
+}  color: #F8FAFC !important;
 }
 
 /* Button overrides for dark mode */

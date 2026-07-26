@@ -139,26 +139,24 @@ export default function Header() {
       )}
 
       {/* 2. الهيدر الرئيسي للوحة التحكم */}
-      <div className="w-full bg-white h-20 border-b border-[#E7DCC2] px-4 md:px-8 flex items-center justify-between shadow-sm">
+      <div className="w-full bg-white dark:bg-slate-900 h-20 border-b border-slate-200/80 dark:border-slate-800 px-4 md:px-8 flex items-center justify-between shadow-sm transition-colors">
         
         {/* عنوان الصفحة الحالي */}
         <div>
-          <h2 className="font-bold text-lg md:text-xl text-ink font-arabic leading-tight">
+          <h2 className="font-black text-lg md:text-xl text-slate-900 dark:text-slate-100 font-arabic leading-tight">
             {getPageTitle()}
           </h2>
-          <p className="text-xs text-ink-muted font-arabic hidden md:block mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-arabic hidden md:block mt-1">
             مرحباً بك في لوحة تحكم {storeName}
           </p>
         </div>
 
         {/* أدوات الهيدر (المشرف، التنبيهات، زيارة الموقع) */}
-        <div className="flex items-center gap-3 md:gap-5">
+        <div className="flex items-center gap-3 md:gap-4">
           {/* معاينة المتجر */}
           <a
             href="/"
             target="_blank"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-amber-light text-amber-deep text-xs font-bold hover:bg-amber hover:text-white transition-all duration-200 border border-amber/10"
-          >
             <span className="hidden md:inline">زيارة المتجر</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
