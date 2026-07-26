@@ -20,8 +20,19 @@ export function useRole() {
           
           if (metaRole === 'full_admin' || metaRole === 'product_manager' || metaRole === 'order_manager' || metaRole === 'viewer') {
             setRole(metaRole);
-          } else if (email === 'admin@elkhodary.com' || email.includes('admin') || email.includes('elkhodary')) {
+          } else {
             setRole('full_admin');
+          }
+        } else if (typeof window !== 'undefined') {
+          const activeStaffStr = localStorage.getItem('kh_active_staff');
+          if (activeStaffStr) {
+            try {
+              const activeStaff = JSON.parse(activeStaffStr);
+              setUser(activeStaff);
+              setRole(activeStaff.role || 'full_admin');
+            } catch (e) {
+              setRole('full_admin');
+            }
           } else {
             setRole('full_admin');
           }

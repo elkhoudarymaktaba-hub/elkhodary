@@ -6,7 +6,7 @@ import {
   Search, Plus, Star, StarOff, Edit2, Trash2, ToggleLeft, 
   ToggleRight, Check, AlertCircle, Upload, X, ChevronLeft, ChevronRight, Image as ImageIcon
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase, compressImageToWebP } from '@/lib/supabase';
 import { getMockData, saveMockData, Product, Category } from '@/lib/mockData';
 import { useRole } from '@/lib/useRole';
 import { Input } from '@/components/ui/input';
@@ -60,6 +60,12 @@ export default function ProductsPage() {
   const [formColorsEnabled, setFormColorsEnabled] = useState(false);
   const [formColors, setFormColors] = useState<string[]>([]);
   const [newColorInput, setNewColorInput] = useState('');
+
+  // خيارات المقاسات والأحجام المتعددة بأسعار خاصة لكل مقاس
+  const [formSizesEnabled, setFormSizesEnabled] = useState(false);
+  const [formSizes, setFormSizes] = useState<{ name: string; price: number }[]>([]);
+  const [newSizeNameInput, setNewSizeNameInput] = useState('');
+  const [newSizePriceInput, setNewSizePriceInput] = useState<number | ''>('');
 
   // حالات ودوال السحب والإفلات لترتيب الصور
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -370,6 +376,10 @@ export default function ProductsPage() {
     setFormColorsEnabled(false);
     setFormColors([]);
     setNewColorInput('');
+    setFormSizesEnabled(false);
+    setFormSizes([]);
+    setNewSizeNameInput('');
+    setNewSizePriceInput('');
     setIsFormOpen(true);
   };
 
@@ -404,9 +414,15 @@ export default function ProductsPage() {
     setFormSeoTitle(product.seo_title || '');
     setFormSeoDesc(product.seo_description || '');
     setFormSeoKeywords(product.seo_keywords || '');
-    setFormColorsEnabled(colorsList.length > 0);
-    setFormColors(colorsList);
+    setFormColorsEnabled(colorsList.length > 0 || (product.colors && product.colors.length > 0));
+    setFormColors(colorsList.length > 0 ? colorsList : (product.colors || []));
     setNewColorInput('');
+    
+    const hasSizes = !!(product.sizes && product.sizes.length > 0);
+    setFormSizesEnabled(hasSizes);
+    setFormSizes(product.sizes || []);
+    setNewSizeNameInput('');
+    setNewSizePriceInput('');
     setIsFormOpen(true);
   };
 
@@ -425,10 +441,16 @@ export default function ProductsPage() {
     const finalUrls: string[] = [...objectUrls];
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      let file = files[i];
       try {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+        // تحويل وضغط الصورة تلقائياً لصيغة WebP فائقة الخفة
+        try {
+          file = await compressImageToWebP(file);
+        } catch (compressErr) {
+          console.warn('WebP compression fallback:', compressErr);
+        }
+
+        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.webp`;
         const filePath = `${fileName}`;
 
         const { error } = await supabase.storage
@@ -517,6 +539,8 @@ export default function ProductsPage() {
       seo_description: formSeoDesc,
       seo_keywords: formSeoKeywords,
       badge: formBadge,
+      colors: formColorsEnabled ? formColors : [],
+      sizes: formSizesEnabled ? formSizes : [],
     };
 
     setSubmitting(true);
@@ -742,8 +766,8 @@ export default function ProductsPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* خيارات الألوان بدلاً من كمية المخزون */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* خيارات الألوان */}
               <div className="flex flex-col justify-center gap-1">
                 <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-arabic">خيارات الألوان</span>
                 <button
@@ -751,8 +775,21 @@ export default function ProductsPage() {
                   onClick={() => setFormColorsEnabled(!formColorsEnabled)}
                   className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200"
                 >
-                  <span className="text-xs font-arabic font-bold">تفعيل اختيار الألوان لهذا المنتج</span>
+                  <span className="text-xs font-arabic font-bold">تفعيل اختيار الألوان</span>
                   {formColorsEnabled ? <ToggleRight className="w-6 h-6 text-[#2E7FD9]" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
+                </button>
+              </div>
+
+              {/* خيارات المقاسات والأحجام بأسعار مختلفة */}
+              <div className="flex flex-col justify-center gap-1">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-arabic">المقاسات والأحجام</span>
+                <button
+                  type="button"
+                  onClick={() => setFormSizesEnabled(!formSizesEnabled)}
+                  className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200"
+                >
+                  <span className="text-xs font-arabic font-bold">تفعيل المقاسات والأسعار</span>
+                  {formSizesEnabled ? <ToggleRight className="w-6 h-6 text-[#2E7FD9]" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
                 </button>
               </div>
 
@@ -764,7 +801,7 @@ export default function ProductsPage() {
                   onClick={() => setFormIsFeatured(!formIsFeatured)}
                   className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200"
                 >
-                  <span className="text-xs font-arabic font-bold">تفعيل في العرض الرئيسي</span>
+                  <span className="text-xs font-arabic font-bold">تفعيل في الرئيسي</span>
                   {formIsFeatured ? <ToggleRight className="w-6 h-6 text-amber-500" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
                 </button>
               </div>
@@ -777,7 +814,7 @@ export default function ProductsPage() {
                   onClick={() => setFormIsActive(!formIsActive)}
                   className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200"
                 >
-                  <span className="text-xs font-arabic font-bold">متاح للطلب من الزوار</span>
+                  <span className="text-xs font-arabic font-bold">متاح للطلب</span>
                   {formIsActive ? <ToggleRight className="w-6 h-6 text-emerald-500" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
                 </button>
               </div>
@@ -853,6 +890,94 @@ export default function ProductsPage() {
                       className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-[#2E7FD9]/10 disabled:opacity-50 px-2 py-0.5 rounded transition-all font-arabic font-bold"
                     >
                       {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* تفاصيل إدارة المقاسات والأحجام بأسعار مختلفة إذا كانت مفعلة */}
+            {formSizesEnabled && (
+              <div className="bg-slate-50/50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-[16px] p-4 space-y-3 text-right transition-colors">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block font-arabic">قائمة المقاسات والأحجام مع السعر المخصص:</span>
+                
+                {formSizes.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {formSizes.map((size, index) => (
+                      <span 
+                        key={index}
+                        className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 font-bold text-xs px-3.5 py-1.5 rounded-full flex items-center gap-2 shadow-sm"
+                      >
+                        <span className="font-bold">{size.name}</span>
+                        <span className="text-emerald-600 dark:text-emerald-400 font-english font-black bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full text-[11px] border border-emerald-200 dark:border-emerald-800">{size.price} ج.م</span>
+                        <button 
+                          type="button" 
+                          onClick={() => setFormSizes(prev => prev.filter((_, idx) => idx !== index))}
+                          className="text-red-500 hover:text-red-700 font-bold mr-1"
+                          title="حذف هذا المقاس"
+                        >
+                          &times;
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-400 font-arabic">⚠️ لم تقم بإضافة أي مقاسات بعد. اضف المقاس واسمه وسعره الخاص أدناه.</p>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
+                  <input
+                    type="text"
+                    placeholder="اسم المقاس (مثال: A4 60 ورقة / علبة 12 قلم)"
+                    value={newSizeNameInput}
+                    onChange={(e) => setNewSizeNameInput(e.target.value)}
+                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs rounded-[10px] focus:outline-none focus:border-[#2E7FD9] font-arabic text-slate-800 dark:text-slate-100"
+                  />
+                  <input
+                    type="number"
+                    placeholder="السعر الخاص لهذا المقاس (ج.م)"
+                    value={newSizePriceInput === '' ? '' : newSizePriceInput}
+                    onChange={(e) => setNewSizePriceInput(e.target.value === '' ? '' : Number(e.target.value))}
+                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs rounded-[10px] focus:outline-none focus:border-[#2E7FD9] font-arabic text-slate-800 dark:text-slate-100 font-english"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (newSizeNameInput.trim() && newSizePriceInput !== '') {
+                        setFormSizes(prev => [...prev, { name: newSizeNameInput.trim(), price: Number(newSizePriceInput) }]);
+                        setNewSizeNameInput('');
+                        setNewSizePriceInput('');
+                      } else {
+                        alert('يرجى ادخال اسم المقاس والسعر الخاص به!');
+                      }
+                    }}
+                    className="bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white font-bold text-xs px-4 py-2 rounded-[10px] transition-colors font-arabic flex items-center justify-center gap-1 shadow-sm"
+                  >
+                    + إضافة مقاس بسعر خاص
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap gap-1 items-center pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-700">
+                  <span className="text-[10px] text-slate-400 font-arabic ml-1">مقاسات سريعة:</span>
+                  {[
+                    { name: 'مقاس A4', price: 45 },
+                    { name: 'مقاس A5', price: 25 },
+                    { name: '60 ورقة', price: 30 },
+                    { name: '80 ورقة', price: 40 },
+                    { name: '100 ورقة', price: 50 },
+                    { name: 'علبة 12 قلم', price: 75 },
+                    { name: 'مقاس صغير', price: 20 },
+                    { name: 'مقاس وسط', price: 35 },
+                    { name: 'مقاس كبير', price: 50 },
+                  ].map(s => (
+                    <button
+                      key={s.name}
+                      type="button"
+                      disabled={formSizes.some(item => item.name === s.name)}
+                      onClick={() => setFormSizes(prev => [...prev, s])}
+                      className="text-[10px] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-[#2E7FD9]/10 disabled:opacity-50 px-2 py-0.5 rounded transition-all font-arabic font-bold"
+                    >
+                      {s.name} ({s.price} ج.م)
                     </button>
                   ))}
                 </div>

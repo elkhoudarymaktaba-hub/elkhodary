@@ -30,6 +30,8 @@ export interface Product {
   seo_description?: string;
   seo_keywords?: string;
   badge?: string;
+  colors?: string[];
+  sizes?: { name: string; price: number }[];
 }
 
 export interface Box {

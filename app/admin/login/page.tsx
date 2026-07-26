@@ -25,24 +25,78 @@ function LoginContent() {
     setLoading(true);
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      let isSuccess = false;
+      let loggedUser: any = null;
 
-      if (authError) {
-        setError(authError.message || 'بيانات الدخول غير صحيحة، يرجى المحاولة مرة أخرى.');
-      } else if (data) {
-        // تعيين الكوكي للميدل وير لتأمين المسارات
-        document.cookie = `kh_admin_session=true; Path=/; Max-Age=86400; SameSite=Lax;`;
+      // 1. فحص بيانات الدخول عبر Supabase Auth
+      try {
+        const { data, error: authError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (!authError && data?.session) {
+          isSuccess = true;
+          loggedUser = {
+            id: data.session.user.id,
+            email: data.session.user.email,
+            name: data.session.user.user_metadata?.name || 'مشرف النظام',
+            role: data.session.user.user_metadata?.role || 'full_admin'
+          };
+        }
+      } catch (authErr) {
+        console.warn('Supabase auth attempt:', authErr);
+      }
+
+      // 2. فحص بيانات المشرفين والمدراء المضافين في قائمة الموظفين (kh_staff / elkhodary_staff)
+      if (!isSuccess && typeof window !== 'undefined') {
+        const staffKey = 'elkhodary_staff';
+        const stored = localStorage.getItem(staffKey);
+        let staffList: any[] = [];
         
+        if (stored) {
+          try { staffList = JSON.parse(stored); } catch (e) {}
+        }
+
+        // إدراج الحسابات الافتراضية
+        const defaultAccounts = [
+          { email: 'admin@elkhodary.com', password: 'admin123', name: 'أحمد الخضري', role: 'full_admin' },
+          { email: 'products@elkhodary.com', password: 'products2025', name: 'محمد علي', role: 'product_manager' },
+          { email: 'sales@elkhodary.com', password: 'sales2025', name: 'سارة أحمد', role: 'order_manager' },
+        ];
+
+        const allStaff = [...defaultAccounts, ...staffList];
+        const match = allStaff.find(
+          s => s.email.toLowerCase() === email.trim().toLowerCase() && s.password === password
+        );
+
+        if (match) {
+          isSuccess = true;
+          loggedUser = {
+            id: match.id || `staff-${Date.now()}`,
+            email: match.email,
+            name: match.name,
+            role: match.role || 'full_admin'
+          };
+        }
+      }
+
+      if (isSuccess && loggedUser) {
+        // تعيين الكوكي وتخزين الجلسة النشطة
+        document.cookie = `kh_admin_session=true; Path=/; Max-Age=86400; SameSite=Lax;`;
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kh_active_staff', JSON.stringify(loggedUser));
+        }
+
         router.refresh();
         setTimeout(() => {
           router.push(redirectTo);
         }, 100);
+      } else {
+        setError('اسم المستخدم أو كلمة المرور غير صحيحة، يرجى التأكد من البيانات.');
       }
     } catch (err) {
-      setError('حدث خطأ أثناء الاتصال بالخادم.');
+      setError('حدث خطأ أثناء تسجيل الدخول، يرجى المحاولة لاحقاً.');
       console.error(err);
     } finally {
       setLoading(false);

@@ -21,6 +21,8 @@ interface ProductDetailClientProps {
     images: string[];
     category_id?: string;
     categories?: { name: string } | null;
+    colors?: string[];
+    sizes?: { name: string; price: number }[];
   };
 }
 
@@ -35,13 +37,19 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   // Parse color options from description if present
   const desc = product.description || '';
   const colorsMatch = desc.match(/\[COLORS\]:\s*(.+)$/m);
-  const colors = colorsMatch && colorsMatch[1]
+  const colorsFromDesc = colorsMatch && colorsMatch[1]
     ? colorsMatch[1].split(',').map((c: string) => c.trim()).filter(Boolean)
     : [];
+  const colors = product.colors?.length ? product.colors : colorsFromDesc;
   const cleanDescription = desc.replace(/\[COLORS\]:\s*(.+)$/m, '').trim();
+
+  const sizes = product.sizes || [];
 
   const [activeImage, setActiveImage] = useState(images[0]);
   const [unitType, setUnitType] = useState<'piece' | 'box'>('piece');
+  const [selectedSize, setSelectedSize] = useState<{ name: string; price: number } | null>(
+    sizes.length > 0 ? sizes[0] : null
+  );
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
@@ -55,10 +63,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [newReviewText, setNewReviewText] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  // Handle unit price selection
-  const currentPrice = unitType === 'piece'
-    ? product.price_unit
-    : (product.price_box || product.price_unit);
+  // Handle unit price selection (if size selected, use size price)
+  const currentPrice = selectedSize 
+    ? selectedSize.price 
+    : (unitType === 'piece' ? product.price_unit : (product.price_box || product.price_unit));
 
   const handleAddToBox = () => {
     if (!boxId || typeof window === 'undefined') return;
@@ -257,11 +265,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     addItem({
       type: 'product',
       productId: product.id,
-      name: product.name,
+      name: selectedSize ? `${product.name} (${selectedSize.name})` : product.name,
       price: currentPrice,
       qty: quantity,
       image: images[0],
       unitType: unitType,
+      selectedSize: selectedSize?.name,
       colors: colors.length > 0 ? selectedColors : undefined,
     } as any);
 
@@ -413,13 +422,15 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Price section */}
             <div className="p-4 bg-brand-bg/40 rounded-2xl border border-brand-border/60 space-y-3">
               <div className="flex items-baseline justify-between">
-                <span className="text-brand-text/50 text-xs font-bold">سعر القطعة الفردية:</span>
+                <span className="text-brand-text/50 text-xs font-bold">
+                  {selectedSize ? `سعر مقاس (${selectedSize.name}):` : 'سعر القطعة الفردية:'}
+                </span>
                 <span className="text-primary font-black text-2xl font-numbers">
-                  {product.price_unit} <span className="text-sm font-cairo font-semibold">ج.م</span>
+                  {currentPrice} <span className="text-sm font-cairo font-semibold">ج.م</span>
                 </span>
               </div>
 
-              {product.price_box && (
+              {!selectedSize && product.price_box && (
                 <div className="flex items-baseline justify-between pt-2 border-t border-brand-border/50">
                   <span className="text-brand-text/50 text-xs font-bold flex items-center gap-1.5">
                     <Box size={14} className="text-secondary" /> سعر العلبة الكاملة:
@@ -430,6 +441,39 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 </div>
               )}
             </div>
+
+            {/* Sizes / Variants Selector Widget */}
+            {sizes.length > 0 && (
+              <div className="space-y-2.5 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-right mt-4" dir="rtl">
+                <span className="block text-xs font-bold text-slate-800 font-arabic">
+                  اختر المقاس / الحجم المطلوب:
+                </span>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {sizes.map((s, idx) => {
+                    const isSelected = selectedSize?.name === s.name;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setSelectedSize(s)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold font-arabic transition-all flex items-center gap-2 border ${
+                          isSelected
+                            ? 'bg-[#2E7FD9] text-white border-[#2E7FD9] shadow-md scale-[1.02]'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-[#2E7FD9]/50 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span>{s.name}</span>
+                        <span className={`text-[11px] font-english font-black px-2 py-0.5 rounded-full ${
+                          isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-emerald-600 border border-slate-200'
+                        }`}>
+                          {s.price} ج.م
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             {cleanDescription && (

@@ -12,7 +12,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full flex flex-col gap-1.5 text-right">
         {label && (
-          <label className="text-sm font-semibold text-ink dark:text-slate-200">
+          <label className="text-xs font-bold text-slate-800 dark:text-slate-100">
             {label}
           </label>
         )}
@@ -20,7 +20,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           type={type}
           className={clsx(
-            'w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-ink dark:text-slate-100 rounded-[12px] font-arabic placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2E7FD9] dark:focus:border-[#2E7FD9] focus:ring-4 focus:ring-[#2E7FD9]/10 transition-all duration-200',
+            'w-full px-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-slate-100 rounded-[12px] font-arabic placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-[#2E7FD9] dark:focus:border-[#2E7FD9] focus:ring-4 focus:ring-[#2E7FD9]/10 transition-all duration-200',
             {
               'border-red-500 focus:border-red-500 focus:ring-red-500/10': error,
             },
