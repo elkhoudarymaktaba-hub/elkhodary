@@ -187,18 +187,17 @@ body.admin-dark {
   --white: #1E293B;
   background-color: #0F172A;
   color: #F8FAFC;
-}  color: #F8FAFC !important;
 }
 
 /* Button overrides for dark mode */
 body.admin-dark button[variant="outline"] {
-  border-color: var(--paper-line) !important;
-  color: #F8FAFC !important;
-  background-color: transparent !important;
+  border-color: var(--paper-line);
+  color: #F8FAFC;
+  background-color: transparent;
 }
 
 body.admin-dark button[variant="outline"]:hover {
-  background-color: #1E293B !important;
+  background-color: #1E293B;
 }
 
 /* ==========================================
