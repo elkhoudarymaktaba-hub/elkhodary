@@ -239,33 +239,33 @@ export default function CategoriesPage() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" dir="rtl">
       
       {/* الجزء الأول: نموذج الإضافة / التعديل (Side Form Card) */}
-      <div className="bg-white p-5 rounded-[16px] shadow-premium border border-[#E7DCC2] h-fit space-y-4 lg:col-span-1">
+      <div className="bg-[#F7F8FA] p-5 rounded-[16px] border border-slate-300 h-fit space-y-4 lg:col-span-1 shadow-2xs">
         <div className="space-y-1 text-right">
-          <h3 className="text-base font-bold text-ink font-arabic flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-amber" />
+          <h3 className="text-base font-black text-slate-900 font-arabic flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4 text-[#2E7FD9]" />
             <span>{editingCategory ? 'تعديل بيانات القسم' : 'إنشاء قسم جديد'}</span>
           </h3>
-          <p className="text-xs text-slate-400 font-arabic">أضف رمزاً تعبيرياً واسماً مميزاً للقسم</p>
+          <p className="text-xs text-slate-500 font-arabic">أضف رمزاً تعبيرياً واسماً مميزاً للقسم</p>
         </div>
 
         <form onSubmit={handleSaveCategory} className="space-y-4 text-right">
           
           {/* اختيار الأيقونة */}
           <div className="space-y-2">
-            <span className="text-sm font-semibold text-ink font-arabic">أيقونة القسم (Emoji)</span>
+            <span className="text-xs font-bold text-slate-900 font-arabic">أيقونة القسم (Emoji)</span>
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 bg-[#FBEBCB]/30 rounded-[12px] border border-[#E7DCC2] flex items-center justify-center text-3xl shadow-inner select-none">
+              <div className="w-14 h-14 bg-white rounded-[12px] border border-slate-300 flex items-center justify-center text-3xl shadow-xs select-none">
                 {formIcon}
               </div>
               
-              <div className="flex-1 flex flex-wrap gap-1 bg-slate-50 p-2 rounded-[12px] border border-slate-100 max-h-[80px] overflow-y-auto scrollbar-none">
+              <div className="flex-1 flex flex-wrap gap-1 bg-white p-2 rounded-[12px] border border-slate-300 max-h-[80px] overflow-y-auto scrollbar-none">
                 {emojis.map((emoji) => (
                   <button
                     key={emoji}
                     type="button"
                     onClick={() => setFormIcon(emoji)}
-                    className={`w-7 h-7 flex items-center justify-center rounded-[6px] text-base hover:bg-amber/10 transition-colors ${
-                      formIcon === emoji ? 'bg-amber/20' : ''
+                    className={`w-7 h-7 flex items-center justify-center rounded-[6px] text-base hover:bg-[#2E7FD9]/10 transition-colors ${
+                      formIcon === emoji ? 'bg-[#2E7FD9]/20 font-bold' : ''
                     }`}
                   >
                     {emoji}
@@ -294,26 +294,26 @@ export default function CategoriesPage() {
 
           {/* مفتاح التفعيل النشط */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold text-ink font-arabic">الحالة الافتراضية للقسم</span>
+            <span className="text-xs font-bold text-slate-900 font-arabic">الحالة الافتراضية للقسم</span>
             <button
               type="button"
               onClick={() => setFormIsActive(!formIsActive)}
-              className="flex items-center gap-2 py-2 px-3 border border-[#E7DCC2] rounded-[12px] bg-slate-50 hover:bg-slate-100/70 transition-colors justify-between text-slate-700 w-full"
+              className="flex items-center gap-2 py-2 px-3 border border-slate-300 rounded-[12px] bg-white hover:bg-slate-100 transition-colors justify-between text-slate-800 w-full font-bold text-xs"
             >
               <span className="text-xs font-arabic">عرض في تصفح الموقع</span>
-              {formIsActive ? <ToggleRight className="w-6 h-6 text-sage" /> : <ToggleLeft className="w-6 h-6 text-slate-300" />}
+              {formIsActive ? <ToggleRight className="w-6 h-6 text-emerald-600" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
             </button>
           </div>
 
           {/* أزرار الحفظ */}
-          <div className="flex gap-2 border-t border-slate-100 pt-3">
+          <div className="flex gap-2 border-t border-slate-200 pt-3">
             {editingCategory && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleCancelEdit}
-                className="flex-1 font-arabic"
+                className="flex-1 font-arabic border-slate-300 text-slate-700"
               >
                 إلغاء
               </Button>
@@ -333,15 +333,15 @@ export default function CategoriesPage() {
       </div>
 
       {/* الجزء الثاني: جدول وعرض الأقسام (Main Table) */}
-      <div className="bg-white p-5 rounded-[16px] shadow-premium border border-[#E7DCC2] lg:col-span-2 flex flex-col gap-4">
+      <div className="bg-[#F7F8FA] p-5 rounded-[16px] border border-slate-300 lg:col-span-2 flex flex-col gap-4 shadow-2xs">
         <div className="space-y-1 text-right">
-          <h3 className="text-base font-bold text-ink font-arabic">أقسام المتجر المتاحة</h3>
-          <p className="text-xs text-slate-400 font-arabic">ترتيب وحصر لأقسام المتجر وحجم المنتجات المرتبطة بها</p>
+          <h3 className="text-base font-black text-slate-900 font-arabic">أقسام المتجر المتاحة</h3>
+          <p className="text-xs text-slate-500 font-arabic">ترتيب وحصر لأقسام المتجر وحجم المنتجات المرتبطة بها</p>
         </div>
 
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-4 text-ink">
-            <svg className="animate-spin h-8 w-8 text-amber" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-800">
+            <svg className="animate-spin h-8 w-8 text-[#2E7FD9]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -351,7 +351,7 @@ export default function CategoriesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm">
               <thead>
-                <tr className="bg-[#F6F1E4]/30 border-b border-[#E7DCC2] text-ink-soft font-arabic">
+                <tr className="bg-slate-200/60 border-b border-slate-300 text-slate-900 font-arabic">
                   <th className="py-4 px-5 font-bold">الأيقونة</th>
                   <th className="py-4 px-5 font-bold">اسم القسم</th>
                   <th className="py-4 px-5 font-bold">الرابط فرعي (Slug)</th>
@@ -360,12 +360,12 @@ export default function CategoriesPage() {
                   <th className="py-4 px-5 font-bold text-center">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-[#E7DCC2]">
+              <tbody className="divide-y divide-dashed divide-slate-300">
                 {categories.map((cat) => {
                   const productCount = products.filter(p => p.category_id === cat.id).length;
 
                   return (
-                    <tr key={cat.id} className="hover:bg-[#FBEBCB]/15 transition-colors">
+                    <tr key={cat.id} className="hover:bg-slate-100/70 transition-colors">
                       <td className="py-3.5 px-5 text-2xl select-none">
                         {cat.icon || '📚'}
                       </td>

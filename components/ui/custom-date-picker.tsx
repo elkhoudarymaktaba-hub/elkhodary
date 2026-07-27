@@ -211,10 +211,10 @@ export function CustomDatePicker({
       {/* حقل الإدخال المنشط */}
       <div 
         onClick={() => setIsOpen(true)}
-        className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-[#2E7FD9]/60 dark:hover:border-[#2E7FD9]/60 rounded-[12px] px-3.5 py-2 text-xs outline-none transition-all duration-200 text-slate-800 dark:text-slate-100 font-arabic cursor-pointer shadow-sm flex items-center justify-between gap-2.5 hover:shadow-md select-none ${className}`}
+        className={`bg-white border border-slate-300 hover:border-[#2E7FD9] rounded-[12px] px-3.5 py-2 text-xs outline-none transition-all duration-200 text-slate-900 font-arabic cursor-pointer shadow-2xs flex items-center justify-between gap-2.5 hover:shadow-xs select-none ${className}`}
       >
         <div className="flex items-center gap-2 truncate flex-grow">
-          <CalendarIcon className="w-4 h-4 text-[#2E7FD9] dark:text-[#2E7FD9] shrink-0" />
+          <CalendarIcon className="w-4 h-4 text-[#2E7FD9] shrink-0" />
           <input
             type="text"
             value={isFocused ? tempInput : (getFormattedDisplay() || '')}
@@ -226,7 +226,7 @@ export function CustomDatePicker({
             }}
             onBlur={handleTextBlur}
             className={`bg-transparent border-none p-0 outline-none text-xs focus:ring-0 w-full text-right ${
-              value ? 'text-slate-800 dark:text-slate-100 font-bold' : 'text-slate-400 dark:text-slate-500'
+              value ? 'text-slate-900 font-bold' : 'text-slate-500'
             }`}
             dir={isFocused ? 'ltr' : 'rtl'}
           />
@@ -235,14 +235,14 @@ export function CustomDatePicker({
           <button 
             type="button" 
             onClick={clearDate}
-            className="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 shrink-0"
+            className="p-0.5 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 shrink-0"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         )}
       </div>
 
-      <span className="absolute -top-2.5 right-3 bg-white dark:bg-slate-800 px-2 py-0.2 text-[9px] font-bold text-slate-700 dark:text-slate-200 rounded-full border border-slate-200 dark:border-slate-700 shadow-xs select-none">
+      <span className="absolute -top-2.5 right-3 bg-white px-2 py-0.2 text-[9px] font-bold text-slate-900 rounded-full border border-slate-300 shadow-2xs select-none">
         {label}
       </span>
 
@@ -254,7 +254,7 @@ export function CustomDatePicker({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: dropdownDirection === 'up' ? -10 : 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className={`absolute z-30 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[20px] p-4 shadow-2xl w-64 select-none animate-in fade-in duration-150 ${
+            className={`absolute z-30 right-0 bg-white border border-slate-300 rounded-[20px] p-4 shadow-2xl w-64 select-none animate-in fade-in duration-150 ${
               dropdownDirection === 'up' 
                 ? 'bottom-full mb-2 slide-in-from-bottom-2' 
                 : 'top-full mt-2 slide-in-from-top-2'
