@@ -53,161 +53,79 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 async function getHomeData() {
+  // الأقسام الافتراضية الخمسة - مضمونة دائماً كـ fallback نهائي
+  const defaultHome = defaultPages.find(p => p.slug === 'home');
+  const fallbackBlocks = defaultHome ? JSON.parse(JSON.stringify(defaultHome.blocks)) : [];
+
   try {
-    // استخدام عميل Supabase مباشر لضمان قراءة البيانات الحية دون أي cache
     const directSb = getDirectSupabase();
     const sb = directSb || supabase;
 
-    const pagesPromise = sb
-      .from('pages')
-      .select('*')
-      .eq('slug', 'home')
-      .limit(1);
+    // 1. جلب كل البيانات بشكل متوازٍ مع timeout لمنع التعليق
+    const withTimeout = <T>(promise: Promise<T>, ms = 4000): Promise<T> =>
+      Promise.race([promise, new Promise<T>((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
 
-    const pagesRes = await pagesPromise;
-    const dbPage = pagesRes.data && pagesRes.data.length > 0 ? pagesRes.data[0] : null;
-    const mockHome = getMockData.pages().find(p => p.slug === 'home');
-    const defaultHome = defaultPages.find(p => p.slug === 'home');
-    
-    let rawBlocks: any = dbPage?.blocks || mockHome?.blocks || defaultHome?.blocks || [];
+    const [pagesRes, settingsRes, productsRes, boxesRes] = await Promise.all([
+      withTimeout(sb.from('pages').select('*').eq('slug', 'home').limit(1)).catch(() => ({ data: null })),
+      withTimeout(sb.from('site_settings').select('key, value').in('key', ['hero_card_type','hero_card_id','box_builder_title','box_builder_desc','box_builder_image'])).catch(() => ({ data: null })),
+      withTimeout(sb.from('products').select('*, categories(name)').eq('is_featured', true).eq('is_active', true).limit(8)).catch(() => ({ data: null })),
+      withTimeout(sb.from('boxes').select('*').eq('is_active', true)).catch(() => ({ data: null })),
+    ]);
+
+    // 2. تجميع الأقسام مع ضمان الأقسام الخمسة الأساسية
+    const dbPage = (pagesRes as any).data?.[0] ?? null;
+    let rawBlocks: any = dbPage?.blocks ?? null;
     if (typeof rawBlocks === 'string') {
-      try {
-        rawBlocks = JSON.parse(rawBlocks);
-      } catch (e) {
-        console.error('Error parsing blocks JSON:', e);
-        rawBlocks = [];
-      }
+      try { rawBlocks = JSON.parse(rawBlocks); } catch { rawBlocks = null; }
     }
-    let blocks: any[] = Array.isArray(rawBlocks) ? rawBlocks : [];
+    let blocks: any[] = Array.isArray(rawBlocks) ? rawBlocks : [...fallbackBlocks];
 
-    // ضمان كامل لوجود الأقسام الرئيسية الخمسة الهامة بالترتيب الصحيح
+    // حقن أي قسم أساسي ناقص من الـ defaultPages
     const requiredTypes = ['hero', 'stats', 'packages_section', 'products_row', 'testimonials'];
-    if (defaultHome && defaultHome.blocks) {
-      requiredTypes.forEach((reqType) => {
-        if (!blocks.some((b: any) => b && b.type === reqType)) {
-          const defaultB = defaultHome.blocks.find((db: any) => db.type === reqType);
-          if (defaultB) {
-            blocks.push(JSON.parse(JSON.stringify(defaultB)));
-          }
+    if (defaultHome?.blocks) {
+      requiredTypes.forEach(reqType => {
+        if (!blocks.some((b: any) => b?.type === reqType)) {
+          const def = defaultHome.blocks.find((d: any) => d.type === reqType);
+          if (def) blocks.push(JSON.parse(JSON.stringify(def)));
         }
       });
     }
-
     blocks = [...blocks].sort((a, b) => (a.order || 0) - (b.order || 0));
 
-    const heroBlock = blocks.find((b: any) => b.type === 'hero');
-    let selectedProductId = '';
-    let selectedBoxId = '';
-    if (heroBlock?.content?.media_type === 'product' && heroBlock?.content?.selected_id) {
-      selectedProductId = heroBlock.content.selected_id;
-    }
-    if (heroBlock?.content?.media_type === 'box' && heroBlock?.content?.selected_id) {
-      selectedBoxId = heroBlock.content.selected_id;
+    // 3. جلب المنتجات والصناديق
+    let featuredProducts: any[] = (productsRes as any).data || [];
+    if (featuredProducts.length === 0) {
+      featuredProducts = getMockData.products().filter(p => p.is_featured);
     }
 
-    // 2. Fetch site settings
-    const settingsPromise = supabase
-      .from('site_settings')
-      .select('key, value')
-      .in('key', [
-        'hero_card_type', 
-        'hero_card_id',
-        'box_builder_title',
-        'box_builder_desc',
-        'box_builder_image'
-      ]);
+    let boxes: any[] = (boxesRes as any).data || [];
+    if (boxes.length === 0) boxes = getMockData.boxes();
 
-    const productsPromise = supabase
-      .from('products')
-      .select('*, categories(name)')
-      .eq('is_featured', true)
-      .eq('is_active', true)
-      .limit(8);
-
-    const boxesPromise = supabase
-      .from('boxes')
-      .select('*')
-      .eq('is_active', true);
-
-    const selectedProductPromise = selectedProductId
-      ? supabase.from('products').select('*, categories(name)').eq('id', selectedProductId).limit(1)
-      : Promise.resolve({ data: null });
-
-    const selectedBoxPromise = selectedBoxId
-      ? supabase.from('boxes').select('*').eq('id', selectedBoxId).limit(1)
-      : Promise.resolve({ data: null });
-
-    const [settingsRes, productsRes, boxesRes, selectedProductRes, selectedBoxRes] = await Promise.all([
-      settingsPromise,
-      productsPromise,
-      boxesPromise,
-      selectedProductPromise,
-      selectedBoxPromise
-    ]);
-
+    // 4. بناء بطاقة الهيرو
     const settings: Record<string, string> = {};
-    settingsRes.data?.forEach((s) => {
-      settings[s.key] = s.value;
-    });
+    ((settingsRes as any).data || []).forEach((s: any) => { settings[s.key] = s.value; });
 
     const heroCardType = settings.hero_card_type || 'box';
     const heroCardId = settings.hero_card_id;
-
-    let heroCardData = null;
+    let heroCardData: any = null;
 
     if (heroCardType === 'product' && heroCardId) {
-      const { data: prodData } = await supabase
-        .from('products')
-        .select('*, categories(name)')
-        .eq('id', heroCardId)
-        .eq('is_active', true)
-        .limit(1);
-      if (prodData && prodData.length > 0) {
+      const { data: prodData } = await sb.from('products').select('*, categories(name)').eq('id', heroCardId).eq('is_active', true).limit(1).catch(() => ({ data: null })) as any;
+      if (prodData?.[0]) {
         const p = prodData[0];
-        heroCardData = {
-          type: 'product',
-          id: p.id,
-          name: p.name,
-          description: p.description || '',
-          imageUrl: p.images?.[0] || 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80',
-          price: p.price_unit,
-          link: `/products/${p.id}`
-        };
+        heroCardData = { type: 'product', id: p.id, name: p.name, description: p.description || '', imageUrl: p.images?.[0] || 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80', price: p.price_unit, link: `/products/${p.id}` };
       }
     } else if (heroCardType === 'box' && heroCardId) {
-      const { data: boxData } = await supabase
-        .from('boxes')
-        .select('*')
-        .eq('id', heroCardId)
-        .eq('is_active', true)
-        .limit(1);
-      if (boxData && boxData.length > 0) {
+      const { data: boxData } = await sb.from('boxes').select('*').eq('id', heroCardId).eq('is_active', true).limit(1).catch(() => ({ data: null })) as any;
+      if (boxData?.[0]) {
         const b = boxData[0];
-        heroCardData = {
-          type: 'box',
-          id: b.id,
-          name: b.name,
-          description: b.description || '',
-          imageUrl: b.image_url || 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80',
-          price: b.base_price,
-          link: `/box-builder?stage=${b.stage}`
-        };
+        heroCardData = { type: 'box', id: b.id, name: b.name, description: b.description || '', imageUrl: b.image_url || 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80', price: b.base_price, link: `/box-builder?stage=${b.stage}` };
       }
     }
 
-    if (!heroCardData) {
-      const defaultBox = boxes?.[0];
-      if (defaultBox) {
-        heroCardData = {
-          type: 'box',
-          id: defaultBox.id,
-          name: defaultBox.name,
-          description: defaultBox.description || '',
-          imageUrl: defaultBox.image_url || 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80',
-          price: defaultBox.base_price,
-          link: `/box-builder?stage=${defaultBox.stage}`
-        };
-      }
+    if (!heroCardData && boxes.length > 0) {
+      const b = boxes[0];
+      heroCardData = { type: 'box', id: b.id, name: b.name, description: b.description || '', imageUrl: b.image_url || 'https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&q=80', price: b.base_price, link: `/box-builder?stage=${b.stage}` };
     }
 
     const boxBuilderSettings = {
@@ -216,50 +134,25 @@ async function getHomeData() {
       image: settings.box_builder_image || ''
     };
 
-    let featuredProducts = productsRes.data || [];
-    if (featuredProducts.length === 0) {
-      featuredProducts = getMockData.products().filter(p => p.is_featured);
-    }
-    if (selectedProductRes?.data && selectedProductRes.data.length > 0) {
-      const p = selectedProductRes.data[0];
-      if (!featuredProducts.some((item: any) => item.id === p.id)) {
-        featuredProducts.push(p);
-      }
-    }
+    return { featuredProducts, boxes, heroCardData, boxBuilderSettings, blocks };
 
-    let boxes = boxesRes.data || [];
-    if (boxes.length === 0) {
-      boxes = getMockData.boxes();
-    }
-    if (selectedBoxRes?.data && selectedBoxRes.data.length > 0) {
-      const b = selectedBoxRes.data[0];
-      if (!boxes.some((item: any) => item.id === b.id)) {
-        boxes.push(b);
-      }
-    }
-
-    return {
-      featuredProducts: featuredProducts,
-      boxes: boxes,
-      heroCardData,
-      boxBuilderSettings,
-      blocks
-    };
   } catch (error) {
     console.error('Error loading home data:', error);
-    return { 
-      featuredProducts: [], 
-      boxes: [], 
+    // حتى في حالة الخطأ الكامل، نرجع الأقسام الخمسة الافتراضية
+    return {
+      featuredProducts: getMockData.products().filter(p => p.is_featured),
+      boxes: getMockData.boxes(),
       heroCardData: null,
       boxBuilderSettings: {
         title: 'اصنع باقتك المدرسية المخصصة بنفسك!',
         desc: 'لا تتقيد بالباقات الجاهزة. اختر الكشكول، القلم، المسطرة، وكل ما تحتاجه بالكميات التي تناسبك تماماً، ودع الباقي علينا لتعبئته وتوصيله لباب منزلك.',
         image: ''
       },
-      blocks: []
+      blocks: fallbackBlocks
     };
   }
 }
+
 
 
 async function DynamicProductsRow({ block }: { block: PageBlock }) {
