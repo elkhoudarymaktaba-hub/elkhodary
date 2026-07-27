@@ -511,28 +511,20 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 <Input
                   label="اسم المتجر بالعربية"
                   value={storeName}
                   onChange={(e) => setStoreName(e.target.value)}
                   required
                 />
-                
-                {/* رابط الشعار المباشر */}
-                <Input
-                  label="رابط الشعار المباشر (URL)"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                />
               </div>
 
               <div className="grid grid-cols-1 gap-4 border-t border-slate-300 dark:border-slate-800 pt-4">
                 <Input
-                  label="نص شريط الإعلانات العلوي (الشريط الأخضر)"
+                  label="نص شريط الإعلانات العلوي (اختياري - اتركه فارغاً لإلغاء الشريط)"
                   value={topRibbonText}
                   onChange={(e) => setTopRibbonText(e.target.value)}
-                  required
                 />
               </div>
 

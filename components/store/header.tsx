@@ -117,10 +117,12 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
 
   return (
     <>
-      <div className="bg-gradient-to-r from-ink to-ink-soft text-white py-2 px-4 text-center text-xs font-bold shadow-sm flex items-center justify-center gap-2 relative z-50">
-        <Sparkles size={12} className="animate-spin text-amber shrink-0" />
-        <span className="leading-tight">{currentRibbon || 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!'}</span>
-      </div>
+      {currentRibbon && currentRibbon.trim() !== '' && (
+        <div className="bg-gradient-to-r from-ink to-ink-soft text-white py-2 px-4 text-center text-xs font-bold shadow-sm flex items-center justify-center gap-2 relative z-50">
+          <Sparkles size={12} className="animate-spin text-amber shrink-0" />
+          <span className="leading-tight">{currentRibbon}</span>
+        </div>
+      )}
 
       <header
         className={`sticky top-0 left-0 right-0 z-40 transition-all duration-350 border-b border-paper-line bg-white ${
@@ -150,18 +152,18 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
                   <img
                     src={currentLogo}
                     alt={currentName}
-                    className="w-10 h-10 md:w-14 md:h-14 object-contain rounded-full shadow-brand border border-paper-line"
+                    className="h-12 w-auto max-w-[140px] md:h-16 md:max-w-[180px] object-contain drop-shadow-xs"
                   />
                 ) : (
-                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black text-lg md:text-2xl shadow-brand transform -rotate-6 group-hover:rotate-0 transition-transform duration-300 border border-amber/30">
+                  <div className="w-12 h-12 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black text-xl md:text-3xl shadow-sm transform -rotate-3 group-hover:rotate-0 transition-transform duration-300">
                     خ
                   </div>
                 )}
                 <div className="flex flex-col text-right font-arabic">
-                  <span className="text-sm md:text-lg font-black text-ink-soft leading-tight whitespace-nowrap">
+                  <span className="text-base md:text-xl font-black text-ink-soft leading-tight whitespace-nowrap">
                     مكتبة الخضري
                   </span>
-                  <span className="text-[8px] md:text-[10px] font-bold text-amber font-english tracking-wider leading-none mt-0.5">
+                  <span className="text-[9px] md:text-[11px] font-bold text-amber font-english tracking-wider leading-none mt-0.5">
                     AL-KHOUDARY
                   </span>
                 </div>
