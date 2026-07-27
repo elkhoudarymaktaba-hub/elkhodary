@@ -193,7 +193,7 @@ export default function Footer({ storeName }: FooterProps) {
         {/* Bottom strip */}
         <div className="border-t border-slate-700/50 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400 text-xs">
           <p className="text-center sm:text-right font-numbers">
-            &copy; {currentYear} {storeName}. جميع الحقوق محفوظة. تم التطوير بواسطة APEX.
+            &copy; {currentYear} {storeName}. جميع الحقوق محفوظة. تم التطوير بواسطة <a href="https://apex-scale.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-amber transition-colors underline font-bold">APEX</a>.
           </p>
           <div className="flex gap-4">
             <span>الدفع عند الاستلام (COD)</span>

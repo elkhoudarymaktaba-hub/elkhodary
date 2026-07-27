@@ -20,8 +20,8 @@ export default function SettingsPage() {
   // 1. الهوية البصرية والمطورين
   const [storeName, setStoreName] = useState('مكتبة الخضري');
   const [logoUrl, setLogoUrl] = useState('');
-  const [devName, setDevName] = useState('حلول الخضري التقنية');
-  const [devUrl, setDevUrl] = useState('https://elkhodary-dev.com');
+  const [devName, setDevName] = useState('APEX');
+  const [devUrl, setDevUrl] = useState('https://apex-scale.vercel.app/');
   const [topRibbonText, setTopRibbonText] = useState('عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!');
   
   // الباقة الترويجية المختارة
@@ -534,23 +534,6 @@ export default function SettingsPage() {
                   onChange={(e) => setTopRibbonText(e.target.value)}
                   required
                 />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-300 dark:border-slate-800 pt-4">
-                <Input
-                  label="الشركة المطورة للمتجر"
-                  value={devName}
-                  onChange={(e) => setDevName(e.target.value)}
-                />
-                <div className="relative">
-                  <Input
-                    label="رابط موقع المطورين"
-                    value={devUrl}
-                    onChange={(e) => setDevUrl(e.target.value)}
-                    className="pl-10 font-english"
-                  />
-                  <Link2 className="absolute left-3.5 bottom-3.5 w-4 h-4 text-black dark:text-slate-400" />
-                </div>
               </div>
 
             </div>

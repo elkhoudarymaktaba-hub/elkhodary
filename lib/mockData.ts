@@ -327,8 +327,8 @@ export const defaultVisitSources = [
 export const defaultSiteSettings = {
   store_name: 'مكتبة الخضري',
   logo_url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&auto=format&fit=crop&q=80',
-  developer_name: 'حلول الخضري التقنية',
-  developer_url: 'https://elkhodary-dev.com',
+  developer_name: 'APEX',
+  developer_url: 'https://apex-scale.vercel.app/',
   maintenance_mode: 'false',
   free_shipping_enabled: 'true',
   free_shipping_min: 500,
