@@ -66,7 +66,9 @@ async function getHomeData() {
     const pagesRes = await pagesPromise;
     const dbPage = pagesRes.data && pagesRes.data.length > 0 ? pagesRes.data[0] : null;
     const mockHome = getMockData.pages().find(p => p.slug === 'home');
-    const homePage = dbPage || mockHome;
+    const defaultHome = defaultPages.find(p => p.slug === 'home');
+    
+    const homePage = dbPage || mockHome || defaultHome;
     let rawBlocks: any = homePage?.blocks || [];
     if (typeof rawBlocks === 'string') {
       try {
@@ -77,6 +79,16 @@ async function getHomeData() {
       }
     }
     let blocks: any[] = Array.isArray(rawBlocks) ? rawBlocks : [];
+
+    // دمج كتل الصفحة الرئيسية الافتراضية إذا كانت بعض الأقسام ناقصة
+    if (defaultHome && defaultHome.blocks) {
+      defaultHome.blocks.forEach((defBlock) => {
+        if (!blocks.some((b: any) => b.type === defBlock.type)) {
+          blocks.push(defBlock);
+        }
+      });
+    }
+
     blocks = [...blocks].sort((a, b) => (a.order || 0) - (b.order || 0));
 
     const heroBlock = blocks.find((b: any) => b.type === 'hero');
