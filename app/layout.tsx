@@ -104,7 +104,10 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
-                localStorage.setItem('kh_categories', JSON.stringify(${JSON.stringify(categories)}));
+                const cats = ${JSON.stringify(categories)};
+                if (cats && cats.length > 0) {
+                  localStorage.setItem('kh_categories', JSON.stringify(cats));
+                }
               } catch (e) {
                 console.error('Error writing categories to localStorage:', e);
               }
