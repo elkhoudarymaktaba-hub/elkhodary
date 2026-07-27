@@ -5,6 +5,7 @@ import ProductCard from '@/components/store/product-card';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { getMockData } from '@/lib/mockData';
 
 export const revalidate = 10;
 
@@ -16,43 +17,60 @@ interface ProductDetailPageProps {
 
 async function getProductData(id: string) {
   try {
-    const { data: product, error } = await supabase
-      .from('products')
-      .select('*, categories(id, name)')
-      .eq('id', id)
-      .single();
+    let product: any = null;
 
-    if (error || !product) {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('*, categories(id, name)')
+        .eq('id', id)
+        .single();
+      
+      if (!error && data) {
+        product = data;
+      }
+    } catch (e) {
+      console.warn('Supabase fetch error for product:', id, e);
+    }
+
+    // Fallback للبيانات المحلية في حال عدم العثور على المنتج في Supabase
+    if (!product) {
+      const allMockProducts = getMockData.products();
+      const foundMock = allMockProducts.find(p => p.id === id);
+      if (foundMock) {
+        const categories = getMockData.categories();
+        const cat = categories.find(c => c.id === foundMock.category_id);
+        product = {
+          ...foundMock,
+          categories: cat ? { id: cat.id, name: cat.name } : { id: 'all', name: 'أدوات مكتبية' }
+        };
+      }
+    }
+
+    if (!product) {
       return null;
     }
 
     // 1. Get related products from the same category
-    let { data: related } = await supabase
-      .from('products')
-      .select('*, categories(name)')
-      .eq('category_id', product.category_id)
-      .eq('is_active', true)
-      .neq('id', product.id)
-      .limit(4);
-
-    // If we have less than 4 related products, fetch featured products to fill the gaps
-    if (!related || related.length < 4) {
-      const neededCount = 4 - (related?.length || 0);
-      const existingIds = [product.id, ...(related || []).map((p: any) => p.id)];
-      
-      const { data: featured } = await supabase
+    let related: any[] = [];
+    try {
+      const { data } = await supabase
         .from('products')
         .select('*, categories(name)')
+        .eq('category_id', product.category_id)
         .eq('is_active', true)
-        .eq('is_featured', true)
-        .limit(6);
-        
-      if (featured && featured.length > 0) {
-        const filteredFeatured = featured
-          .filter((p: any) => !existingIds.includes(p.id))
-          .slice(0, neededCount);
-        related = [...(related || []), ...filteredFeatured];
-      }
+        .neq('id', product.id)
+        .limit(4);
+      if (data) related = data;
+    } catch (e) {}
+
+    if (related.length < 4) {
+      const allMock = getMockData.products();
+      const combined = [...related];
+      allMock.filter(p => p.id !== product.id).forEach(p => {
+        if (!combined.some(c => c.id === p.id)) combined.push(p);
+      });
+      related = combined.slice(0, 4);
     }
 
     // 2. Fetch the featured box/package ID from site settings

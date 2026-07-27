@@ -1036,10 +1036,40 @@ export default function ProductsPage() {
                   <p className="text-[11px] text-slate-400 font-arabic">⚠️ لم تقم بإضافة أي مقاسات بعد. اضف المقاس واسمه وسعره الخاص أدناه.</p>
                 )}
 
+                <div className="flex flex-wrap gap-2 pb-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const price = formPriceUnit || 10;
+                      if (!formSizes.some(s => s.name === 'سعر فردي (قطعة)')) {
+                        setFormSizes(prev => [...prev, { name: 'سعر فردي (قطعة)', price }]);
+                      }
+                    }}
+                    className="text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700 px-3 py-1.5 rounded-xl font-bold font-arabic hover:bg-emerald-100 transition-all flex items-center gap-1.5 shadow-xs"
+                  >
+                    <span>➕ إضافة سعر الفردي (قطعة)</span>
+                    <span className="text-[10px] opacity-80 font-english">({formPriceUnit || 10} ج.م)</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const price = formPriceBox || 100;
+                      if (!formSizes.some(s => s.name === 'سعر العلبة (جملة)')) {
+                        setFormSizes(prev => [...prev, { name: 'سعر العلبة (جملة)', price }]);
+                      }
+                    }}
+                    className="text-xs bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700 px-3 py-1.5 rounded-xl font-bold font-arabic hover:bg-blue-100 transition-all flex items-center gap-1.5 shadow-xs"
+                  >
+                    <span>📦 إضافة سعر العلبة (جملة)</span>
+                    <span className="text-[10px] opacity-80 font-english">({formPriceBox || 100} ج.م)</span>
+                  </button>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                   <input
                     type="text"
-                    placeholder="اسم المقاس (مثال: A4 60 ورقة / علبة 12 قلم)"
+                    placeholder="اسم المقاس (مثال: سعر فردي / علبة 12 قلم)"
                     value={newSizeNameInput}
                     onChange={(e) => setNewSizeNameInput(e.target.value)}
                     className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs rounded-[10px] focus:outline-none focus:border-[#2E7FD9] font-arabic text-slate-800 dark:text-slate-100"
@@ -1071,14 +1101,18 @@ export default function ProductsPage() {
                 <div className="flex flex-wrap gap-1 items-center pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-700">
                   <span className="text-[10px] text-slate-400 font-arabic ml-1">مقاسات سريعة:</span>
                   {[
-                    { name: 'علبة', price: 100 },
-                    { name: 'قطعة', price: 10 },
+                    { name: 'سعر فردي (قطعة)', price: formPriceUnit || 10 },
+                    { name: 'سعر العلبة (جملة)', price: formPriceBox || 100 },
+                    { name: 'قطعة واحدة', price: 10 },
+                    { name: 'علبة كاملة', price: 100 },
+                    { name: 'علبة 12 قلم', price: 75 },
+                    { name: 'علبة 24 قطعة', price: 150 },
+                    { name: 'كرتونة', price: 300 },
                     { name: 'مقاس A4', price: 45 },
                     { name: 'مقاس A5', price: 25 },
                     { name: '60 ورقة', price: 30 },
                     { name: '80 ورقة', price: 40 },
                     { name: '100 ورقة', price: 50 },
-                    { name: 'علبة 12 قلم', price: 75 },
                     { name: 'مقاس صغير', price: 20 },
                     { name: 'مقاس وسط', price: 35 },
                     { name: 'مقاس كبير', price: 50 },
