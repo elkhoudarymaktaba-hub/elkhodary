@@ -68,8 +68,7 @@ async function getHomeData() {
     const mockHome = getMockData.pages().find(p => p.slug === 'home');
     const defaultHome = defaultPages.find(p => p.slug === 'home');
     
-    const homePage = dbPage || mockHome || defaultHome;
-    let rawBlocks: any = homePage?.blocks || [];
+    let rawBlocks: any = dbPage?.blocks || mockHome?.blocks || defaultHome?.blocks || [];
     if (typeof rawBlocks === 'string') {
       try {
         rawBlocks = JSON.parse(rawBlocks);
@@ -80,11 +79,14 @@ async function getHomeData() {
     }
     let blocks: any[] = Array.isArray(rawBlocks) ? rawBlocks : [];
 
-    // دمج كتل الصفحة الرئيسية الافتراضية إذا كانت بعض الأقسام ناقصة
-    if (defaultHome && defaultHome.blocks) {
+    // إذا كانت الأقسام القادمة من قاعدة البيانات أقل من 3 أقسام رئيسية، استخدم أقسام الصفحة الرئيسية الافتراضية المتكاملة
+    if (blocks.length < 3 && defaultHome && defaultHome.blocks) {
+      blocks = JSON.parse(JSON.stringify(defaultHome.blocks));
+    } else if (defaultHome && defaultHome.blocks) {
+      // التأكد من وجود الأقسام الأساسية الهامة
       defaultHome.blocks.forEach((defBlock) => {
         if (!blocks.some((b: any) => b.type === defBlock.type)) {
-          blocks.push(defBlock);
+          blocks.push(JSON.parse(JSON.stringify(defBlock)));
         }
       });
     }
