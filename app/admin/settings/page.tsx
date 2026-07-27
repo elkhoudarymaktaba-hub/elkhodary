@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { 
   Settings, Image as ImageIcon, CreditCard, ToggleLeft, ToggleRight, 
-  Save, AlertTriangle, ShieldCheck, Link2, MonitorPlay, BookOpen, Layers,
+  Save, AlertTriangle, ShieldCheck, MonitorPlay, BookOpen, Layers,
   Star, Trash2, Heart
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';

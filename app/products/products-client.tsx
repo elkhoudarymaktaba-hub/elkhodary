@@ -30,13 +30,20 @@ export default function ProductsClient({ categories, initialProducts }: Products
     if (typeof window !== 'undefined') {
       try {
         const localCats = localStorage.getItem('kh_categories');
-        const localProds = localStorage.getItem('kh_products');
         if (localCats) {
           setCategoriesList(JSON.parse(localCats));
+        } else if (categories && categories.length > 0) {
+          setCategoriesList(categories);
+          localStorage.setItem('kh_categories', JSON.stringify(categories));
         }
+
+        const localProds = localStorage.getItem('kh_products');
         if (localProds) {
           const allProds: Product[] = JSON.parse(localProds);
           setProductsList(allProds.filter(p => p.is_active));
+        } else if (initialProducts && initialProducts.length > 0) {
+          setProductsList(initialProducts.filter(p => p.is_active));
+          localStorage.setItem('kh_products', JSON.stringify(initialProducts));
         }
       } catch (err) {
         console.error('Error loading mock data from localStorage:', err);

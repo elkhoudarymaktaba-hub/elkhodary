@@ -20,10 +20,26 @@ export default function AdminLayout({
   useEffect(() => {
     let isMounted = true;
     const checkAuth = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
+      // 1. فحص فوري وقطع السلسلة عبر الكوكي أو التخزين المحلي في أجزاء من الثانية
+      if (typeof window !== 'undefined') {
+        const hasCookie = document.cookie.includes('kh_admin_session=true');
+        const hasActiveStaff = localStorage.getItem('kh_active_staff');
         
-        if (!data?.session && pathname !== '/admin/login') {
+        if (hasCookie || hasActiveStaff) {
+          if (isMounted) setLoading(false);
+          return;
+        }
+      }
+
+      // 2. فحص Supabase مع مهلة قصيرة جداً (1 ثانية) لمنع أي تعليق أو بطء
+      try {
+        const timeoutPromise = new Promise((resolve) => setTimeout(() => resolve(null), 1000));
+        const sessionPromise = supabase.auth.getSession();
+        
+        const res: any = await Promise.race([sessionPromise, timeoutPromise]);
+        const session = res?.data?.session;
+        
+        if (!session && pathname !== '/admin/login') {
           router.replace('/admin/login');
         } else if (isMounted) {
           setLoading(false);
@@ -42,7 +58,7 @@ export default function AdminLayout({
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [pathname]);
 
   // استثناء صفحة تسجيل الدخول من هيكل اللي آوت العام (حتى لا يظهر الـ Sidebar هناك)
   if (pathname === '/admin/login') {

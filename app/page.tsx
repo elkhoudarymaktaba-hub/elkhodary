@@ -180,7 +180,7 @@ async function getHomeData() {
     }
 
     if (!heroCardData) {
-      const defaultBox = boxesRes.data?.[0];
+      const defaultBox = boxes?.[0];
       if (defaultBox) {
         heroCardData = {
           type: 'box',

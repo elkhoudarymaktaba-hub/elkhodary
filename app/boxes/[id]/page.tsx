@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { supabase, cachedFetch } from '@/lib/supabase';
 import BoxDetailClient from './box-detail-client';
 import Link from 'next/link';
+import { getMockData } from '@/lib/mockData';
 
 export const revalidate = 10;
 
@@ -15,13 +16,23 @@ async function getBoxData(id: string) {
   return cachedFetch(`box-detail-data-${id}`, async () => {
     try {
       // 1. Get box
-      const { data: box, error } = await supabase
-        .from('boxes')
-        .select('*')
-        .eq('id', id)
-        .single();
+      let box = null;
+      try {
+        const { data, error } = await supabase
+          .from('boxes')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (!error && data) {
+          box = data;
+        }
+      } catch (e) {}
 
-      if (error || !box) return null;
+      if (!box) {
+        box = getMockData.boxes().find(b => b.id === id) || null;
+      }
+
+      if (!box) return null;
 
       const boxItems = (box.products || box.items || []) as Array<{ product_id: string; qty?: number; quantity?: number }>;
       if (!boxItems || boxItems.length === 0) {
@@ -30,26 +41,46 @@ async function getBoxData(id: string) {
 
       // 2. Get products in this box
       const productIds = boxItems.map((item) => item.product_id);
-      const { data: products } = await supabase
-        .from('products')
-        .select('*, categories(id, name)')
-        .in('id', productIds);
+      let productsList: any[] = [];
+      try {
+        const { data } = await supabase
+          .from('products')
+          .select('*, categories(id, name)')
+          .in('id', productIds);
+        if (data && data.length > 0) {
+          productsList = data;
+        }
+      } catch (e) {}
+
+      if (productsList.length === 0) {
+        productsList = getMockData.products().filter(p => productIds.includes(p.id));
+      }
 
       // 3. Get alternative products from the same categories for swapping
       const categoryIds = Array.from(
-        new Set(products?.map((p) => p.category_id).filter(Boolean))
+        new Set(productsList?.map((p) => p.category_id).filter(Boolean))
       );
 
-      const { data: alternatives } = await supabase
-        .from('products')
-        .select('*, categories(id, name)')
-        .in('category_id', categoryIds)
-        .eq('is_active', true);
+      let alternativesList: any[] = [];
+      try {
+        const { data } = await supabase
+          .from('products')
+          .select('*, categories(id, name)')
+          .in('category_id', categoryIds)
+          .eq('is_active', true);
+        if (data && data.length > 0) {
+          alternativesList = data;
+        }
+      } catch (e) {}
+
+      if (alternativesList.length === 0) {
+        alternativesList = getMockData.products().filter(p => categoryIds.includes(p.category_id) && p.is_active);
+      }
 
       return {
         box,
-        products: products || [],
-        alternatives: alternatives || [],
+        products: productsList,
+        alternatives: alternativesList,
       };
     } catch (err) {
       console.error('Error fetching box details:', err);

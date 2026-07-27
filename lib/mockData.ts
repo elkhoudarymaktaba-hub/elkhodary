@@ -295,10 +295,10 @@ export const defaultShippingRates: ShippingRate[] = [
 ];
 
 export const defaultTrackingPixels: TrackingPixel[] = [
-  { platform: 'facebook', pixel_id: '123456789012345', active: true, conversion_api_token: 'EAAD...fake_token...ZZ', events: ['PageView', 'AddToCart', 'Purchase'] },
-  { platform: 'google', pixel_id: 'G-AB12CDE3FG', active: true, events: ['PageView', 'Purchase'] },
-  { platform: 'snapchat', pixel_id: 'snap-pixel-id-1122', active: false, events: ['PageView'] },
-  { platform: 'tiktok', pixel_id: 'tiktok-pixel-id-3344', active: false, events: ['PageView'] },
+  { platform: 'facebook', pixel_id: '', active: false, conversion_api_token: '', events: ['PageView', 'AddToCart', 'Purchase'] },
+  { platform: 'google', pixel_id: '', active: false, events: ['PageView', 'Purchase'] },
+  { platform: 'snapchat', pixel_id: '', active: false, events: ['PageView'] },
+  { platform: 'tiktok', pixel_id: '', active: false, events: ['PageView'] },
 ];
 
 export const defaultApiKeys: ApiKey[] = [
@@ -461,15 +461,15 @@ export const defaultPages: PageData[] = [
 const getStorageItem = <T>(key: string, defaultValue: T): T => {
   if (typeof window === 'undefined') {
     try {
-      const fs = require('fs');
-      const path = require('path');
+      const fs = eval("require('fs')");
+      const path = eval("require('path')");
       const filePath = path.join(process.cwd(), 'lib', 'mock_db.json');
       if (fs.existsSync(filePath)) {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         const db = JSON.parse(fileContent);
         if (db[key] !== undefined) {
           const val = db[key];
-          if (Array.isArray(val) && val.some(x => x && x.id && (String(x.id).startsWith('prod-') || String(x.id).startsWith('cat-') || String(x.id).startsWith('box-')))) {
+          if (key === 'kh_tracking_pixels' && Array.isArray(val) && val.some(x => x && (x.pixel_id === '123456789012345' || x.pixel_id === 'G-AB12CDE3FG'))) {
             return defaultValue;
           }
           return val;
@@ -484,7 +484,7 @@ const getStorageItem = <T>(key: string, defaultValue: T): T => {
     const item = window.localStorage.getItem(key);
     if (!item) return defaultValue;
     const parsed = JSON.parse(item);
-    if (Array.isArray(parsed) && parsed.some(x => x && x.id && (String(x.id).startsWith('prod-') || String(x.id).startsWith('cat-') || String(x.id).startsWith('box-')))) {
+    if (key === 'kh_tracking_pixels' && Array.isArray(parsed) && parsed.some(x => x && (x.pixel_id === '123456789012345' || x.pixel_id === 'G-AB12CDE3FG'))) {
       window.localStorage.setItem(key, JSON.stringify(defaultValue));
       return defaultValue;
     }

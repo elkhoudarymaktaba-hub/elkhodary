@@ -37,14 +37,26 @@ async function getProductsData() {
         pageData = getMockData.pages().find(p => p.slug === 'products') || null;
       }
 
+      const categoriesList = categoriesRes.data && categoriesRes.data.length > 0
+        ? categoriesRes.data
+        : getMockData.categories();
+
+      const productsList = productsRes.data && productsRes.data.length > 0
+        ? productsRes.data
+        : getMockData.products();
+
       return {
-        categories: categoriesRes.data || [],
-        products: productsRes.data || [],
+        categories: categoriesList,
+        products: productsList,
         pageData,
       };
     } catch (error) {
       console.error('Error fetching products page data:', error);
-      return { categories: [], products: [], pageData: null };
+      return { 
+        categories: getMockData.categories(), 
+        products: getMockData.products(), 
+        pageData: null 
+      };
     }
   }, 5000);
 }

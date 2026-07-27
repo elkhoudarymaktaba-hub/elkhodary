@@ -49,14 +49,22 @@ async function getBoxesData() {
         }
       }
 
+      const boxesList = boxesRes.data && boxesRes.data.length > 0
+        ? boxesRes.data
+        : getMockData.boxes();
+
       return {
-        boxes: boxesRes.data || [],
+        boxes: boxesList,
         pageData,
         customStages,
       };
     } catch (err) {
       console.error('Error fetching boxes page data:', err);
-      return { boxes: [], pageData: null, customStages: [] };
+      return { 
+        boxes: getMockData.boxes(), 
+        pageData: null, 
+        customStages: [] 
+      };
     }
   }, 5000);
 }

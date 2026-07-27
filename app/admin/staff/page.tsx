@@ -71,7 +71,14 @@ function loadStaff(): StaffMember[] {
 }
 
 function saveStaff(list: StaffMember[]) {
-  localStorage.setItem(STAFF_KEY, JSON.stringify(list));
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STAFF_KEY, JSON.stringify(list));
+    fetch('/api/sync-mock', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: 'kh_staff', data: list }),
+    }).catch(err => console.error('Error syncing staff:', err));
+  }
 }
 
 const defaultStaff: StaffMember[] = [
