@@ -50,24 +50,40 @@ function LoginContent() {
 
       // 2. فحص بيانات المشرفين والمدراء المضافين في قائمة الموظفين (kh_staff / elkhodary_staff)
       if (!isSuccess && typeof window !== 'undefined') {
-        const staffKey = 'elkhodary_staff';
-        const stored = localStorage.getItem(staffKey);
+        const stored1 = localStorage.getItem('elkhodary_staff');
+        const stored2 = localStorage.getItem('kh_staff');
         let staffList: any[] = [];
         
-        if (stored) {
-          try { staffList = JSON.parse(stored); } catch (e) {}
+        if (stored1) {
+          try { staffList = [...staffList, ...JSON.parse(stored1)]; } catch (e) {}
+        }
+        if (stored2) {
+          try { staffList = [...staffList, ...JSON.parse(stored2)]; } catch (e) {}
         }
 
-        // إدراج الحسابات الافتراضية
+        // جلب قائمة الموظفين من السيرفر إذا لم تكن موجودة في الـ LocalStorage
+        if (staffList.length === 0) {
+          try {
+            const { data: serverStaff } = await supabase.from('kh_staff').select('*');
+            if (serverStaff && Array.isArray(serverStaff)) {
+              staffList = serverStaff;
+            }
+          } catch (e) {}
+        }
+
+        // الحسابات المتاحة للاختبار والمدراء
         const defaultAccounts = [
           { email: 'admin@elkhodary.com', password: 'admin123', name: 'أحمد الخضري', role: 'full_admin' },
           { email: 'products@elkhodary.com', password: 'products2025', name: 'محمد علي', role: 'product_manager' },
           { email: 'sales@elkhodary.com', password: 'sales2025', name: 'سارة أحمد', role: 'order_manager' },
         ];
 
-        const allStaff = [...defaultAccounts, ...staffList];
+        const inputEmail = email.trim().toLowerCase();
+        const inputPass = password.trim();
+
+        const allStaff = [...staffList, ...defaultAccounts];
         const match = allStaff.find(
-          s => s.email.toLowerCase() === email.trim().toLowerCase() && s.password === password
+          s => s.email && s.email.trim().toLowerCase() === inputEmail && s.password && s.password.trim() === inputPass
         );
 
         if (match) {
@@ -75,7 +91,7 @@ function LoginContent() {
           loggedUser = {
             id: match.id || `staff-${Date.now()}`,
             email: match.email,
-            name: match.name,
+            name: match.name || match.email.split('@')[0],
             role: match.role || 'full_admin'
           };
         }
