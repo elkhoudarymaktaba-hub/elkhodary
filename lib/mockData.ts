@@ -130,146 +130,11 @@ export interface ApiKey {
 // البيانات الافتراضية
 // -------------------------------------------------------------
 
-export const defaultCategories: Category[] = [
-  { id: 'cat-1', name: 'الكتب الدراسية', slug: 'textbooks', icon: '📚', is_active: true },
-  { id: 'cat-2', name: 'الأدوات المكتبية', slug: 'stationery', icon: '✏️', is_active: true },
-  { id: 'cat-3', name: 'الروايات والكتب العامة', slug: 'novels', icon: '📖', is_active: true },
-  { id: 'cat-4', name: 'قصص الأطفال ورسم', slug: 'kids', icon: '🎨', is_active: true },
-  { id: 'cat-5', name: 'الوسائل التعليمية', slug: 'educational-toys', icon: '🧩', is_active: true },
-];
+export const defaultCategories: Category[] = [];
 
-export const defaultProducts: Product[] = [
-  {
-    id: 'prod-1',
-    name: 'سلاح التلميذ - اللغة العربية - الصف السادس الابتدائي',
-    description: 'كتاب الشرح الخارجي لمادة اللغة العربية للفصلين الدراسيين الأول والثاني، يتضمن نماذج امتحانات وتدريبات مكثفة.',
-    category_id: 'cat-1',
-    price_unit: 145,
-    price_box: 1620,
-    box_qty_label: 'كرتونة 12 كتاب',
-    images: ['https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=600&auto=format&fit=crop&q=60'],
-    stock: 120,
-    is_featured: true,
-    is_active: true,
-    created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    badge: 'bestseller',
-  },
-  {
-    id: 'prod-2',
-    name: 'الأضواء - الرياضيات - الصف الأول الإعدادي',
-    description: 'كتاب شرح المنهج الجديد المطور في الرياضيات لطلاب الصف الأول الإعدادي بالتفصيل والأمثلة المحلولة.',
-    category_id: 'cat-1',
-    price_unit: 160,
-    price_box: 1800,
-    box_qty_label: 'كرتونة 12 كتاب',
-    images: ['https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600&auto=format&fit=crop&q=60'],
-    stock: 95,
-    is_featured: true,
-    is_active: true,
-    created_at: new Date(Date.now() - 25 * 24 * 60 * 60 * 1000).toISOString(),
-    badge: 'limited_offer',
-  },
-  {
-    id: 'prod-3',
-    name: 'علبة ألوان خشبية فابر كاستل 24 لون',
-    description: 'ألوان خشبية ذات جودة عالية لا تنكسر بسهولة، مثالية للرسم والنشاطات المدرسية المتقدمة.',
-    category_id: 'cat-2',
-    price_unit: 85,
-    price_box: 960,
-    box_qty_label: 'علبة 12 عبوة ألوان',
-    images: ['https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&auto=format&fit=crop&q=60'],
-    stock: 350,
-    is_featured: false,
-    is_active: true,
-    created_at: new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'prod-4',
-    name: 'دفتر تحضير دروس فاخر 100 ورقة مقوى',
-    description: 'دفتر تحضير للمعلمين مع غلاف جلد سميك وتخطيط داخلي مريح للجدول والحصص الدراسية.',
-    category_id: 'cat-2',
-    price_unit: 50,
-    price_box: 540,
-    box_qty_label: 'علبة 12 دفتر',
-    images: ['https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=600&auto=format&fit=crop&q=60'],
-    stock: 80,
-    is_featured: false,
-    is_active: true,
-    created_at: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: 'prod-5',
-    name: 'قصص الأنبياء للأطفال - مجلد ملون كامل',
-    description: 'سلسلة قصص الأنبياء بأسلوب سهل يناسب الأطفال مع رسومات كرتونية ملونة جذابة لترسيخ القيم.',
-    category_id: 'cat-4',
-    price_unit: 195,
-    price_box: 1080,
-    box_qty_label: 'طقم 6 مجلدات',
-    images: ['https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=600&auto=format&fit=crop&q=60'],
-    stock: 45,
-    is_featured: true,
-    is_active: true,
-    created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    badge: 'last_5_pieces',
-  },
-  {
-    id: 'prod-6',
-    name: 'كشكول سلك مقسم A4 - 5 فواصل 200 ورقة',
-    description: 'كشكول جامعي مقسم فواصل ملونة لتنظيم المواد الدراسية المختلفة، ورق عالي الجودة متوافق مع الحبر السائل.',
-    category_id: 'cat-2',
-    price_unit: 95,
-    price_box: 1080,
-    box_qty_label: 'كرتونة 12 كشكول',
-    images: ['https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop&q=60'],
-    stock: 180,
-    is_featured: false,
-    is_active: true,
-    created_at: new Date().toISOString(),
-  }
-];
+export const defaultProducts: Product[] = [];
 
-export const defaultBoxes: Box[] = [
-  {
-    id: 'box-1',
-    name: 'بوكس انطلاق الروضة (KG)',
-    stage: 'kg',
-    base_price: 380,
-    description: 'يحتوي على كتب التهيئة والحساب، ألوان شمعية، كراسات تلوين، صلصال طبيعي، ومقلمة هدايا متكاملة لبدء رحلة التعلم.',
-    image_url: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=600&auto=format&fit=crop&q=60',
-    products: [
-      { product_id: 'prod-3', quantity: 1 },
-      { product_id: 'prod-5', quantity: 1 }
-    ],
-    is_active: true
-  },
-  {
-    id: 'box-2',
-    name: 'حقيبة متفوقي الابتدائي المدرسية',
-    stage: 'primary',
-    base_price: 520,
-    description: 'تتضمن كتب سلاح التلميذ الأساسية في اللغات والرياضيات، مع تشكيلة من الأقلام والكشاكيل ودفاتر الرسم الفاخرة.',
-    image_url: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600&auto=format&fit=crop&q=60',
-    products: [
-      { product_id: 'prod-1', quantity: 1 },
-      { product_id: 'prod-3', quantity: 1 },
-      { product_id: 'prod-4', quantity: 2 }
-    ],
-    is_active: true
-  },
-  {
-    id: 'box-3',
-    name: 'حقيبة الطالب الإعدادي المتكاملة',
-    stage: 'middle',
-    base_price: 680,
-    description: 'مجموعة المنهج الأساسية لصفوف المرحلة الإعدادية بالإضافة إلى الآلة الحاسبة وأدوات الهندسة والكشاكيل الجامعية الفاخرة.',
-    image_url: 'https://images.unsplash.com/photo-1527891751199-7225231a68dd?w=600&auto=format&fit=crop&q=60',
-    products: [
-      { product_id: 'prod-2', quantity: 1 },
-      { product_id: 'prod-6', quantity: 2 }
-    ],
-    is_active: true
-  }
-];
+export const defaultBoxes: Box[] = [];
 
 // إنشاء تواريخ للأيام السبعة الماضية لتسجيل الطلبات التجريبية
 const getPastDateStr = (daysAgo: number) => {
@@ -603,7 +468,11 @@ const getStorageItem = <T>(key: string, defaultValue: T): T => {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         const db = JSON.parse(fileContent);
         if (db[key] !== undefined) {
-          return db[key];
+          const val = db[key];
+          if (Array.isArray(val) && val.some(x => x && x.id && (String(x.id).startsWith('prod-') || String(x.id).startsWith('cat-') || String(x.id).startsWith('box-')))) {
+            return defaultValue;
+          }
+          return val;
         }
       }
     } catch (e) {
@@ -613,7 +482,13 @@ const getStorageItem = <T>(key: string, defaultValue: T): T => {
   }
   try {
     const item = window.localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
+    if (!item) return defaultValue;
+    const parsed = JSON.parse(item);
+    if (Array.isArray(parsed) && parsed.some(x => x && x.id && (String(x.id).startsWith('prod-') || String(x.id).startsWith('cat-') || String(x.id).startsWith('box-')))) {
+      window.localStorage.setItem(key, JSON.stringify(defaultValue));
+      return defaultValue;
+    }
+    return parsed;
   } catch (error) {
     console.error(`Error reading ${key} from localStorage`, error);
     return defaultValue;

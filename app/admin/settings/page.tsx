@@ -489,22 +489,22 @@ export default function SettingsPage() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* 1. هوية المتجر (Store Identity Card) */}
-            <div className="bg-white dark:bg-slate-900 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-5 transition-colors">
-              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 border-r-4 border-[#2E7FD9] pr-2.5">هوية وشعار المتجر</h3>
+            <div className="bg-[#F7F8FA] dark:bg-slate-900 rounded-[16px] border border-slate-300 dark:border-slate-800 p-6 space-y-5 shadow-2xs transition-colors">
+              <h3 className="text-base font-black text-black dark:text-slate-100 border-r-4 border-[#2E7FD9] pr-2.5 font-arabic">هوية وشعار المتجر</h3>
               
               {/* شعار المتجر رفع ومعاينة */}
-              <div className="flex flex-col sm:flex-row items-center gap-5 bg-slate-50 dark:bg-slate-800/50 p-4 border border-slate-200 dark:border-slate-700 rounded-[12px]">
-                <div className="w-20 h-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[16px] flex items-center justify-center text-3xl shadow-sm shrink-0 overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-center gap-5 bg-white dark:bg-slate-800/50 p-4 border border-slate-300 dark:border-slate-700 rounded-[12px]">
+                <div className="w-20 h-20 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-[16px] flex items-center justify-center text-3xl shadow-2xs shrink-0 overflow-hidden">
                   {logoUrl && logoUrl !== 'null' && logoUrl !== '' ? (
                     <img src={logoUrl} alt="Store logo" className="w-full h-full object-contain p-2" />
                   ) : (
-                    <ImageIcon className="w-8 h-8 text-slate-400" />
+                    <ImageIcon className="w-8 h-8 text-black dark:text-slate-400" />
                   )}
                 </div>
                 <div className="space-y-2 flex-1 text-center sm:text-right">
-                  <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block font-arabic">شعار العلامة التجارية (Logo)</span>
-                  <p className="text-[10px] text-slate-400 font-arabic">يفضل صورة مربعة بامتداد PNG ذات خلفية شفافة.</p>
-                  <label className="inline-flex px-4 py-1.5 bg-[#2E7FD9] hover:bg-[#1B4F8A] text-xs font-bold text-white rounded-[8px] cursor-pointer transition-all">
+                  <span className="text-xs font-black text-black dark:text-slate-100 block font-arabic">شعار العلامة التجارية (Logo)</span>
+                  <p className="text-[10px] text-black dark:text-slate-400 font-bold font-arabic">يفضل صورة مربعة بامتداد PNG ذات خلفية شفافة.</p>
+                  <label className="inline-flex px-4 py-1.5 bg-[#2E7FD9] hover:bg-[#1B4F8A] text-xs font-bold text-white rounded-[8px] cursor-pointer transition-all shadow-2xs">
                     <span>تغيير الشعار</span>
                     <input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden" />
                   </label>
@@ -527,7 +527,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <div className="grid grid-cols-1 gap-4 border-t border-slate-300 dark:border-slate-800 pt-4">
                 <Input
                   label="نص شريط الإعلانات العلوي (الشريط الأخضر)"
                   value={topRibbonText}
@@ -536,7 +536,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-300 dark:border-slate-800 pt-4">
                 <Input
                   label="الشركة المطورة للمتجر"
                   value={devName}
@@ -549,33 +549,33 @@ export default function SettingsPage() {
                     onChange={(e) => setDevUrl(e.target.value)}
                     className="pl-10 font-english"
                   />
-                  <Link2 className="absolute left-3.5 bottom-3.5 w-4 h-4 text-slate-400" />
+                  <Link2 className="absolute left-3.5 bottom-3.5 w-4 h-4 text-black dark:text-slate-400" />
                 </div>
               </div>
 
             </div>
 
             {/* 1.5. الباقة المميزة المروّج لها */}
-            <div className="bg-white dark:bg-slate-900 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-4 transition-colors">
-              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 border-r-4 border-[#2E7FD9] pr-2.5 flex items-center gap-2">
+            <div className="bg-[#F7F8FA] dark:bg-slate-900 rounded-[16px] border border-slate-300 dark:border-slate-800 p-6 space-y-4 shadow-2xs transition-colors">
+              <h3 className="text-base font-black text-black dark:text-slate-100 border-r-4 border-[#2E7FD9] pr-2.5 flex items-center gap-2 font-arabic">
                 <BookOpen className="w-5 h-5 text-[#2E7FD9]" />
                 <span>الباقة المميزة المختارة (في تفاصيل المنتجات)</span>
               </h3>
               
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-arabic">
+              <p className="text-xs text-black dark:text-slate-300 leading-relaxed font-bold font-arabic">
                 اختر الباقة أو الحقيبة المدرسية الجاهزة التي ترغب في إظهارها لعملائك أسفل شاشة تفاصيل أي منتج للترويج لها وزيادة المبيعات.
               </p>
 
               <div className="relative space-y-1.5">
-                <label className="text-xs font-bold text-slate-800 dark:text-slate-100 block">الباقة الترويجية النشطة</label>
+                <label className="text-xs font-black text-black dark:text-slate-100 block font-arabic">الباقة الترويجية النشطة</label>
                 <select
                   value={featuredBoxId}
                   onChange={(e) => setFeaturedBoxId(e.target.value)}
-                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-slate-800 dark:text-slate-100 font-bold focus:border-[#2E7FD9] focus:outline-none"
+                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-black dark:text-slate-100 font-black focus:border-[#2E7FD9] focus:outline-none"
                 >
-                  <option value="" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">-- بدون باقة ترويجية --</option>
+                  <option value="" className="bg-white dark:bg-slate-900 text-black dark:text-slate-100 font-black">-- بدون باقة ترويجية --</option>
                   {boxes.map((box) => (
-                    <option key={box.id} value={box.id} className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100">
+                    <option key={box.id} value={box.id} className="bg-white dark:bg-slate-900 text-black dark:text-slate-100 font-black">
                       {box.name}
                     </option>
                   ))}
@@ -584,19 +584,19 @@ export default function SettingsPage() {
             </div>
 
             {/* 1.6. كارت البطل المعروض بالصفحة الرئيسية */}
-            <div className="bg-white dark:bg-slate-900 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-4 transition-colors">
-              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 border-r-4 border-[#2E7FD9] pr-2.5 flex items-center gap-2">
+            <div className="bg-[#F7F8FA] dark:bg-slate-900 rounded-[16px] border border-slate-300 dark:border-slate-800 p-6 space-y-4 shadow-2xs transition-colors">
+              <h3 className="text-base font-black text-black dark:text-slate-100 border-r-4 border-[#2E7FD9] pr-2.5 flex items-center gap-2 font-arabic">
                 <MonitorPlay className="w-5 h-5 text-[#2E7FD9]" />
                 <span>المنتج أو الباقة المميزة في الصفحة الرئيسية (الهيرو)</span>
               </h3>
               
-              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-arabic">
+              <p className="text-xs text-black dark:text-slate-300 leading-relaxed font-bold font-arabic">
                 اختر نوع ومسمى المنتج أو الباقة المدرسية التي ستعرض في الكارت المتحرك يسار قسم البطل (Hero Section) بالصفحة الرئيسية للمتجر.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-800 dark:text-slate-100 block">نوع الكارت المعروض</label>
+                  <label className="text-xs font-black text-black dark:text-slate-100 block font-arabic">نوع الكارت المعروض</label>
                   <select
                     value={heroCardType}
                     onChange={(e) => {
