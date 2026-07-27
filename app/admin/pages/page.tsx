@@ -330,6 +330,25 @@ export default function PageBuilderPage() {
   // رفع صور الكتل ودعم الـ base64 fallback
   const handleBlockImageUpload = async (blockId: string, file: File) => {
     setUploadingBlockId(blockId);
+    
+    // 1. تحويل الصورة إلى base64 فوراً للعرض الفوري والمزامنة المحلية
+    let base64 = '';
+    try {
+      base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      updateBlockContent(blockId, 'imageUrl', base64);
+    } catch (readErr) {
+      console.error(readErr);
+      alert('حدث خطأ أثناء قراءة الصورة.');
+      setUploadingBlockId(null);
+      return;
+    }
+
+    // 2. محاولة الرفع على Supabase Storage بالخلفية
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
@@ -339,9 +358,7 @@ export default function PageBuilderPage() {
         .from('products')
         .upload(filePath, file, { upsert: true });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const { data: publicData } = supabase.storage
         .from('products')
@@ -351,25 +368,37 @@ export default function PageBuilderPage() {
         updateBlockContent(blockId, 'imageUrl', publicData.publicUrl);
       }
     } catch (err) {
-      console.warn('Fallback to base64 for page block image upload');
-      try {
-        const base64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        });
-        updateBlockContent(blockId, 'imageUrl', base64);
-      } catch (readErr) {
-        console.error(readErr);
-        alert('حدث خطأ أثناء قراءة الصورة.');
-      }
+      console.warn('Supabase storage upload failed, keeping base64 fallback:', err);
     } finally {
       setUploadingBlockId(null);
     }
   };
+
   // رفع صور الصندوق التفاعلي (الصور الستة)
   const handleBlockSlotImageUpload = async (blockId: string, idx: number, file: File, currentImages: string[]) => {
     setUploadingBlockId(`${blockId}-slot-${idx}`);
+    
+    // 1. تحويل الصورة إلى base64 فوراً للعرض الفوري والمزامنة المحلية
+    let base64 = '';
+    try {
+      base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+      const updatedImages = [...currentImages];
+      while (updatedImages.length < 6) updatedImages.push('');
+      updatedImages[idx] = base64;
+      updateBlockContent(blockId, 'images', updatedImages);
+    } catch (readErr) {
+      console.error(readErr);
+      alert('حدث خطأ أثناء قراءة الصورة.');
+      setUploadingBlockId(null);
+      return;
+    }
+
+    // 2. محاولة الرفع على Supabase Storage بالخلفية
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
@@ -379,9 +408,7 @@ export default function PageBuilderPage() {
         .from('products')
         .upload(filePath, file, { upsert: true });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const { data: publicData } = supabase.storage
         .from('products')
@@ -394,21 +421,7 @@ export default function PageBuilderPage() {
         updateBlockContent(blockId, 'images', updatedImages);
       }
     } catch (err) {
-      console.warn('Fallback to base64 for page block slot image upload');
-      try {
-        const base64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(file);
-        });
-        const updatedImages = [...currentImages];
-        while (updatedImages.length < 6) updatedImages.push('');
-        updatedImages[idx] = base64;
-        updateBlockContent(blockId, 'images', updatedImages);
-      } catch (readErr) {
-        console.error(readErr);
-        alert('حدث خطأ أثناء قراءة الصورة.');
-      }
+      console.warn('Supabase storage slot upload failed, keeping base64 fallback:', err);
     } finally {
       setUploadingBlockId(null);
     }
@@ -440,6 +453,13 @@ export default function PageBuilderPage() {
       const mockPages = getMockData.pages();
       const updatedMock = mockPages.filter(p => p.slug !== slug);
       saveMockData.pages(updatedMock);
+
+      // مزامنة الملف على السيرفر
+      fetch('/api/sync-mock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'kh_pages', data: updatedMock })
+      }).catch(syncErr => console.error('Failed to sync pages to server:', syncErr));
 
       // إذا كانت الصفحة المفتوحة هي التي تم حذفها، نقوم بإلغاء تحديدها
       if (selectedPage?.slug === slug) {
@@ -485,6 +505,13 @@ export default function PageBuilderPage() {
       const mockPages = getMockData.pages();
       const updatedMock = mockPages.map(p => p.slug === selectedPage.slug ? { ...p, ...payload } : p);
       saveMockData.pages(updatedMock);
+
+      // مزامنة الملف على السيرفر
+      fetch('/api/sync-mock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'kh_pages', data: updatedMock })
+      }).catch(syncErr => console.error('Failed to sync pages to server:', syncErr));
 
       if (dbError) {
         alert(`تم حفظ التغييرات محلياً بنجاح! ⚠️ (تنبيه: لم يتم التحديث في قاعدة البيانات السحابية بسبب صلاحيات RLS: ${dbError.message})`);

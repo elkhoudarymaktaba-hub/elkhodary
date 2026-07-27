@@ -1071,6 +1071,8 @@ export default function ProductsPage() {
                 <div className="flex flex-wrap gap-1 items-center pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-700">
                   <span className="text-[10px] text-slate-400 font-arabic ml-1">مقاسات سريعة:</span>
                   {[
+                    { name: 'علبة', price: 100 },
+                    { name: 'قطعة', price: 10 },
                     { name: 'مقاس A4', price: 45 },
                     { name: 'مقاس A5', price: 25 },
                     { name: '60 ورقة', price: 30 },

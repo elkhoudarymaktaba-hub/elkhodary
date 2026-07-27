@@ -40,32 +40,85 @@ export default function ShippingPage() {
     setLoading(true);
     let ratesList: ShippingRate[] = [];
 
-    try {
-      const { data } = await supabase.from('shipping_rates').select('*');
-      if (data) ratesList = data;
-
-      // جلب إعدادات الشحن المجاني من site_settings
-      const { data: settings } = await supabase.from('site_settings').select('*');
-      if (settings) {
-        const enabledObj = settings.find((s: any) => s.key === 'free_shipping_enabled');
-        const minObj = settings.find((s: any) => s.key === 'free_shipping_min');
-        const labelObj = settings.find((s: any) => s.key === 'free_shipping_label');
-        
-        if (enabledObj) setFreeShippingEnabled(enabledObj.value === 'true');
-        if (minObj) setFreeShippingMin(Number(minObj.value));
-        if (labelObj) setFreeShippingLabel(labelObj.value);
+    // 1. Load from localStorage first (for instant rendering)
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('kh_shipping_rates');
+      if (stored) {
+        try { ratesList = JSON.parse(stored); } catch (e) {}
+      } else {
+        ratesList = getMockData.shippingRates();
+        localStorage.setItem('kh_shipping_rates', JSON.stringify(ratesList));
       }
-    } catch (err) {
-      ratesList = getMockData.shippingRates();
-      // استيراد قيم الـ LocalStorage الافتراضية
-      const settings = getMockData.settings();
-      setFreeShippingEnabled(settings.free_shipping_enabled === 'true');
-      setFreeShippingMin(Number(settings.free_shipping_min));
-      setFreeShippingLabel(settings.free_shipping_label);
+
+      const storedSettings = localStorage.getItem('kh_settings');
+      if (storedSettings) {
+        try {
+          const parsed = JSON.parse(storedSettings);
+          setFreeShippingEnabled(parsed.free_shipping_enabled === 'true');
+          setFreeShippingMin(Number(parsed.free_shipping_min || 500));
+          setFreeShippingLabel(parsed.free_shipping_label || '');
+        } catch (e) {}
+      } else {
+        const settings = getMockData.settings();
+        setFreeShippingEnabled(settings.free_shipping_enabled === 'true');
+        setFreeShippingMin(Number(settings.free_shipping_min));
+        setFreeShippingLabel(settings.free_shipping_label);
+      }
     }
 
-    setRates(ratesList);
+    setRates(ratesList.length > 0 ? ratesList : getMockData.shippingRates());
     setLoading(false);
+
+    // 2. Fetch from database in background
+    try {
+      const { data: dbData, error: dbErr } = await supabase.from('shipping_rates').select('*');
+      if (dbErr) throw dbErr;
+      if (dbData && dbData.length > 0) {
+        setRates(dbData);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('kh_shipping_rates', JSON.stringify(dbData));
+        }
+      }
+
+      // جلب إعدادات الشحن المجاني من site_settings
+      const { data: settingsData, error: settingsErr } = await supabase.from('site_settings').select('*');
+      if (settingsErr) throw settingsErr;
+      if (settingsData) {
+        const enabledObj = settingsData.find((s: any) => s.key === 'free_shipping_enabled');
+        const minObj = settingsData.find((s: any) => s.key === 'free_shipping_min');
+        const labelObj = settingsData.find((s: any) => s.key === 'free_shipping_label');
+        
+        let newEnabled = freeShippingEnabled;
+        let newMin = freeShippingMin;
+        let newLabel = freeShippingLabel;
+
+        if (enabledObj) {
+          newEnabled = enabledObj.value === 'true';
+          setFreeShippingEnabled(newEnabled);
+        }
+        if (minObj) {
+          newMin = Number(minObj.value);
+          setFreeShippingMin(newMin);
+        }
+        if (labelObj) {
+          newLabel = labelObj.value;
+          setFreeShippingLabel(newLabel);
+        }
+
+        if (typeof window !== 'undefined') {
+          const localSettings = localStorage.getItem('kh_settings') || '{}';
+          try {
+            const parsed = JSON.parse(localSettings);
+            parsed.free_shipping_enabled = String(newEnabled);
+            parsed.free_shipping_min = newMin;
+            parsed.free_shipping_label = newLabel;
+            localStorage.setItem('kh_settings', JSON.stringify(parsed));
+          } catch (e) {}
+        }
+      }
+    } catch (err) {
+      console.warn('Shipping rates background sync failed or timed out:', err);
+    }
   };
 
   // فتح إضافة محافظة
@@ -102,24 +155,51 @@ export default function ShippingPage() {
 
     try {
       if (editingRate) {
-        await supabase.from('shipping_rates').update(payload).eq('governorate', editingRate.governorate);
-        setRates(prev => prev.map(r => r.governorate === editingRate.governorate ? { ...r, ...payload } : r));
-        alert('تم تعديل تسعيرة المحافظة بنجاح!');
+        const { error } = await supabase.from('shipping_rates').update(payload).eq('governorate', editingRate.governorate);
+        if (error) throw error;
       } else {
         // التحقق من التكرار
         if (rates.some(r => r.governorate === formGov)) {
           alert('هذه المحافظة مسجلة مسبقاً! يرجى اختيار تعديل المحافظة القائمة بدلاً من إضافتها.');
           return;
         }
-        await supabase.from('shipping_rates').insert([payload]);
-        fetchData();
-        alert('تم إضافة المحافظة بنجاح!');
+        const { error } = await supabase.from('shipping_rates').insert([payload]);
+        if (error) throw error;
       }
-      setIsModalOpen(false);
     } catch (err) {
-      console.error(err);
-      alert('حدث خطأ أثناء حفظ التعديلات.');
+      console.warn('Database save failed, using local storage fallback:', err);
     }
+
+    // مزامنة محلياً ومع الخادم
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('kh_shipping_rates');
+      let allRates: ShippingRate[] = [];
+      if (local) {
+        try { allRates = JSON.parse(local); } catch (e) {}
+      } else {
+        allRates = getMockData.shippingRates();
+      }
+
+      let updated: ShippingRate[] = [];
+      if (editingRate) {
+        updated = allRates.map(r => r.governorate === editingRate.governorate ? { ...r, ...payload } : r);
+      } else {
+        updated = [...allRates, payload];
+      }
+
+      localStorage.setItem('kh_shipping_rates', JSON.stringify(updated));
+      setRates(updated);
+
+      // إرسال التحديث للسيرفر
+      fetch('/api/sync-mock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'kh_shipping_rates', data: updated })
+      }).catch(err => console.error('Failed to sync shipping rates:', err));
+    }
+
+    alert(editingRate ? 'تم تعديل تسعيرة المحافظة بنجاح!' : 'تم إضافة المحافظة بنجاح!');
+    setIsModalOpen(false);
   };
 
   // حفظ إعدادات الشحن المجاني
@@ -135,25 +215,36 @@ export default function ShippingPage() {
 
     try {
       await supabase.from('site_settings').upsert(updates);
+    } catch (err) {
+      console.warn('Database upsert failed, fallback to local storage:', err);
+    }
+
+    // حفظ محلي في الموك داتا للتكامل
+    if (typeof window !== 'undefined') {
+      const localSettings = localStorage.getItem('kh_settings') || '{}';
+      try {
+        const parsed = JSON.parse(localSettings);
+        parsed.free_shipping_enabled = String(freeShippingEnabled);
+        parsed.free_shipping_min = freeShippingMin;
+        parsed.free_shipping_label = freeShippingLabel;
+        localStorage.setItem('kh_settings', JSON.stringify(parsed));
+
+        // إرسال التحديث للسيرفر
+        await fetch('/api/sync-mock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: 'kh_settings', data: parsed })
+        });
+      } catch (e) {
+        console.error(e);
+      }
       
-      // حفظ محلي في الموك داتا للتكامل
-      const settings = getMockData.settings();
-      getMockData.settings = () => ({
-        ...settings,
-        free_shipping_enabled: String(freeShippingEnabled),
-        free_shipping_min: freeShippingMin,
-        free_shipping_label: freeShippingLabel
-      });
       // إرسال حدث مخصص لتحديث الهيدر
       window.dispatchEvent(new Event('settingsUpdated'));
-
-      alert('تم حفظ إعدادات الشحن المجاني بنجاح!');
-    } catch (err) {
-      console.error(err);
-      alert('حدث خطأ أثناء حفظ الإعدادات.');
-    } finally {
-      setSavingSettings(false);
     }
+
+    alert('تم حفظ إعدادات الشحن المجاني بنجاح!');
+    setSavingSettings(false);
   };
 
   // تبديل تفعيل المحافظة
@@ -165,6 +256,26 @@ export default function ShippingPage() {
     } catch (err) {
       console.error(err);
     }
+
+    // مزامنة محلياً ومع الخادم
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('kh_shipping_rates');
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          const updated = parsed.map((r: any) => r.governorate === rate.governorate ? { ...r, is_active: newVal } : r);
+          localStorage.setItem('kh_shipping_rates', JSON.stringify(updated));
+
+          fetch('/api/sync-mock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'kh_shipping_rates', data: updated })
+          }).catch(err => console.error('Failed to sync shipping rates:', err));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
   };
 
   // حذف محافظة
@@ -172,11 +283,32 @@ export default function ShippingPage() {
     if (!confirm(`هل أنت متأكد من رغبتك في حذف تسعيرة شحن محافظة "${gov}" نهائياً؟`)) return;
     try {
       await supabase.from('shipping_rates').delete().eq('governorate', gov);
-      setRates(prev => prev.filter(r => r.governorate !== gov));
-      alert('تم إزالة المحافظة.');
     } catch (err) {
       console.error(err);
     }
+
+    // مزامنة محلياً ومع الخادم
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('kh_shipping_rates');
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          const updated = parsed.filter((r: any) => r.governorate !== gov);
+          localStorage.setItem('kh_shipping_rates', JSON.stringify(updated));
+          setRates(updated);
+
+          fetch('/api/sync-mock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'kh_shipping_rates', data: updated })
+          }).catch(err => console.error('Failed to sync shipping rates:', err));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
+
+    alert('تم إزالة المحافظة.');
   };
 
   return (
