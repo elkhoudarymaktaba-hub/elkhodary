@@ -152,6 +152,13 @@ export default function CategoriesPage() {
               const parsed = JSON.parse(local);
               const updated = parsed.map((c: any) => c.id === editingCategory.id ? { ...c, ...categoryPayload } : c);
               localStorage.setItem('kh_categories', JSON.stringify(updated));
+
+              // مزامنة الملف على الخادم
+              fetch('/api/sync-mock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ key: 'kh_categories', data: updated })
+              }).catch(err => console.error('Failed to sync categories:', err));
             } catch (e) {
               console.error(e);
             }
@@ -187,6 +194,13 @@ export default function CategoriesPage() {
           }
           allCats.push(newCategory);
           localStorage.setItem('kh_categories', JSON.stringify(allCats));
+
+          // مزامنة الملف على الخادم
+          fetch('/api/sync-mock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'kh_categories', data: allCats })
+          }).catch(err => console.error('Failed to sync categories:', err));
         }
 
         setCategories(prev => [...prev, newCategory]);
@@ -210,6 +224,26 @@ export default function CategoriesPage() {
     } catch (err) {
       console.error(err);
     }
+
+    // مزامنة التغييرات محلياً ومع الخادم
+    if (typeof window !== 'undefined') {
+      const local = localStorage.getItem('kh_categories');
+      if (local) {
+        try {
+          const parsed = JSON.parse(local);
+          const updated = parsed.map((c: any) => c.id === cat.id ? { ...c, is_active: newVal } : c);
+          localStorage.setItem('kh_categories', JSON.stringify(updated));
+
+          fetch('/api/sync-mock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'kh_categories', data: updated })
+          }).catch(err => console.error('Failed to sync categories:', err));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    }
   };
 
   // حذف قسم
@@ -225,6 +259,27 @@ export default function CategoriesPage() {
     try {
       await supabase.from('categories').delete().eq('id', catId);
       setCategories(prev => prev.filter(c => c.id !== catId));
+
+      // مزامنة التغييرات محلياً ومع الخادم
+      if (typeof window !== 'undefined') {
+        const local = localStorage.getItem('kh_categories');
+        if (local) {
+          try {
+            const parsed = JSON.parse(local);
+            const updated = parsed.filter((c: any) => c.id !== catId);
+            localStorage.setItem('kh_categories', JSON.stringify(updated));
+
+            fetch('/api/sync-mock', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ key: 'kh_categories', data: updated })
+            }).catch(err => console.error('Failed to sync categories:', err));
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+
       alert('تم حذف القسم بنجاح.');
     } catch (err) {
       console.error(err);

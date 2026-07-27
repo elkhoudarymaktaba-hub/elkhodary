@@ -25,9 +25,9 @@ export default function ProductsClient({ categories, initialProducts }: Products
   const [minPrice, setMinPrice] = useState<number>(0);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Sync with localStorage when in mock mode
+  // Sync with localStorage on client mount (especially helpful in mock or dev modes)
   useEffect(() => {
-    if (!isSupabaseConfigured && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined') {
       try {
         const localCats = localStorage.getItem('kh_categories');
         const localProds = localStorage.getItem('kh_products');
