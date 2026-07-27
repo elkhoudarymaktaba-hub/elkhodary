@@ -147,13 +147,13 @@ export default function CouponsPage() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" dir="rtl">
       
       {/* 1. نموذج الإنشاء والتعديل (Form Panel) */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 h-fit space-y-4 lg:col-span-1 transition-colors">
+      <div className="bg-[#F7F8FA] p-5 rounded-[16px] border border-slate-300 h-fit space-y-4 lg:col-span-1 shadow-2xs transition-colors">
         <div className="space-y-1 text-right">
-          <h3 className="text-base font-bold text-ink dark:text-slate-100 font-arabic flex items-center gap-1.5">
+          <h3 className="text-base font-black text-slate-900 font-arabic flex items-center gap-1.5">
             <Sparkles className="w-4 h-4 text-[#2E7FD9]" />
             <span>{editingCoupon ? 'تعديل بيانات الكوبون' : 'إنشاء كوبون خصم جديد'}</span>
           </h3>
-          <p className="text-xs text-slate-400 dark:text-slate-400 font-arabic">أنشئ كوبونات ترويجية لزيادة حجم المبيعات</p>
+          <p className="text-xs text-slate-500 font-arabic">أنشئ كوبونات ترويجية لزيادة حجم المبيعات</p>
         </div>
 
         <form onSubmit={handleSaveCoupon} className="space-y-4 text-right">
@@ -207,26 +207,26 @@ export default function CouponsPage() {
 
           {/* تفعيل/تعطيل الكوبون */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold text-ink dark:text-slate-200 font-arabic">حالة الكوبون الافتراضية</span>
+            <span className="text-sm font-bold text-slate-900 font-arabic">حالة الكوبون الافتراضية</span>
             <button
               type="button"
               onClick={() => setFormIsActive(!formIsActive)}
-              className="flex items-center gap-2 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800 hover:bg-slate-100/70 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200 w-full"
+              className="flex items-center gap-2 py-2 px-3 border border-slate-300 rounded-[12px] bg-white hover:bg-slate-100 transition-colors justify-between text-slate-800 w-full font-bold text-xs"
             >
               <span className="text-xs font-arabic">نشط حالياً للمشترين</span>
-              {formIsActive ? <ToggleRight className="w-6 h-6 text-emerald-500" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
+              {formIsActive ? <ToggleRight className="w-6 h-6 text-emerald-600" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
             </button>
           </div>
 
           {/* أزرار الحفظ */}
-          <div className="flex gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
+          <div className="flex gap-2 border-t border-slate-200 pt-3">
             {editingCoupon && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleCancelEdit}
-                className="flex-1 font-arabic dark:border-slate-700 dark:text-slate-200"
+                className="flex-1 font-arabic border-slate-300 text-slate-700"
               >
                 إلغاء
               </Button>
@@ -245,10 +245,10 @@ export default function CouponsPage() {
       </div>
 
       {/* 2. جدول الكوبونات المتاحة (Table Panel) */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 lg:col-span-2 flex flex-col gap-4 transition-colors">
+      <div className="bg-[#F7F8FA] p-5 rounded-[16px] border border-slate-300 lg:col-span-2 flex flex-col gap-4 shadow-2xs transition-colors">
         <div className="space-y-1 text-right">
-          <h3 className="text-base font-bold text-ink dark:text-slate-100 font-arabic">أكواد الكوبونات النشطة</h3>
-          <p className="text-xs text-slate-400 dark:text-slate-400 font-arabic">مراقبة معدلات استخدام الكوبونات والخصومات الحالية للموقع</p>
+          <h3 className="text-base font-black text-slate-900 font-arabic">أكواد الكوبونات النشطة</h3>
+          <p className="text-xs text-slate-500 font-arabic">مراقبة معدلات استخدام الكوبونات والخصومات الحالية للموقع</p>
         </div>
 
         {loading ? (
@@ -263,7 +263,7 @@ export default function CouponsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-arabic">
+                <tr className="bg-slate-200/60 border-b border-slate-300 text-slate-900 font-arabic">
                   <th className="py-4 px-5 font-bold">الكود الترويجي</th>
                   <th className="py-4 px-5 font-bold">نوع الخصم</th>
                   <th className="py-4 px-5 font-bold">القيمة المخصومة</th>
@@ -273,9 +273,9 @@ export default function CouponsPage() {
                   <th className="py-4 px-5 font-bold text-center">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-slate-200 dark:divide-slate-800">
+              <tbody className="divide-y divide-dashed divide-slate-300">
                 {coupons.map((coupon) => (
-                  <tr key={coupon.code} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                  <tr key={coupon.code} className="hover:bg-slate-100/70 transition-colors">
                     <td className="py-3.5 px-5 font-english font-bold text-xs tracking-wider text-[#2E7FD9] dark:text-[#5B9FE6] select-all bg-[#2E7FD9]/10 dark:bg-[#2E7FD9]/20 rounded-[8px]">
                       {coupon.code}
                     </td>

@@ -1376,10 +1376,10 @@ export default function ProductsPage() {
       </div>
 
       {/* جدول المنتجات */}
-      <div className="bg-white rounded-[16px] shadow-premium border border-[#E7DCC2] overflow-hidden">
+      <div className="bg-[#F7F8FA] rounded-[16px] border border-slate-300 overflow-hidden shadow-2xs">
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-4 text-ink">
-            <svg className="animate-spin h-8 w-8 text-amber" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-800">
+            <svg className="animate-spin h-8 w-8 text-[#2E7FD9]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -1389,7 +1389,7 @@ export default function ProductsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm">
               <thead>
-                <tr className="bg-[#F6F1E4]/30 border-b border-[#E7DCC2] text-ink-soft font-arabic">
+                <tr className="bg-slate-200/60 border-b border-slate-300 text-slate-900 font-arabic">
                   <th className="py-4 px-6 font-bold">الصورة</th>
                   <th className="py-4 px-6 font-bold">اسم المنتج</th>
                   <th className="py-4 px-6 font-bold">القسم</th>
@@ -1403,13 +1403,13 @@ export default function ProductsPage() {
                   <th className="py-4 px-6 font-bold text-center">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-[#E7DCC2]">
+              <tbody className="divide-y divide-dashed divide-slate-300">
                 {filteredProducts.map((product) => {
                   const catName = categories.find(c => c.id === product.category_id)?.name || 'غير مصنف';
                   const primaryImage = product.images?.[0] || '';
 
                   return (
-                    <tr key={product.id} className="hover:bg-[#FBEBCB]/15 transition-colors group">
+                    <tr key={product.id} className="hover:bg-slate-100/70 transition-colors group">
                       <td className="py-3.5 px-6">
                         {primaryImage ? (
                           <img 

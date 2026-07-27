@@ -180,96 +180,11 @@ html {
   transform: translateY(0);
 }
 
-/* 🌙 Dark Mode / Night Mode variables & overrides for Admin Panel */
-html.dark,
-body.admin-dark {
-  --ink: #F8FAFC;
-  --ink-soft: #60A5FA;
-  --ink-muted: #94A3B8;
-  --paper: #0F172A;
-  --paper-line: #1E293B;
-  --white: #1E293B;
-  background-color: #0F172A;
-  color: #F8FAFC;
-}
-
+/* 🌙 Dark Mode / Night Mode Styling */
 html.dark body,
 body.admin-dark {
   background-color: #0F172A;
   color: #F8FAFC;
-}
-
-html.dark .bg-white,
-body.admin-dark .bg-white {
-  background-color: #1E293B;
-  color: #F8FAFC;
-  border-color: #334155;
-}
-
-html.dark .bg-slate-50,
-body.admin-dark .bg-slate-50 {
-  background-color: #0F172A;
-}
-
-html.dark .bg-\[\#F7F8FA\],
-body.admin-dark .bg-\[\#F7F8FA\] {
-  background-color: #0F172A;
-}
-
-html.dark .text-slate-900,
-html.dark .text-slate-800,
-html.dark .text-slate-700,
-body.admin-dark .text-slate-900,
-body.admin-dark .text-slate-800,
-body.admin-dark .text-slate-700 {
-  color: #F8FAFC;
-}
-
-html.dark .border-slate-200,
-html.dark .border-slate-300,
-body.admin-dark .border-slate-200,
-body.admin-dark .border-slate-300 {
-  border-color: #334155;
-}
-
-html.dark input,
-html.dark select,
-html.dark textarea,
-body.admin-dark input,
-body.admin-dark select,
-body.admin-dark textarea {
-  background-color: #0F172A;
-  color: #F8FAFC;
-  border-color: #334155;
-}
-
-html.dark table,
-body.admin-dark table {
-  color: #F8FAFC;
-}
-
-html.dark table th,
-body.admin-dark table th {
-  color: #94A3B8;
-  background-color: #1E293B;
-}
-
-html.dark table tr:hover,
-body.admin-dark table tr:hover {
-  background-color: rgba(255, 255, 255, 0.04);
-}
-
-/* Button overrides for dark mode */
-html.dark button[variant="outline"],
-body.admin-dark button[variant="outline"] {
-  border-color: #334155;
-  color: #F8FAFC;
-  background-color: transparent;
-}
-
-html.dark button[variant="outline"]:hover,
-body.admin-dark button[variant="outline"]:hover {
-  background-color: #1E293B;
 }
 
 /* ==========================================

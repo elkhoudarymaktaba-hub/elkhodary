@@ -340,7 +340,7 @@ export default function OrdersPage() {
     <div className="space-y-6" dir="rtl">
       
       {/* 1. أشرطة تبويب الحالات (Status Tabs) */}
-      <div className="w-full overflow-x-auto scrollbar-none flex border-b border-slate-200/80 dark:border-slate-800 gap-2 bg-white dark:bg-slate-900 px-4 pt-2 rounded-t-[16px] shadow-sm transition-colors">
+      <div className="w-full overflow-x-auto scrollbar-none flex border border-slate-300 gap-2 bg-[#F7F8FA] px-4 pt-2.5 rounded-t-[16px] shadow-2xs transition-colors">
         {statusTabs.map((tab) => {
           const tabCount = tab.id === 'all' 
             ? orders.length 
@@ -356,15 +356,15 @@ export default function OrdersPage() {
               }}
               className={`pb-3.5 px-4 text-sm font-bold transition-all duration-200 border-b-2 font-arabic whitespace-nowrap flex items-center gap-2 ${
                 isActive
-                  ? 'border-[#2E7FD9] text-[#2E7FD9] dark:text-[#5B9FE6] font-black'
-                  : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                  ? 'border-[#2E7FD9] text-[#2E7FD9] font-black'
+                  : 'border-transparent text-slate-700 hover:text-slate-900'
               }`}
             >
               <span>{tab.label}</span>
               <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold font-english ${
                 isActive 
-                  ? 'bg-amber-500 text-white shadow-sm' 
-                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700'
+                  ? 'bg-[#2E7FD9] text-white shadow-xs' 
+                  : 'bg-slate-200/80 text-slate-800 border border-slate-300/80'
               }`}>
                 {tabCount}
               </span>
@@ -374,7 +374,7 @@ export default function OrdersPage() {
       </div>
 
       {/* 2. البحث والفلترة المتقدمة (Filters Bar) */}
-      <div className="bg-white dark:bg-slate-900 p-5 rounded-b-[16px] shadow-sm border-x border-b border-slate-200 dark:border-slate-800 space-y-4 transition-colors">
+      <div className="bg-[#F7F8FA] p-5 rounded-b-[16px] border-x border-b border-slate-300 space-y-4 transition-colors">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {/* حقل البحث */}
           <div className="relative md:col-span-2">
@@ -411,14 +411,14 @@ export default function OrdersPage() {
           <div className="flex gap-2">
             <button
               onClick={resetFilters}
-              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-[12px] text-sm font-bold transition-all duration-200 font-arabic"
+              className="flex-1 flex items-center justify-center gap-1.5 px-4 py-2 bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 rounded-[12px] text-sm font-bold transition-all duration-200 font-arabic shadow-xs"
             >
               <X className="w-4 h-4" />
               <span>تفريغ الفلاتر</span>
             </button>
             <button
               onClick={fetchOrders}
-              className="p-2.5 bg-[#2E7FD9]/10 hover:bg-[#2E7FD9]/20 text-[#2E7FD9] dark:text-[#2E7FD9] rounded-[12px] border border-[#2E7FD9]/20 transition-all duration-200"
+              className="p-2.5 bg-[#2E7FD9]/10 hover:bg-[#2E7FD9]/20 text-[#2E7FD9] rounded-[12px] border border-[#2E7FD9]/30 transition-all duration-200"
               title="تحديث البيانات"
             >
               <RefreshCw className="w-5 h-5" />
@@ -427,15 +427,15 @@ export default function OrdersPage() {
         </div>
 
         {/* فلاتر تاريخ مخصصة مع اختيارات سريعة */}
-        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/60 p-3.5 rounded-[16px] border border-slate-200/80 dark:border-slate-800/80 transition-colors">
+        <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-slate-800 bg-[#F7F8FA] p-3.5 rounded-[16px] border border-slate-300 transition-colors">
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-1.5">
               <Calendar className="w-4.5 h-4.5 text-[#2E7FD9]" />
-              <span className="font-bold font-arabic text-xs text-slate-800 dark:text-slate-100">نطاق تاريخ التسجيل:</span>
+              <span className="font-bold font-arabic text-xs text-slate-800">نطاق تاريخ التسجيل:</span>
             </div>
 
             {/* أزرار المدة السريعة */}
-            <div className="flex flex-wrap gap-1 bg-white dark:bg-slate-800 p-1 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
+            <div className="flex flex-wrap gap-1 bg-white p-1 rounded-full border border-slate-300 shadow-xs shrink-0">
               {[
                 { id: 'all', label: 'الكل' },
                 { id: 'today', label: 'اليوم' },
@@ -450,8 +450,8 @@ export default function OrdersPage() {
                   onClick={() => handleDateRangeTypeChange(pill.id as any)}
                   className={`px-3 py-1 rounded-full text-[10px] font-bold font-arabic transition-all ${
                     dateRangeType === pill.id
-                      ? 'bg-[#2E7FD9] text-white shadow-sm font-extrabold'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/60'
+                      ? 'bg-[#2E7FD9] text-white shadow-xs font-extrabold'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
                   {pill.label}
@@ -486,7 +486,7 @@ export default function OrdersPage() {
           
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[12px] text-xs font-bold transition-all duration-200 font-arabic shadow-sm hover:shadow h-[38px]"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-[12px] text-xs font-bold transition-all duration-200 font-arabic shadow-xs hover:shadow h-[38px]"
           >
             <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -497,9 +497,9 @@ export default function OrdersPage() {
       </div>
 
       {/* 3. جدول الطلبات (Orders Table Card) */}
-      <div className="bg-white dark:bg-slate-900 rounded-[16px] shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
+      <div className="bg-[#F7F8FA] rounded-[16px] border border-slate-300 overflow-hidden shadow-2xs transition-colors">
         {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-4 text-ink dark:text-slate-100">
+          <div className="py-20 flex flex-col items-center justify-center gap-4 text-slate-800">
             <svg className="animate-spin h-8 w-8 text-[#2E7FD9]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -510,7 +510,7 @@ export default function OrdersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-right text-sm">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-arabic">
+                <tr className="bg-slate-200/60 border-b border-slate-300 text-slate-900 font-arabic">
                   <th className="py-4 px-6 font-bold">رقم الطلب</th>
                   <th className="py-4 px-6 font-bold">اسم العميل</th>
                   <th className="py-4 px-6 font-bold">الهاتف</th>
@@ -522,7 +522,7 @@ export default function OrdersPage() {
                   <th className="py-4 px-6 font-bold text-center">إجراءات</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dashed divide-slate-200 dark:divide-slate-800">
+              <tbody className="divide-y divide-dashed divide-slate-300">
                 {paginatedOrders.map((order) => {
                   const productsSummary = order.items
                     .map(item => `${item.name} (${item.quantity})`)
