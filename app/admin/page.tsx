@@ -232,65 +232,71 @@ export default function DashboardHome() {
           className="bg-white p-5 rounded-[16px] shadow-premium hover:shadow-premium-hover transition-all duration-300 border border-[#E7DCC2] flex items-center justify-between group animate-rise cursor-pointer"
         >
           <div className="space-y-2 text-right">
-            <p className="text-xs font-bold text-[#6B7796] font-arabic">إجمالي عدد الطلبات</p>
-            <h3 className="text-2xl font-black text-ink font-cairo" style={{ fontWeight: 900 }}>{orders.length} طلب</h3>
-            <p className="text-[11px] text-amber hover:underline font-bold font-arabic flex items-center gap-1">
+        {/* إجمالي عدد الطلبات */}
+        <Link 
+          href="/admin/orders" 
+          className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm hover:shadow-md transition-all duration-300 border border-slate-300 dark:border-slate-800 flex items-center justify-between group animate-rise cursor-pointer"
+        >
+          <div className="space-y-2 text-right">
+            <p className="text-xs font-black text-black dark:text-slate-300 font-arabic">إجمالي عدد الطلبات</p>
+            <h3 className="text-2xl font-black text-black dark:text-slate-100 font-cairo" style={{ fontWeight: 900 }}>{orders.length} طلب</h3>
+            <p className="text-[11px] text-[#2E7FD9] dark:text-[#5B9FE6] hover:underline font-black font-arabic flex items-center gap-1">
               <span>عرض كل الطلبات</span>
               <ChevronLeft className="w-3 h-3" />
             </p>
           </div>
-          <div className="w-12 h-12 bg-amber-light/10 text-amber rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
+          <div className="w-12 h-12 bg-blue-100 dark:bg-blue-950 text-[#2E7FD9] rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
             <ClipboardList className="w-6 h-6" />
           </div>
         </Link>
 
         {/* إجمالي المبيعات */}
-        <div className="bg-white p-5 rounded-[16px] shadow-premium hover:shadow-premium-hover transition-all duration-300 border border-[#E7DCC2] flex items-center justify-between group animate-rise">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm hover:shadow-md transition-all duration-300 border border-slate-300 dark:border-slate-800 flex items-center justify-between group animate-rise">
           <div className="space-y-2 text-right">
-            <p className="text-xs font-bold text-[#6B7796] font-arabic">إجمالي المبيعات (بدون الملغاة)</p>
-            <h3 className="text-2xl font-black text-ink font-cairo" style={{ fontWeight: 900 }}>{kpis.totalSales.toLocaleString()} ج.م</h3>
-            <span className="inline-flex items-center text-[11px] text-[#396A56] bg-[#DCEEE5] px-2 py-0.5 rounded-full font-bold">
+            <p className="text-xs font-black text-black dark:text-slate-300 font-arabic">إجمالي المبيعات (بدون الملغاة)</p>
+            <h3 className="text-2xl font-black text-black dark:text-slate-100 font-cairo" style={{ fontWeight: 900 }}>{kpis.totalSales.toLocaleString()} ج.م</h3>
+            <span className="inline-flex items-center text-[11px] text-emerald-800 bg-emerald-100 dark:bg-emerald-950 dark:text-emerald-200 px-2 py-0.5 rounded-full font-black">
               <ArrowUpRight className="w-3 h-3 ml-0.5 animate-pulse" />
               <span>+12% عن الشهر الماضي</span>
             </span>
           </div>
-          <div className="w-12 h-12 bg-[#EAE1F3] text-[#7A5C9E] rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
+          <div className="w-12 h-12 bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
             <TrendingUp className="w-6 h-6" />
           </div>
         </div>
 
         {/* الطلبات المؤكدة */}
-        <div className="bg-white p-5 rounded-[16px] shadow-premium hover:shadow-premium-hover transition-all duration-300 border border-[#E7DCC2] flex items-center justify-between group animate-rise">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm hover:shadow-md transition-all duration-300 border border-slate-300 dark:border-slate-800 flex items-center justify-between group animate-rise">
           <div className="space-y-2 text-right">
-            <p className="text-xs font-bold text-[#6B7796] font-arabic">الطلبات المؤكدة</p>
-            <h3 className="text-2xl font-black text-ink font-cairo" style={{ fontWeight: 900 }}>{kpis.confirmedCount} طلب</h3>
-            <p className="text-[11px] text-slate-500 font-arabic">بانتظار شركة الشحن حالياً</p>
+            <p className="text-xs font-black text-black dark:text-slate-300 font-arabic">الطلبات المؤكدة</p>
+            <h3 className="text-2xl font-black text-black dark:text-slate-100 font-cairo" style={{ fontWeight: 900 }}>{kpis.confirmedCount} طلب</h3>
+            <p className="text-[11px] text-black dark:text-slate-300 font-black font-arabic">بانتظار شركة الشحن حالياً</p>
           </div>
-          <div className="w-12 h-12 bg-[#DCEEE5] text-[#396A56] rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
+          <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
             <CheckCircle className="w-6 h-6" />
           </div>
         </div>
 
         {/* الطلبات الملغية */}
-        <div className="bg-white p-5 rounded-[16px] shadow-premium hover:shadow-premium-hover transition-all duration-300 border border-[#E7DCC2] flex items-center justify-between group animate-rise">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm hover:shadow-md transition-all duration-300 border border-slate-300 dark:border-slate-800 flex items-center justify-between group animate-rise">
           <div className="space-y-2 text-right">
-            <p className="text-xs font-bold text-[#6B7796] font-arabic">الطلبات الملغية</p>
-            <h3 className="text-2xl font-black text-coral font-cairo" style={{ fontWeight: 900 }}>{kpis.cancelledCount} طلب</h3>
-            <p className="text-[11px] text-slate-500 font-arabic">تم إلغاؤها من العملاء / المشرف</p>
+            <p className="text-xs font-black text-black dark:text-slate-300 font-arabic">الطلبات الملغية</p>
+            <h3 className="text-2xl font-black text-rose-600 dark:text-rose-400 font-cairo" style={{ fontWeight: 900 }}>{kpis.cancelledCount} طلب</h3>
+            <p className="text-[11px] text-black dark:text-slate-300 font-black font-arabic">تم إلغاؤها من العملاء / المشرف</p>
           </div>
-          <div className="w-12 h-12 bg-[#FBE1DB] text-[#C43F2B] rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
+          <div className="w-12 h-12 bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
             <XCircle className="w-6 h-6" />
           </div>
         </div>
 
         {/* متوسط قيمة الطلب */}
-        <div className="bg-white p-5 rounded-[16px] shadow-premium hover:shadow-premium-hover transition-all duration-300 border border-[#E7DCC2] flex items-center justify-between group animate-rise">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm hover:shadow-md transition-all duration-300 border border-slate-300 dark:border-slate-800 flex items-center justify-between group animate-rise">
           <div className="space-y-2 text-right">
-            <p className="text-xs font-bold text-[#6B7796] font-arabic">متوسط قيمة الطلب</p>
-            <h3 className="text-2xl font-black text-ink font-cairo" style={{ fontWeight: 900 }}>{kpis.avgOrderVal.toLocaleString()} ج.م</h3>
-            <p className="text-[11px] text-slate-500 font-arabic">حجم مشتريات العميل المتوسطة</p>
+            <p className="text-xs font-black text-black dark:text-slate-300 font-arabic">متوسط قيمة الطلب</p>
+            <h3 className="text-2xl font-black text-black dark:text-slate-100 font-cairo" style={{ fontWeight: 900 }}>{kpis.avgOrderVal.toLocaleString()} ج.م</h3>
+            <p className="text-[11px] text-black dark:text-slate-300 font-black font-arabic">حجم مشتريات العميل المتوسطة</p>
           </div>
-          <div className="w-12 h-12 bg-[#FBEBCB] text-[#C9862A] rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
+          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-[12px] flex items-center justify-center group-hover:scale-105 transition-transform duration-200 shadow-sm">
             <ShoppingBag className="w-6 h-6" />
           </div>
         </div>
@@ -301,13 +307,13 @@ export default function DashboardHome() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* مخطط مبيعات آخر 7 أيام */}
-        <div className="bg-white p-5 rounded-[16px] shadow-premium border border-[#E7DCC2] lg:col-span-2 flex flex-col gap-4">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm border border-slate-300 dark:border-slate-800 lg:col-span-2 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-bold text-ink font-arabic">منحنى مبيعات آخر 7 أيام</h3>
-              <p className="text-xs text-ink-muted font-arabic mt-1">مخطط تطور حجم الإيرادات بالجنيه المصري</p>
+              <h3 className="text-base font-black text-black dark:text-slate-100 font-arabic">منحنى مبيعات آخر 7 أيام</h3>
+              <p className="text-xs text-black dark:text-slate-300 font-black font-arabic mt-1">مخطط تطور حجم الإيرادات بالجنيه المصري</p>
             </div>
-            <span className="px-3 py-1 bg-[#FBEBCB]/60 text-[#C9862A] text-xs font-bold rounded-[8px] font-arabic">تحديث فوري</span>
+            <span className="px-3 py-1 bg-amber-100 text-amber-900 text-xs font-black rounded-[8px] font-arabic border border-amber-300">تحديث فوري</span>
           </div>
 
           <div className="h-64 w-full">
@@ -320,11 +326,11 @@ export default function DashboardHome() {
                       <stop offset="95%" stopColor="#E4573F" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="#94A3B8" strokeDasharray="3 3" vertical={false} opacity={0.25} />
-                  <XAxis dataKey="date" stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} dy={10} />
-                  <YAxis stroke="#94A3B8" tick={{ fill: '#94A3B8', fontSize: 12, fontWeight: 'bold' }} dx={-10} />
+                  <CartesianGrid stroke="#cbd5e1" strokeDasharray="3 3" vertical={false} opacity={0.6} />
+                  <XAxis dataKey="date" stroke="#000000" tick={{ fill: '#000000', fontSize: 12, fontWeight: '900' }} dy={10} />
+                  <YAxis stroke="#000000" tick={{ fill: '#000000', fontSize: 12, fontWeight: '900' }} dx={-10} />
                   <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: '1px solid #E7DCC2', direction: 'rtl', textAlign: 'right', backgroundColor: '#FFFFFF' }} 
+                    contentStyle={{ borderRadius: '12px', border: '1px solid #cbd5e1', direction: 'rtl', textAlign: 'right', backgroundColor: '#FFFFFF', fontWeight: 'bold' }} 
                     formatter={(val) => [`${val} ج.م`, 'المبيعات']}
                   />
                   <Area 
@@ -341,7 +347,7 @@ export default function DashboardHome() {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-slate-400 font-arabic text-sm">جاري معالجة الرسم البياني...</div>
+              <div className="h-full flex items-center justify-center text-black font-black font-arabic text-sm">جاري معالجة الرسم البياني...</div>
             )}
           </div>
         </div>

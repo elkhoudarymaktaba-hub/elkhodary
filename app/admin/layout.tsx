@@ -64,7 +64,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-[#F7F8FA] text-slate-900" dir="rtl">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-[#F7F8FA] dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors" dir="rtl">
       <ToastContainer />
       {/* شريط التنقل الجانبي */}
       <Sidebar />
@@ -75,7 +75,7 @@ export default function AdminLayout({
         <Header />
 
         {/* جسم الصفحة الرئيسي */}
-        <main className="flex-1 p-4 md:p-8 bg-[#F7F8FA] overflow-x-hidden">
+        <main className="flex-1 p-4 md:p-8 bg-[#F7F8FA] dark:bg-slate-950 transition-colors overflow-x-hidden">
           {children}
         </main>
       </div>

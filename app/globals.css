@@ -183,8 +183,52 @@ html {
 /* 🌙 Dark Mode / Night Mode Styling */
 html.dark body,
 body.admin-dark {
-  background-color: #0F172A;
-  color: #F8FAFC;
+  background-color: #0B132B !important;
+  color: #F8FAFC !important;
+}
+
+html.dark .bg-white,
+body.admin-dark .bg-white {
+  background-color: #16233F !important;
+  color: #F8FAFC !important;
+  border-color: #2E3E63 !important;
+}
+
+html.dark .bg-\[\#F7F8FA\],
+body.admin-dark .bg-\[\#F7F8FA\] {
+  background-color: #0B132B !important;
+  color: #F8FAFC !important;
+  border-color: #2E3E63 !important;
+}
+
+html.dark .bg-slate-50,
+html.dark .bg-slate-100,
+body.admin-dark .bg-slate-50,
+body.admin-dark .bg-slate-100 {
+  background-color: #1E293B !important;
+  color: #F8FAFC !important;
+}
+
+html.dark input,
+html.dark select,
+html.dark textarea,
+body.admin-dark input,
+body.admin-dark select,
+body.admin-dark textarea {
+  background-color: #16233F !important;
+  color: #F8FAFC !important;
+  border-color: #2E3E63 !important;
+}
+
+html.dark table th,
+body.admin-dark table th {
+  background-color: #1E293B !important;
+  color: #94A3B8 !important;
+}
+
+html.dark table td,
+body.admin-dark table td {
+  color: #F8FAFC !important;
 }
 
 /* ==========================================

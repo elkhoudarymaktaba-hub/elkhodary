@@ -1660,11 +1660,11 @@ export default function ProductsPage() {
       {/* ⚙️ نافذة التعديل الجماعي للأسعار (Bulk Price Update Modal) */}
       {isBulkPriceModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fade-in font-arabic">
-          <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-200 dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden text-right transition-colors">
+          <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-300 dark:border-slate-800 shadow-2xl max-w-md w-full overflow-hidden text-right transition-colors">
             
             {/* Header */}
-            <div className="bg-slate-50 dark:bg-slate-800/80 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <span className="font-black text-sm text-slate-800 dark:text-slate-100 font-arabic flex items-center gap-2">
+            <div className="bg-slate-100 dark:bg-slate-800/80 px-6 py-4 border-b border-slate-300 dark:border-slate-700 flex items-center justify-between">
+              <span className="font-black text-sm text-black dark:text-slate-100 font-arabic flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-[#2E7FD9]" />
                 <span>تعديل جماعي لأسعار المنتجات</span>
               </span>
@@ -1681,30 +1681,30 @@ export default function ProductsPage() {
               
               {/* Category selection */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">1. القسم المستهدف بالتعديل</label>
+                <label className="block text-xs font-black text-black dark:text-slate-100">1. القسم المستهدف بالتعديل</label>
                 <select
                   value={bulkTargetCategory}
                   onChange={(e) => setBulkTargetCategory(e.target.value)}
-                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-slate-800 dark:text-slate-100 font-bold focus:border-[#2E7FD9] focus:outline-none font-arabic cursor-pointer"
+                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-black dark:text-slate-100 font-black focus:border-[#2E7FD9] focus:outline-none font-arabic cursor-pointer"
                 >
-                  <option value="all">كل الأقسام والمستلزمات</option>
+                  <option value="all" className="bg-white dark:bg-slate-900 text-black dark:text-slate-100 font-black">كل الأقسام والمستلزمات</option>
                   {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id} className="bg-white dark:bg-slate-900 text-black dark:text-slate-100 font-black">{c.name}</option>
                   ))}
                 </select>
               </div>
 
               {/* Adjustment Type selection */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">2. نوع التعديل على السعر</label>
+                <label className="block text-xs font-black text-black dark:text-slate-100">2. نوع التعديل على السعر</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setBulkAdjustmentType('increase')}
-                    className={`py-2.5 px-4 rounded-xl border text-center text-xs font-bold font-arabic transition-all ${
+                    className={`py-2.5 px-4 rounded-xl border text-center text-xs font-black font-arabic transition-all ${
                       bulkAdjustmentType === 'increase'
-                        ? 'border-[#2E7FD9] bg-[#2E7FD9]/10 text-[#2E7FD9] dark:text-[#5B9FE6] font-extrabold shadow-xs'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        ? 'border-[#2E7FD9] bg-[#2E7FD9]/10 text-[#2E7FD9] dark:text-[#5B9FE6] font-black shadow-xs'
+                        : 'border-slate-300 dark:border-slate-700 text-black dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
                     📈 زيادة الأسعار
@@ -1712,10 +1712,10 @@ export default function ProductsPage() {
                   <button
                     type="button"
                     onClick={() => setBulkAdjustmentType('decrease')}
-                    className={`py-2.5 px-4 rounded-xl border text-center text-xs font-bold font-arabic transition-all ${
+                    className={`py-2.5 px-4 rounded-xl border text-center text-xs font-black font-arabic transition-all ${
                       bulkAdjustmentType === 'decrease'
-                        ? 'border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-400 font-extrabold shadow-xs'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        ? 'border-rose-500 bg-rose-500/10 text-rose-600 dark:text-rose-400 font-black shadow-xs'
+                        : 'border-slate-300 dark:border-slate-700 text-black dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                   >
                     📉 تخفيض الأسعار (خصم)
@@ -1725,7 +1725,7 @@ export default function ProductsPage() {
 
               {/* Percentage input */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">3. نسبة التعديل (%)</label>
+                <label className="block text-xs font-black text-black dark:text-slate-100">3. نسبة التعديل (%)</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -1733,21 +1733,21 @@ export default function ProductsPage() {
                     max="100"
                     value={bulkPercentage}
                     onChange={(e) => setBulkPercentage(Math.max(1, Number(e.target.value)))}
-                    className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-center text-slate-800 dark:text-slate-100 focus:border-[#2E7FD9] focus:outline-none font-numbers font-bold"
+                    className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-center text-black dark:text-slate-100 focus:border-[#2E7FD9] focus:outline-none font-numbers font-black"
                   />
-                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xs font-bold text-slate-400">%</span>
+                  <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-xs font-black text-black dark:text-slate-300">%</span>
                 </div>
               </div>
 
               {/* Rounding option */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-800 dark:text-slate-200">4. استراتيجية تقريب الأسعار</label>
+                <label className="block text-xs font-black text-black dark:text-slate-100">4. استراتيجية تقريب الأسعار</label>
                 <select
                   value={bulkRounding}
                   onChange={(e) => setBulkRounding(e.target.value)}
-                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-slate-800 dark:text-slate-100 font-bold focus:border-[#2E7FD9] focus:outline-none font-arabic cursor-pointer"
+                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-black dark:text-slate-100 font-black focus:border-[#2E7FD9] focus:outline-none font-arabic cursor-pointer"
                 >
-                  <option value="none">لا تقريب (حساب النسبة الدقيقة)</option>
+                  <option value="none" className="bg-white dark:bg-slate-900 text-black dark:text-slate-100 font-black">لا تقريب (حساب النسبة الدقيقة)</option>
                   <option value="half">تقريب لأقرب 50 قرش (أمثلة: 14.50 ، 15.00)</option>
                   <option value="integer">تقريب لأقرب جنيه كامل (أمثلة: 14.00 ، 15.00)</option>
                 </select>

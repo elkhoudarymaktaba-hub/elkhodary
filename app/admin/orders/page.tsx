@@ -530,25 +530,25 @@ export default function OrdersPage() {
 
                   return (
                     <tr key={order.id} className="transition-all duration-200 hover:scale-[1.001] hover:bg-blue-50/20 group cursor-pointer">
-                      <td className="py-4 px-6 font-bold font-english text-[#2E7FD9] dark:text-[#5B9FE6] text-xs">
+                      <td className="py-4 px-6 font-black font-english text-[#2E7FD9] dark:text-[#5B9FE6] text-xs">
                         #{order.id}
                       </td>
-                      <td className="py-4 px-6 font-bold text-slate-800 dark:text-slate-100 font-arabic">
+                      <td className="py-4 px-6 font-black text-black dark:text-slate-100 font-arabic text-sm">
                         {order.customer_name}
                       </td>
-                      <td className="py-4 px-6 font-semibold font-english text-slate-600 dark:text-slate-300">
+                      <td className="py-4 px-6 font-black font-english text-black dark:text-slate-100 text-xs">
                         {order.customer_phone}
                       </td>
-                      <td className="py-4 px-6 font-arabic text-slate-600 dark:text-slate-300">
+                      <td className="py-4 px-6 font-black font-arabic text-black dark:text-slate-100 text-xs">
                         <span className="inline-flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                          <MapPin className="w-3.5 h-3.5 text-[#2E7FD9]" />
                           {order.governorate}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-slate-500 dark:text-slate-400 font-arabic max-w-xs truncate" title={productsSummary}>
+                      <td className="py-4 px-6 text-black dark:text-slate-100 font-bold font-arabic max-w-xs truncate text-xs" title={productsSummary}>
                         {productsSummary}
                       </td>
-                      <td className="py-4 px-6 font-black text-rose-600 dark:text-rose-400 font-english">
+                      <td className="py-4 px-6 font-black text-rose-600 dark:text-rose-400 font-english text-sm">
                         {order.total_amount} ج.م
                       </td>
                       <td className="py-4 px-6">
@@ -563,16 +563,16 @@ export default function OrdersPage() {
                               console.error(err);
                             }
                           }}
-                          className={`px-3 py-1.5 rounded-[12px] text-xs font-bold font-arabic focus:outline-none outline-none border cursor-pointer transition-colors ${statusColors[order.status]}`}
+                          className={`px-3 py-1.5 rounded-[12px] text-xs font-black font-arabic focus:outline-none outline-none border cursor-pointer transition-colors ${statusColors[order.status]}`}
                         >
-                          <option value="new" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">جديد</option>
-                          <option value="confirmed" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">مؤكد</option>
-                          <option value="shipping" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">مع الشحن</option>
-                          <option value="delivered" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">تم التسليم</option>
-                          <option value="cancelled" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 font-bold">ملغي</option>
+                          <option value="new" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-black">جديد</option>
+                          <option value="confirmed" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-black">مؤكد</option>
+                          <option value="shipping" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-black">مع الشحن</option>
+                          <option value="delivered" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-black">تم التسليم</option>
+                          <option value="cancelled" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 font-black">ملغي</option>
                         </select>
                       </td>
-                      <td className="py-4 px-6 text-xs text-slate-400 dark:text-slate-400 font-arabic">
+                      <td className="py-4 px-6 text-xs text-black dark:text-slate-100 font-black font-arabic">
                         {new Date(order.created_at).toLocaleDateString('ar-EG', { dateStyle: 'medium' })}
                       </td>
                       <td className="py-4 px-6 text-center">
