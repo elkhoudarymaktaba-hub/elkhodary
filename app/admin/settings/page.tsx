@@ -70,33 +70,125 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     setLoading(true);
+    let localSettings: any = null;
+    let localReviews: any[] = [];
+    let localBoxes: any[] = [];
+    let localProducts: any[] = [];
+
+    // 1. تحميل البيانات من الكاش المحلي أولاً للعرض الفوري
+    if (typeof window !== 'undefined') {
+      const s = localStorage.getItem('kh_settings');
+      if (s) {
+        try { localSettings = JSON.parse(s); } catch (e) {}
+      }
+      const r = localStorage.getItem('kh_reviews');
+      if (r) {
+        try { localReviews = JSON.parse(r); } catch (e) {}
+      }
+      const b = localStorage.getItem('kh_boxes');
+      if (b) {
+        try { localBoxes = JSON.parse(b); } catch (e) {}
+      }
+      const p = localStorage.getItem('kh_products');
+      if (p) {
+        try { localProducts = JSON.parse(p); } catch (e) {}
+      }
+    }
+
+    if (!localSettings) {
+      localSettings = getMockData.settings();
+    }
+    if (localReviews.length === 0) {
+      localReviews = getMockData.testimonials() || [];
+    }
+    if (localBoxes.length === 0) {
+      localBoxes = getMockData.boxes() || [];
+    }
+    if (localProducts.length === 0) {
+      localProducts = getMockData.products() || [];
+    }
+
+    // تعيين الحالات المحلية فوراً
+    setStoreName(localSettings.store_name || 'مكتبة الخضري');
+    setLogoUrl(localSettings.logo_url || '');
+    setDevName(localSettings.developer_name || 'APEX');
+    setDevUrl(localSettings.developer_url || 'https://apex-scale.vercel.app/');
+    setMaintenanceMode(localSettings.maintenance_mode === 'true');
+    setTopRibbonText(localSettings.top_ribbon_text !== undefined ? localSettings.top_ribbon_text : 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!');
+    setFeaturedBoxId(localSettings.featured_box_id || '');
+    setHeroCardType((localSettings.hero_card_type || 'box') as any);
+    setHeroCardId(localSettings.hero_card_id || '');
+    setBoxBuilderTitle(localSettings.box_builder_title || 'اصنع باقتك المدرسية المخصصة بنفسك!');
+    setBoxBuilderDesc(localSettings.box_builder_desc || 'لا تتقيد بالباقات الجاهزة. اختر الكشكول، القلم، المسطرة، وكل ما تحتاجه بالكميات التي تناسبك تماماً، ودع الباقي علينا لتعبئته وتوصيله لباب منزلك.');
+    setBoxBuilderImage(localSettings.box_builder_image || '');
+    setBoxBuilderStep1(localSettings.box_builder_step1 || 'اختر المرحلة الدراسية');
+    setBoxBuilderStep2(localSettings.box_builder_step2 || 'عدّل وزد الأدوات والكميات');
+    setBoxBuilderStep3(localSettings.box_builder_step3 || 'أضف الصندوق للسلة');
+    setBoxBuilderImg1(localSettings.box_builder_img1 || '');
+    setBoxBuilderImg2(localSettings.box_builder_img2 || '');
+    setBoxBuilderImg3(localSettings.box_builder_img3 || '');
+    setBoxBuilderImg4(localSettings.box_builder_img4 || '');
+    setBoxBuilderImg5(localSettings.box_builder_img5 || '');
+    setBoxBuilderImg6(localSettings.box_builder_img6 || '');
+    setTestimonialsTitle(localSettings.testimonials_title || 'آراء عائلتنا الدافئة');
+    setTestimonialsSubtitle(localSettings.testimonials_subtitle || 'قالوا عن مكتبة الخضري');
+    
+    setAdminReviews(localReviews);
+    setBoxes(localBoxes);
+    setProducts(localProducts);
+
+    setLoading(false);
+
+    // 2. تحديث متوازي بالخلفية مع مهلة زمنية قصيرة لمنع البطء والتعليق
     try {
-      // 1. Fetch site settings
-      const { data } = await supabase.from('site_settings').select('*');
-      if (data && data.length > 0) {
-        const nameObj = data.find((s: any) => s.key === 'store_name');
-        const logoObj = data.find((s: any) => s.key === 'logo_url');
-        const devNameObj = data.find((s: any) => s.key === 'developer_name');
-        const devUrlObj = data.find((s: any) => s.key === 'developer_url');
-        const maintenanceObj = data.find((s: any) => s.key === 'maintenance_mode');
-        const topRibbonObj = data.find((s: any) => s.key === 'top_ribbon_text');
-        const featuredBoxObj = data.find((s: any) => s.key === 'featured_box_id');
-        const heroTypeObj = data.find((s: any) => s.key === 'hero_card_type');
-        const heroIdObj = data.find((s: any) => s.key === 'hero_card_id');
-        const boxTitleObj = data.find((s: any) => s.key === 'box_builder_title');
-        const boxDescObj = data.find((s: any) => s.key === 'box_builder_desc');
-        const boxImageObj = data.find((s: any) => s.key === 'box_builder_image');
-        const boxStep1Obj = data.find((s: any) => s.key === 'box_builder_step1');
-        const boxStep2Obj = data.find((s: any) => s.key === 'box_builder_step2');
-        const boxStep3Obj = data.find((s: any) => s.key === 'box_builder_step3');
-        const boxImg1Obj = data.find((s: any) => s.key === 'box_builder_img1');
-        const boxImg2Obj = data.find((s: any) => s.key === 'box_builder_img2');
-        const boxImg3Obj = data.find((s: any) => s.key === 'box_builder_img3');
-        const boxImg4Obj = data.find((s: any) => s.key === 'box_builder_img4');
-        const boxImg5Obj = data.find((s: any) => s.key === 'box_builder_img5');
-        const boxImg6Obj = data.find((s: any) => s.key === 'box_builder_img6');
-        const testTitleObj = data.find((s: any) => s.key === 'testimonials_title');
-        const testSubtitleObj = data.find((s: any) => s.key === 'testimonials_subtitle');
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 2500)
+      );
+
+      const dbPromise = (async () => {
+        const settingsPromise = supabase.from('site_settings').select('*');
+        const boxesPromise = supabase.from('boxes').select('id, name').eq('is_active', true);
+        const productsPromise = supabase.from('products').select('id, name').eq('is_active', true);
+
+        const [settingsRes, boxesRes, productsRes] = await Promise.all([
+          settingsPromise,
+          boxesPromise,
+          productsPromise
+        ]);
+
+        return {
+          settingsData: settingsRes.data,
+          boxesData: boxesRes.data,
+          productsData: productsRes.data
+        };
+      })();
+
+      const { settingsData, boxesData, productsData } = await Promise.race([dbPromise, timeoutPromise]) as any;
+
+      if (settingsData && settingsData.length > 0) {
+        const nameObj = settingsData.find((s: any) => s.key === 'store_name');
+        const logoObj = settingsData.find((s: any) => s.key === 'logo_url');
+        const devNameObj = settingsData.find((s: any) => s.key === 'developer_name');
+        const devUrlObj = settingsData.find((s: any) => s.key === 'developer_url');
+        const maintenanceObj = settingsData.find((s: any) => s.key === 'maintenance_mode');
+        const topRibbonObj = settingsData.find((s: any) => s.key === 'top_ribbon_text');
+        const featuredBoxObj = settingsData.find((s: any) => s.key === 'featured_box_id');
+        const heroTypeObj = settingsData.find((s: any) => s.key === 'hero_card_type');
+        const heroIdObj = settingsData.find((s: any) => s.key === 'hero_card_id');
+        const boxTitleObj = settingsData.find((s: any) => s.key === 'box_builder_title');
+        const boxDescObj = settingsData.find((s: any) => s.key === 'box_builder_desc');
+        const boxImageObj = settingsData.find((s: any) => s.key === 'box_builder_image');
+        const boxStep1Obj = settingsData.find((s: any) => s.key === 'box_builder_step1');
+        const boxStep2Obj = settingsData.find((s: any) => s.key === 'box_builder_step2');
+        const boxStep3Obj = settingsData.find((s: any) => s.key === 'box_builder_step3');
+        const boxImg1Obj = settingsData.find((s: any) => s.key === 'box_builder_img1');
+        const boxImg2Obj = settingsData.find((s: any) => s.key === 'box_builder_img2');
+        const boxImg3Obj = settingsData.find((s: any) => s.key === 'box_builder_img3');
+        const boxImg4Obj = settingsData.find((s: any) => s.key === 'box_builder_img4');
+        const boxImg5Obj = settingsData.find((s: any) => s.key === 'box_builder_img5');
+        const boxImg6Obj = settingsData.find((s: any) => s.key === 'box_builder_img6');
+        const testTitleObj = settingsData.find((s: any) => s.key === 'testimonials_title');
+        const testSubtitleObj = settingsData.find((s: any) => s.key === 'testimonials_subtitle');
 
         if (nameObj) setStoreName(nameObj.value);
         if (logoObj) setLogoUrl(logoObj.value);
@@ -123,50 +215,15 @@ export default function SettingsPage() {
         if (boxImg6Obj) setBoxBuilderImg6(boxImg6Obj.value);
       }
 
-      // 2. Fetch active boxes list
-      const { data: boxesData } = await supabase.from('boxes').select('id, name').eq('is_active', true);
-      if (boxesData) {
-        setBoxes(boxesData);
-      } else {
-        setBoxes(getMockData.boxes() || []);
-      }
+      if (boxesData && boxesData.length > 0) setBoxes(boxesData);
+      if (productsData && productsData.length > 0) setProducts(productsData);
 
-      // 3. Fetch active products list
-      const { data: productsData } = await supabase.from('products').select('id, name').eq('is_active', true);
-      if (productsData) {
-        setProducts(productsData);
-      } else {
-        setProducts(getMockData.products() || []);
-      }
     } catch (err) {
-      // Fallback للـ LocalStorage
-      const settings = getMockData.settings();
-      setStoreName(settings.store_name);
-      setLogoUrl(settings.logo_url);
-      setDevName(settings.developer_name);
-      setDevUrl(settings.developer_url);
-      setMaintenanceMode(settings.maintenance_mode === 'true');
-      setTopRibbonText(settings.top_ribbon_text || 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!');
-      setFeaturedBoxId(settings.featured_box_id || '');
-      setHeroCardType((settings.hero_card_type || 'box') as any);
-      setHeroCardId(settings.hero_card_id || '');
-      setBoxes(getMockData.boxes() || []);
-      setProducts(getMockData.products() || []);
-      setBoxBuilderTitle(settings.box_builder_title || 'اصنع باقتك المدرسية المخصصة بنفسك!');
-      setBoxBuilderDesc(settings.box_builder_desc || 'لا تتقيد بالباقات الجاهزة. اختر الكشكول، القلم، المسطرة، وكل ما تحتاجه بالكميات التي تناسبك تماماً، ودع الباقي علينا لتعبئته وتوصيله لباب منزلك.');
-      setBoxBuilderImage(settings.box_builder_image || '');
-      setBoxBuilderStep1(settings.box_builder_step1 || 'اختر المرحلة الدراسية');
-      setBoxBuilderStep2(settings.box_builder_step2 || 'عدّل وزد الأدوات والكميات');
-      setBoxBuilderStep3(settings.box_builder_step3 || 'أضف الصندوق للسلة');
-      setBoxBuilderImg1(settings.box_builder_img1 || '');
-      setBoxBuilderImg2(settings.box_builder_img2 || '');
-      setBoxBuilderImg3(settings.box_builder_img3 || '');
-      setBoxBuilderImg4(settings.box_builder_img4 || '');
-      setBoxBuilderImg5(settings.box_builder_img5 || '');
-      setBoxBuilderImg6(settings.box_builder_img6 || '');
+      console.warn('Background settings sync failed or timed out:', err);
     }
-    await fetchAdminReviews();
-    setLoading(false);
+
+    // جلب التقييمات في الخلفية دون تعطيل الصفحة
+    fetchAdminReviews().catch(e => console.error(e));
   };
 
   const fetchAdminReviews = async () => {

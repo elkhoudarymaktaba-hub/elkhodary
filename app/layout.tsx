@@ -54,9 +54,9 @@ async function getStoreData() {
       });
 
       return {
-        storeName: settings.store_name || 'مكتبة الخضري',
+        storeName: settings.store_name !== undefined ? settings.store_name : 'مكتبة الخضري',
         logoUrl: settings.logo_url || null,
-        topRibbonText: settings.top_ribbon_text || 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!',
+        topRibbonText: settings.top_ribbon_text !== undefined ? settings.top_ribbon_text : 'عروض العودة للمدارس: شحن مجاني لكافة المحافظات للطلبات بقيمة 500 ج.م أو أكثر!',
         pixels: pixelsRes.data || [],
         pages: pagesRes.data || [],
         categories: categoriesRes.data || [],

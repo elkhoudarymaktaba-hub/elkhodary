@@ -80,14 +80,15 @@ async function getHomeData() {
     }
     let blocks: any[] = Array.isArray(rawBlocks) ? rawBlocks : [];
 
-    // إذا كانت الأقسام القادمة من قاعدة البيانات أقل من 3 أقسام رئيسية، استخدم أقسام الصفحة الرئيسية الافتراضية المتكاملة
-    if (blocks.length < 3 && defaultHome && defaultHome.blocks) {
-      blocks = JSON.parse(JSON.stringify(defaultHome.blocks));
-    } else if (defaultHome && defaultHome.blocks) {
-      // التأكد من وجود الأقسام الأساسية الهامة
-      defaultHome.blocks.forEach((defBlock) => {
-        if (!blocks.some((b: any) => b.type === defBlock.type)) {
-          blocks.push(JSON.parse(JSON.stringify(defBlock)));
+    // ضمان كامل لوجود الأقسام الرئيسية الخمسة الهامة بالترتيب الصحيح
+    const requiredTypes = ['hero', 'stats', 'packages_section', 'products_row', 'testimonials'];
+    if (defaultHome && defaultHome.blocks) {
+      requiredTypes.forEach((reqType) => {
+        if (!blocks.some((b: any) => b && b.type === reqType)) {
+          const defaultB = defaultHome.blocks.find((db: any) => db.type === reqType);
+          if (defaultB) {
+            blocks.push(JSON.parse(JSON.stringify(defaultB)));
+          }
         }
       });
     }
