@@ -22,11 +22,11 @@ const statusTabs = [
 ];
 
 const statusColors: Record<string, string> = {
-  new: 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-700/60 font-bold',
-  confirmed: 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-800 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-700/60 font-bold',
-  shipping: 'bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-700/60 font-bold',
-  delivered: 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700/60 font-bold',
-  cancelled: 'bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300 border border-rose-300 dark:border-rose-700/60 font-bold',
+  new: 'bg-amber-100 dark:bg-amber-950/80 text-amber-950 dark:text-amber-200 border-2 border-amber-500 font-extrabold shadow-2xs',
+  confirmed: 'bg-purple-100 dark:bg-purple-950/80 text-purple-950 dark:text-purple-200 border-2 border-purple-500 font-extrabold shadow-2xs',
+  shipping: 'bg-blue-100 dark:bg-blue-950/80 text-blue-950 dark:text-blue-200 border-2 border-blue-600 font-extrabold shadow-2xs',
+  delivered: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-200 border-2 border-emerald-600 font-extrabold shadow-2xs',
+  cancelled: 'bg-rose-100 dark:bg-rose-950/80 text-rose-950 dark:text-rose-200 border-2 border-rose-600 font-extrabold shadow-2xs',
 };
 
 const statusLabels: Record<string, string> = {
@@ -529,7 +529,7 @@ export default function OrdersPage() {
                     .join(' - ');
 
                   return (
-                    <tr key={order.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors group">
+                    <tr key={order.id} className="transition-all duration-200 hover:scale-[1.001] hover:bg-blue-50/20 group cursor-pointer">
                       <td className="py-4 px-6 font-bold font-english text-[#2E7FD9] dark:text-[#5B9FE6] text-xs">
                         #{order.id}
                       </td>

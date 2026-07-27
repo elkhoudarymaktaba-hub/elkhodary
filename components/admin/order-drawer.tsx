@@ -26,11 +26,11 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  new: 'bg-[#FBEBCB] text-[#C9862A] border border-[#E7A537]/20 rounded-full',
-  confirmed: 'bg-[#EAE1F3] text-[#7A5C9E] border border-[#7A5C9E]/20 rounded-full',
-  shipping: 'bg-indigo-50 text-[#2E3E63] border border-[#2E3E63]/20 rounded-full',
-  delivered: 'bg-[#DCEEE5] text-[#396A56] border border-[#4F8F73]/20 rounded-full',
-  cancelled: 'bg-[#FBE1DB] text-[#C43F2B] border border-[#E4573F]/20 rounded-full',
+  new: 'bg-amber-100 dark:bg-amber-950/80 text-amber-950 dark:text-amber-200 border-2 border-amber-500 font-extrabold shadow-2xs',
+  confirmed: 'bg-purple-100 dark:bg-purple-950/80 text-purple-950 dark:text-purple-200 border-2 border-purple-500 font-extrabold shadow-2xs',
+  shipping: 'bg-blue-100 dark:bg-blue-950/80 text-blue-950 dark:text-blue-200 border-2 border-blue-600 font-extrabold shadow-2xs',
+  delivered: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-200 border-2 border-emerald-600 font-extrabold shadow-2xs',
+  cancelled: 'bg-rose-100 dark:bg-rose-950/80 text-rose-950 dark:text-rose-200 border-2 border-rose-600 font-extrabold shadow-2xs',
 };
 
 export default function OrderDrawer({
@@ -821,25 +821,32 @@ export default function OrderDrawer({
             </div>
 
             {/* تعديل مبلغ التحصيل عند الاستلام */}
-            <div className="bg-[#FBEBCB]/15 p-4 rounded-[16px] border border-[#E7A537]/20 space-y-2 mt-3 text-right">
-              <span className="block text-xs font-bold text-slate-600 font-arabic">المبلغ المطلوب تحصيله عند الاستلام (COD):</span>
-              <div className="flex items-center gap-2.5">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={codInput}
-                  onChange={(e) => {
-                    const converted = e.target.value
-                      .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1632))
-                      .replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1776));
-                    const clean = converted.replace(/[^0-9]/g, '');
-                    setCodInput(clean);
-                  }}
-                  className="py-2 px-3 bg-white rounded-input border border-[#E7DCC2] focus:border-[#E7A537] focus:outline-none text-xs font-english font-bold text-slate-800 w-28 text-center"
-                />
-                <span className="text-xs font-bold text-slate-600 font-arabic">ج.م</span>
-                <span className="text-[10px] text-slate-400 font-arabic">(تغيير هذا المبلغ يؤثر على بوليصة الشحن المطبوعة فقط)</span>
+            <div className="bg-slate-100 dark:bg-slate-800/80 p-4 rounded-[16px] border border-slate-300 dark:border-slate-700 space-y-2 mt-3 text-right">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <span className="block text-xs font-black text-slate-900 dark:text-slate-100 font-arabic">
+                    المبلغ المطلوب تحصيله عند الاستلام (COD):
+                  </span>
+                  <span className="text-[10px] text-slate-600 dark:text-slate-400 font-arabic">
+                    (تغيير هذا المبلغ يؤثر على بوليصة الشحن فقط)
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={codInput}
+                    onChange={(e) => {
+                      const converted = e.target.value
+                        .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1632))
+                        .replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1776));
+                      const clean = converted.replace(/[^0-9]/g, '');
+                      setCodInput(clean);
+                    }}
+                    className="py-2 px-3 bg-white dark:bg-slate-900 rounded-[10px] border border-slate-400 dark:border-slate-600 focus:border-[#2E7FD9] focus:outline-none text-sm font-english font-black text-slate-900 dark:text-slate-100 w-28 text-center shadow-2xs"
+                  />
+                </div>
               </div>
             </div>
 
