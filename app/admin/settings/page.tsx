@@ -538,26 +538,6 @@ export default function SettingsPage() {
 
             </div>
 
-            {/* 1.5. الباقة المميزة المروّج لها */}
-            <div className="bg-[#F7F8FA] dark:bg-slate-900 rounded-[16px] border border-slate-300 dark:border-slate-800 p-6 space-y-4 shadow-2xs transition-colors">
-              <h3 className="text-base font-black text-black dark:text-slate-100 border-r-4 border-[#2E7FD9] pr-2.5 flex items-center gap-2 font-arabic">
-                <BookOpen className="w-5 h-5 text-[#2E7FD9]" />
-                <span>الباقة المميزة المختارة (في تفاصيل المنتجات)</span>
-              </h3>
-              
-              <p className="text-xs text-black dark:text-slate-300 leading-relaxed font-bold font-arabic">
-                اختر الباقة أو الحقيبة المدرسية الجاهزة التي ترغب في إظهارها لعملائك أسفل شاشة تفاصيل أي منتج للترويج لها وزيادة المبيعات.
-              </p>
-
-              <div className="relative space-y-1.5">
-                <label className="text-xs font-black text-black dark:text-slate-100 block font-arabic">الباقة الترويجية النشطة</label>
-                <select
-                  value={featuredBoxId}
-                  onChange={(e) => setFeaturedBoxId(e.target.value)}
-                  className="w-full rounded-[12px] border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-2.5 text-xs text-right text-black dark:text-slate-100 font-black focus:border-[#2E7FD9] focus:outline-none"
-                >
-            </div>
-
             {/* 2. وضع الصيانة (Maintenance Mode Card) */}
             <div className={`bg-white rounded-[16px] shadow-premium border p-6 space-y-4 transition-all duration-300 ${
               maintenanceMode ? 'border-amber bg-amber-light/10' : 'border-[#E7DCC2]'
