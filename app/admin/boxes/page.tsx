@@ -811,11 +811,18 @@ function BoxFormPage({
             <Input label="سعر بيع البوكس للجمهور (ج.م)" type="number" value={formBasePrice === 0 ? '' : formBasePrice} onChange={(e: any) => setFormBasePrice(Number(e.target.value))} required />
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold text-ink dark:text-slate-200 font-arabic">صورة الغلاف للبوكس</span>
-              <label className="border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-2 rounded-[12px] flex items-center justify-between cursor-pointer text-slate-500 dark:text-slate-300 mt-1 transition-colors">
-                <span className="text-xs font-arabic">{formImageUrl ? 'تم اختيار صورة' : 'اختر صورة...'}</span>
-                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                <span className="text-xs text-[#2E7FD9] font-bold">رفع ملف</span>
-              </label>
+              <div className="flex items-center gap-3 mt-1">
+                {formImageUrl && (
+                  <div className="relative w-11 h-11 rounded-[10px] overflow-hidden border border-slate-300 dark:border-slate-700 shrink-0 bg-slate-50 dark:bg-slate-900 shadow-2xs">
+                    <img src={formImageUrl} alt="Cover preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+                <label className="flex-grow border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-2.5 h-11 rounded-[12px] flex items-center justify-between cursor-pointer text-slate-500 dark:text-slate-300 transition-colors">
+                  <span className="text-xs font-arabic truncate max-w-[150px]">{formImageUrl ? 'تغيير الصورة' : 'اختر صورة...'}</span>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                  <span className="text-xs text-[#2E7FD9] font-bold shrink-0">رفع ملف</span>
+                </label>
+              </div>
             </div>
             <div className="flex flex-col gap-1">
               <span className="text-sm font-semibold text-ink dark:text-slate-200 font-arabic">حالة البوكس</span>
@@ -915,13 +922,42 @@ function BoxFormPage({
       {/* مودال تصفح الكتالوج - مقفل من الخارج */}
       <Dialog isOpen={isCatalogOpen} onClose={() => setIsCatalogOpen(false)} title="تصفح كتالوج المتجر واختيار المنتجات" size="xl" disableBackdropClose>
         <div className="space-y-4 font-arabic text-right" dir="rtl">
+          {/* أقسام المتجر التفاعلية في الكتالوج */}
+          <div className="flex flex-wrap gap-1.5 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={() => setCatalogCategory('all')}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-black font-arabic transition-all border ${
+                catalogCategory === 'all'
+                  ? 'bg-[#2E7FD9] text-white border-[#2E7FD9] shadow-xs'
+                  : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+              }`}
+            >
+              📂 كل الأقسام ({products.length})
+            </button>
+            {categories.map((cat: any) => {
+              const count = products.filter(p => p.category_id === cat.id || (p.category_ids && p.category_ids.includes(cat.id))).length;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setCatalogCategory(cat.id)}
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-black font-arabic transition-all border ${
+                    catalogCategory === cat.id
+                      ? 'bg-[#2E7FD9] text-white border-[#2E7FD9] shadow-xs'
+                      : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {cat.icon || '📚'} {cat.name} ({count})
+                </button>
+              );
+            })}
+          </div>
+
           <div className="flex flex-col md:flex-row gap-3 items-center">
             <div className="relative flex-1 w-full">
-              <Input placeholder="ابحث باسم الكتاب أو الأداة..." value={catalogSearch} onChange={(e: any) => setCatalogSearch(e.target.value)} className="pl-10 text-xs" />
+              <Input placeholder="ابحث باسم الكتاب أو الأداة داخل القسم المختار..." value={catalogSearch} onChange={(e: any) => setCatalogSearch(e.target.value)} className="pl-10 text-xs" />
               <Search className="absolute left-3.5 bottom-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
-            </div>
-            <div className="w-48 shrink-0">
-              <Select options={[{ value: 'all', label: 'كل الأقسام' }, ...categories.map((c: any) => ({ value: c.id, label: c.name }))]} value={catalogCategory} onChange={(e: any) => setCatalogCategory(e.target.value)} />
             </div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[50vh] overflow-y-auto py-1 scrollbar-thin">
