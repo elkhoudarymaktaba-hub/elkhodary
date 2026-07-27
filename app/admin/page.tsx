@@ -229,12 +229,6 @@ export default function DashboardHome() {
         {/* إجمالي عدد الطلبات */}
         <Link 
           href="/admin/orders" 
-          className="bg-white p-5 rounded-[16px] shadow-premium hover:shadow-premium-hover transition-all duration-300 border border-[#E7DCC2] flex items-center justify-between group animate-rise cursor-pointer"
-        >
-          <div className="space-y-2 text-right">
-        {/* إجمالي عدد الطلبات */}
-        <Link 
-          href="/admin/orders" 
           className="bg-white dark:bg-slate-900 p-5 rounded-[16px] shadow-sm hover:shadow-md transition-all duration-300 border border-slate-300 dark:border-slate-800 flex items-center justify-between group animate-rise cursor-pointer"
         >
           <div className="space-y-2 text-right">
