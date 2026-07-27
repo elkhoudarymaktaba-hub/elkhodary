@@ -37,9 +37,9 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
     if (localSettings) {
       try {
         const parsed = JSON.parse(localSettings);
-        if (parsed.logo_url) setCurrentLogo(parsed.logo_url);
-        if (parsed.store_name) setCurrentName(parsed.store_name);
-        if (parsed.top_ribbon_text) setCurrentRibbon(parsed.top_ribbon_text);
+        if (parsed.logo_url !== undefined) setCurrentLogo(parsed.logo_url);
+        if (parsed.store_name !== undefined) setCurrentName(parsed.store_name);
+        if (parsed.top_ribbon_text !== undefined) setCurrentRibbon(parsed.top_ribbon_text);
       } catch (e) {
         console.error(e);
       }
@@ -57,6 +57,18 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
       }
     }
     
+    const handleSettingsUpdated = () => {
+      const updated = localStorage.getItem('kh_settings');
+      if (updated) {
+        try {
+          const parsed = JSON.parse(updated);
+          if (parsed.logo_url !== undefined) setCurrentLogo(parsed.logo_url);
+          if (parsed.store_name !== undefined) setCurrentName(parsed.store_name);
+          if (parsed.top_ribbon_text !== undefined) setCurrentRibbon(parsed.top_ribbon_text);
+        } catch (e) {}
+      }
+    };
+
     const handleScroll = () => {
       if (window.scrollY > 20) {
         setScrolled(true);
@@ -66,7 +78,11 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
     };
     
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('settingsUpdated', handleSettingsUpdated);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('settingsUpdated', handleSettingsUpdated);
+    };
   }, []);
 
   const [animateCart, setAnimateCart] = useState(false);

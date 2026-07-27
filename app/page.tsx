@@ -49,7 +49,8 @@ function formatLink(url?: string, defaultUrl: string = '/'): string {
   return `/${trimmed}`;
 }
 
-export const revalidate = 10;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getHomeData() {
   try {
