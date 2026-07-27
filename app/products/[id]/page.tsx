@@ -1,6 +1,6 @@
-import { notFound } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import ProductDetailClient from './product-detail-client';
+import ProductClientPage from './product-client-page';
 import ProductCard from '@/components/store/product-card';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -143,8 +143,9 @@ export async function generateMetadata({ params }: ProductDetailPageProps) {
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   const data = await getProductData(params.id);
 
+  // إذا لم يُعثر على المنتج في Supabase، نستخدم Client Component لجلبه من localStorage
   if (!data) {
-    notFound();
+    return <ProductClientPage id={params.id} />;
   }
 
   const { product, related, featuredBox } = data;
