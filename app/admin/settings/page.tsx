@@ -8,7 +8,7 @@ import {
   Star, Trash2, Heart
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { getMockData } from '@/lib/mockData';
+import { getMockData, saveMockData } from '@/lib/mockData';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { showToast } from '@/lib/toast';
@@ -512,8 +512,8 @@ export default function SettingsPage() {
         document.cookie = "kh_maintenance_mode=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
       }
 
-      // حفظ القيم في موك داتا
-      getMockData.settings = () => updatedSettings;
+      // حفظ القيم في موك داتا ومزامنتها مع السيرفر
+      saveMockData.settings(updatedSettings);
 
       // إرسال حدث مخصص للهيدر ليقوم بالتحديث فورياً
       window.dispatchEvent(new Event('settingsUpdated'));

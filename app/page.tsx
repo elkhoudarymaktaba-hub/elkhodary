@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import ProductCard from '@/components/store/product-card';
 import { Package, Sparkles, Smile, Truck, ShieldCheck, ArrowLeft, Layers } from 'lucide-react';
-import { PageBlock, getMockData } from '@/lib/mockData';
+import { PageBlock, getMockData, defaultPages } from '@/lib/mockData';
 import HeroCardWidget from '@/components/store/hero-card-widget';
 import BoxBuilderTeaser from '@/components/store/box-builder-teaser';
 import TestimonialsSection from '@/components/store/testimonials-section';
