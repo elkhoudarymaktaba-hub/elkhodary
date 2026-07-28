@@ -159,7 +159,10 @@ export default function CartPage() {
         {items.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-                           {groupedItems.map((group) => {
+            {/* RIGHT COLUMN: Cart Items List */}
+            <div className="lg:col-span-8 space-y-6">
+              <div className="bg-white rounded-card shadow-card border border-paper-line p-6 space-y-6">
+                {groupedItems.map((group) => {
                   const item = group.baseProduct;
                   const isGrouped = group.subItems.length > 1;
                   const displayName = isGrouped ? getBaseProductName(item.name) : item.name;
