@@ -140,43 +140,43 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
       <header
         className={`relative w-full z-40 transition-all duration-200 border-b border-paper-line bg-white ${
           scrolled
-            ? 'shadow-brand py-2 sm:py-3'
-            : 'py-3.5 sm:py-5'
+            ? 'shadow-brand py-1.5 sm:py-2'
+            : 'py-2 sm:py-2.5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
           <div className="flex items-center justify-between md:justify-between w-full">
             
             {/* Mobile Hamburger Trigger (Far Right on mobile, order-1) */}
-            <div className="flex md:hidden w-12 justify-start order-1">
+            <div className="flex md:hidden w-10 justify-start order-1">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-full hover:bg-paper text-ink/80 border border-paper-line bg-white shadow-sm transition-all active:scale-95"
+                className="p-1.5 rounded-full hover:bg-paper text-ink/80 border border-paper-line bg-white shadow-sm transition-all active:scale-95"
                 aria-label="قائمة التنقل"
               >
-                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+                {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
               </button>
             </div>
 
-            {/* Logo Section (Larger logo and prominent brand title) */}
+            {/* Logo Section (Compact logo and sleek brand title) */}
             <div className="flex-grow md:flex-grow-0 flex justify-center md:justify-start order-2 md:order-1">
-              <Link href="/" prefetch={true} className="flex items-center gap-3 md:gap-4 group">
+              <Link href="/" prefetch={true} className="flex items-center gap-2.5 sm:gap-3 group">
                 {currentLogo && currentLogo !== 'null' && currentLogo !== '' ? (
                   <img
                     src={currentLogo}
                     alt={currentName}
-                    className="h-14 w-auto max-w-[170px] sm:h-20 sm:max-w-[240px] md:h-24 md:max-w-[280px] object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.02]"
+                    className="h-10 sm:h-12 md:h-14 w-auto max-w-[140px] sm:max-w-[180px] md:max-w-[220px] object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.02]"
                   />
                 ) : (
-                  <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black text-2xl sm:text-4xl md:text-5xl shadow-md transform -rotate-2 group-hover:rotate-0 transition-transform duration-300">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black text-xl sm:text-2xl md:text-3xl shadow-md transform -rotate-2 group-hover:rotate-0 transition-transform duration-300">
                     خ
                   </div>
                 )}
                 <div className="flex flex-col text-right font-arabic">
-                  <span className="text-lg sm:text-2xl md:text-3xl font-black text-ink-soft leading-none tracking-tight whitespace-nowrap">
+                  <span className="text-base sm:text-lg md:text-xl font-black text-ink-soft leading-none tracking-tight whitespace-nowrap">
                     مكتبة الخضري
                   </span>
-                  <span className="text-[10px] sm:text-xs md:text-sm font-black text-amber font-english tracking-widest leading-none mt-1">
+                  <span className="text-[9px] sm:text-[10px] md:text-xs font-black text-amber font-english tracking-widest leading-none mt-0.5">
                     AL-KHOUDARY
                   </span>
                 </div>
@@ -184,7 +184,7 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
             </div>
 
             {/* Desktop Navigation (Fast prefetching & zero lag) */}
-            <nav className="hidden md:flex items-center gap-8 lg:gap-10 order-2">
+            <nav className="hidden md:flex items-center gap-5 lg:gap-7 order-2">
               {navLinks.map((link) => {
                 const isActive =
                   link.path === '/'
@@ -195,7 +195,7 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
                     key={link.path}
                     href={link.path}
                     prefetch={true}
-                    className={`text-base lg:text-lg font-extrabold relative py-1.5 transition-all duration-150 active:scale-95 ${
+                    className={`text-xs sm:text-sm lg:text-base font-extrabold relative py-1 transition-all duration-150 active:scale-95 ${
                       isActive
                         ? 'text-amber font-black'
                         : 'text-slate-700 hover:text-amber'
@@ -204,7 +204,7 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
                     {link.name}
                     {/* Scale expand gold border at bottom */}
                     <span 
-                      className={`absolute bottom-0 left-0 right-0 h-[3px] bg-amber rounded-full origin-center transition-transform duration-200 ${
+                      className={`absolute bottom-0 left-0 right-0 h-[2.5px] bg-amber rounded-full origin-center transition-transform duration-200 ${
                         isActive ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'
                       }`}
                     />
@@ -214,18 +214,18 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
             </nav>
 
             {/* Action Area / Cart Trigger (Far Left on mobile, order-3) */}
-            <div className="flex items-center justify-end w-12 md:w-auto order-3 md:order-3">
+            <div className="flex items-center justify-end w-10 md:w-auto order-3 md:order-3">
               <Link
                 href="/cart"
                 prefetch={true}
-                className={`relative p-3 rounded-full hover:bg-paper text-ink/80 hover:text-ink-soft transition-all border border-paper-line shadow-sm bg-white active:scale-95 ${
+                className={`relative p-2 rounded-full hover:bg-paper text-ink/80 hover:text-ink-soft transition-all border border-paper-line shadow-sm bg-white active:scale-95 ${
                   animateCart ? 'animate-bounce shadow-glow scale-110 text-amber border-amber' : ''
                 }`}
                 aria-label="سلة التسوق"
               >
-                <ShoppingBag size={22} />
+                <ShoppingBag size={18} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-amber text-white text-xs font-black font-numbers rounded-full w-5.5 h-5.5 flex items-center justify-center border-2 border-white shadow-sm pulse-badge">
+                  <span className="absolute -top-1.5 -right-1.5 bg-amber text-white text-[10px] font-black font-numbers rounded-full w-4.5 h-4.5 flex items-center justify-center border-2 border-white shadow-sm pulse-badge">
                     {cartCount}
                   </span>
                 )}
