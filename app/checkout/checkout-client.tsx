@@ -23,6 +23,7 @@ interface CheckoutClientProps {
 
 export default function CheckoutClient({ shippingZones }: CheckoutClientProps) {
   const router = useRouter();
+  const [zones, setZones] = useState<ShippingZone[]>(shippingZones);
   
   const {
     items,
@@ -46,6 +47,31 @@ export default function CheckoutClient({ shippingZones }: CheckoutClientProps) {
   const [successOrder, setSuccessOrder] = useState<{ id: string; total: number } | null>(null);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const localZones = localStorage.getItem('kh_shipping_rates');
+        if (localZones) {
+          const parsed = JSON.parse(localZones);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const mapped = parsed
+              .filter((r: any) => r.is_active !== false)
+              .map((r: any, idx: number) => ({
+                id: r.id || String(idx),
+                governorate_name: r.governorate,
+                price: Number(r.shipping_fee),
+                delivery_days: r.delivery_time,
+                free_shipping_threshold: r.free_shipping_threshold !== undefined ? r.free_shipping_threshold : null
+              }));
+            setZones(mapped);
+          }
+        }
+      } catch (e) {
+        console.error('Error loading shipping rates from localStorage:', e);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (items.length > 0) {
       const subtotal = getSubtotal();
       const count = items.reduce((sum, item) => sum + item.qty, 0);
@@ -59,9 +85,19 @@ export default function CheckoutClient({ shippingZones }: CheckoutClientProps) {
     }
   }, [selectedGovernorate]);
 
+  // تحديث تكلفة الشحن للمحافظة المحددة عند تحميل أو تغيير المحافظات المتاحة
+  useEffect(() => {
+    if (governorate && zones.length > 0) {
+      const zone = zones.find((z) => z.governorate_name === governorate);
+      if (zone) {
+        setShippingInfo(zone.governorate_name, zone.price, zone.free_shipping_threshold);
+      }
+    }
+  }, [governorate, zones]);
+
   const handleGovernorateChange = (govName: string) => {
     setGovernorate(govName);
-    const zone = shippingZones.find((z) => z.governorate_name === govName);
+    const zone = zones.find((z) => z.governorate_name === govName);
     
     if (zone) {
       setShippingInfo(zone.governorate_name, zone.price, zone.free_shipping_threshold);
@@ -257,7 +293,7 @@ export default function CheckoutClient({ shippingZones }: CheckoutClientProps) {
                 className="w-full px-4 py-3 bg-paper rounded-input border border-paper-line focus:outline-none focus:border-amber text-sm font-bold"
               >
                 <option value="">-- اختر محافظة التوصيل --</option>
-                {shippingZones.map((zone) => (
+                {zones.map((zone) => (
                   <option key={zone.id} value={zone.governorate_name}>
                     {zone.governorate_name}
                   </option>

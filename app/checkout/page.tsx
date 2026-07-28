@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { getMockData } from '@/lib/mockData';
 import CheckoutClient from './checkout-client';
 
 export const dynamic = 'force-dynamic';
@@ -12,9 +13,27 @@ async function getShippingZones() {
       .order('governorate_name');
 
     if (error) throw error;
-    return data || [];
+    if (data && data.length > 0) {
+      return data;
+    }
   } catch (err) {
-    console.error('Error fetching shipping zones:', err);
+    console.error('Error fetching shipping zones from DB:', err);
+  }
+
+  // Fallback to mock shipping rates mapped to ShippingZone format
+  try {
+    const mockRates = getMockData.shippingRates();
+    return mockRates
+      .filter((r: any) => r.is_active !== false)
+      .map((r: any, idx: number) => ({
+        id: r.id || String(idx),
+        governorate_name: r.governorate,
+        price: Number(r.shipping_fee),
+        delivery_days: r.delivery_time,
+        free_shipping_threshold: r.free_shipping_threshold !== undefined ? r.free_shipping_threshold : null
+      }));
+  } catch (e) {
+    console.error('Error fetching fallback shipping zones:', e);
     return [];
   }
 }
