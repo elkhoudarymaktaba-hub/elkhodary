@@ -410,6 +410,113 @@ export default function CartPage() {
         )}
 
       </div>
+
+      {/* 👁️ مودال تفاصيل المنتج والخيارات المختارة (Interactive Product Details Modal) */}
+      {detailModalItem && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setDetailModalItem(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 space-y-5 text-right animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+            dir="rtl"
+          >
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setDetailModalItem(null)}
+              className="absolute top-4 left-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition-colors"
+            >
+              <X size={16} />
+            </button>
+
+            {/* Modal Header */}
+            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+              <div className="relative w-14 h-14 bg-slate-50 rounded-2xl overflow-hidden shrink-0 border border-slate-200">
+                <Image
+                  src={detailModalItem.image}
+                  alt={detailModalItem.name}
+                  fill
+                  sizes="64px"
+                  className="object-contain p-1"
+                />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-base text-slate-900 leading-snug">
+                  {detailModalItem.name}
+                </h3>
+                <span className="text-[11px] font-bold text-amber font-arabic">
+                  {detailModalItem.unitType === 'piece' ? '🟢 فردي / قطعة' : '📦 علبة / جملة'}
+                </span>
+              </div>
+            </div>
+
+            {/* Details Breakdown */}
+            <div className="space-y-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+                <span className="text-slate-500 font-bold font-arabic">سعر الوحدة:</span>
+                <span className="font-black text-slate-800 font-numbers text-sm">{detailModalItem.price} ج.م</span>
+              </div>
+
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
+                <span className="text-slate-500 font-bold font-arabic">الكمية المطلوبة:</span>
+                <span className="font-black text-amber-900 font-numbers text-sm">{detailModalItem.qty} {detailModalItem.unitType === 'piece' ? 'قطعة' : 'علبة'}</span>
+              </div>
+
+              <div className="flex justify-between items-center pt-1 font-arabic">
+                <span className="text-slate-700 font-extrabold">الإجمالي لهذا العنصر:</span>
+                <span className="font-black text-amber text-base font-numbers">
+                  {(detailModalItem.price * detailModalItem.qty).toFixed(2)} ج.م
+                </span>
+              </div>
+            </div>
+
+            {/* Colors Breakdown if present */}
+            {detailModalItem.colors && detailModalItem.colors.length > 0 && (
+              <div className="space-y-2">
+                <span className="block text-xs font-extrabold text-slate-800 font-arabic">🎨 الألوان والكميات التفصيلية:</span>
+                <div className="flex flex-wrap gap-1.5 p-3 bg-amber/10 border border-amber/30 rounded-xl">
+                  {Array.from(new Set(detailModalItem.colors)).map((c: any, idx: number) => {
+                    const count = detailModalItem.colors.filter((x: any) => x === c).length;
+                    return (
+                      <span key={idx} className="text-xs bg-white text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber/30 font-arabic shadow-2xs">
+                        {c}: <strong className="text-amber font-numbers font-black">{count}</strong> قطعة
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Box items breakdown if customized box */}
+            {detailModalItem.type === 'box' && detailModalItem.customItems && (
+              <div className="space-y-2">
+                <span className="block text-xs font-extrabold text-slate-800 font-arabic">📦 المحتويات داخل هذه الباقة:</span>
+                <div className="max-h-36 overflow-y-auto space-y-1.5 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                  {detailModalItem.customItems.map((cItem: any, cIdx: number) => (
+                    <div key={cIdx} className="flex justify-between text-xs font-bold text-slate-700">
+                      <span>{cItem.name}</span>
+                      <span className="text-amber font-numbers">×{cItem.qty}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setDetailModalItem(null)}
+                className="w-full py-3 bg-amber hover:bg-amber-deep text-white font-black text-xs rounded-xl shadow-md transition-all font-arabic"
+              >
+                إغلاق النافذة ✖
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
