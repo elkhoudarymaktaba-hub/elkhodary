@@ -138,17 +138,17 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
       )}
 
       <header
-        className={`relative w-full z-40 transition-all duration-200 border-b border-paper-line bg-white ${
+        className={`relative w-full z-45 transition-all duration-200 border-b border-paper-line bg-white ${
           scrolled
-            ? 'shadow-brand py-1.5 sm:py-2'
-            : 'py-2 sm:py-2.5'
+            ? 'shadow-brand py-1.5'
+            : 'py-2.5 sm:py-3.5'
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">
-          <div className="flex items-center justify-between md:justify-between w-full">
+          <div className="flex items-center justify-between w-full">
             
             {/* Mobile Hamburger Trigger (Far Right on mobile, order-1) */}
-            <div className="flex md:hidden w-10 justify-start order-1">
+            <div className="flex md:hidden w-10 justify-start order-1 items-center">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="p-1.5 rounded-full hover:bg-paper text-ink/80 border border-paper-line bg-white shadow-sm transition-all active:scale-95"
@@ -158,33 +158,49 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
               </button>
             </div>
 
-            {/* Logo Section (Compact logo and sleek brand title) */}
-            <div className="flex-grow md:flex-grow-0 flex justify-center md:justify-start order-2 md:order-1">
+            {/* Logo Section (Compact logo and sleek brand title, vertically centered) */}
+            <div className="flex-grow md:flex-grow-0 flex justify-center md:justify-start order-2 md:order-1 items-center">
               <Link href="/" prefetch={true} className="flex items-center gap-2.5 sm:gap-3 group">
                 {currentLogo && currentLogo !== 'null' && currentLogo !== '' ? (
                   <img
                     src={currentLogo}
                     alt={currentName}
-                    className="h-10 sm:h-12 md:h-14 w-auto max-w-[140px] sm:max-w-[180px] md:max-w-[220px] object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.02]"
+                    className={`w-auto object-contain drop-shadow-sm transition-all duration-200 group-hover:scale-[1.02] ${
+                      scrolled
+                        ? 'h-8 sm:h-10'
+                        : 'h-10 sm:h-12 md:h-14'
+                    }`}
                   />
                 ) : (
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black text-xl sm:text-2xl md:text-3xl shadow-md transform -rotate-2 group-hover:rotate-0 transition-transform duration-300">
+                  <div className={`rounded-xl bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black shadow-md transform -rotate-2 group-hover:rotate-0 transition-all duration-300 ${
+                    scrolled
+                      ? 'w-8 h-8 text-lg'
+                      : 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-xl sm:text-2xl md:text-3xl'
+                  }`}>
                     خ
                   </div>
                 )}
-                <div className="flex flex-col text-right font-arabic">
-                  <span className="text-base sm:text-lg md:text-xl font-black text-ink-soft leading-none tracking-tight whitespace-nowrap">
+                <div className="flex flex-col text-right font-arabic justify-center">
+                  <span className={`font-black text-ink-soft leading-none tracking-tight whitespace-nowrap transition-all ${
+                    scrolled
+                      ? 'text-sm sm:text-base'
+                      : 'text-base sm:text-lg md:text-xl'
+                  }`}>
                     مكتبة الخضري
                   </span>
-                  <span className="text-[9px] sm:text-[10px] md:text-xs font-black text-amber font-english tracking-widest leading-none mt-0.5">
+                  <span className={`font-black text-amber font-english tracking-widest leading-none mt-0.5 transition-all ${
+                    scrolled
+                      ? 'text-[8px] sm:text-[9px]'
+                      : 'text-[9px] sm:text-[10px] md:text-xs'
+                  }`}>
                     AL-KHOUDARY
                   </span>
                 </div>
               </Link>
             </div>
 
-            {/* Desktop Navigation (Fast prefetching & zero lag) */}
-            <nav className="hidden md:flex items-center gap-5 lg:gap-7 order-2">
+            {/* Desktop Navigation (Fast prefetching, bold links, vertically centered) */}
+            <nav className="hidden md:flex items-center gap-5 lg:gap-7 order-2 h-full">
               {navLinks.map((link) => {
                 const isActive =
                   link.path === '/'
@@ -195,9 +211,9 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
                     key={link.path}
                     href={link.path}
                     prefetch={true}
-                    className={`text-xs sm:text-sm lg:text-base font-extrabold relative py-1 transition-all duration-150 active:scale-95 ${
+                    className={`text-xs sm:text-sm lg:text-base font-bold relative py-1 transition-all duration-150 active:scale-95 ${
                       isActive
-                        ? 'text-amber font-black'
+                        ? 'text-amber font-bold'
                         : 'text-slate-700 hover:text-amber'
                     }`}
                   >

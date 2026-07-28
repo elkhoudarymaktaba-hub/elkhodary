@@ -486,15 +486,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     setValidationError(null);
 
     itemsToAdd.forEach(item => {
+      const variantId = `${product.id}_${item.key}`;
       addItem({
+        id: variantId,
         type: 'product',
         productId: product.id,
-        name: item.key === '__base__' ? product.name : `${product.name} (${item.name})`,
+        name: `${product.name} (${item.name})`,
         price: item.unitPrice,
         qty: item.qty,
         image: images[0],
-        unitType: item.key === '__base__' ? unitType : sizeUnitType,
-        selectedSize: item.key === '__base__' ? undefined : item.name,
+        unitType: item.unitType === 'piece' || item.unitType === 'unit' ? 'piece' : 'box',
+        selectedSize: item.name,
         colors: item.colors.length > 0 ? item.colors : undefined,
       } as any);
 
@@ -519,15 +521,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     setValidationError(null);
 
     itemsToAdd.forEach(item => {
+      const variantId = `${product.id}_${item.key}`;
       addItem({
+        id: variantId,
         type: 'product',
         productId: product.id,
-        name: item.key === '__base__' ? product.name : `${product.name} (${item.name})`,
+        name: `${product.name} (${item.name})`,
         price: item.unitPrice,
         qty: item.qty,
         image: images[0],
-        unitType: item.key === '__base__' ? unitType : sizeUnitType,
-        selectedSize: item.key === '__base__' ? undefined : item.name,
+        unitType: item.unitType === 'piece' || item.unitType === 'unit' ? 'piece' : 'box',
+        selectedSize: item.name,
         colors: item.colors.length > 0 ? item.colors : undefined,
       } as any);
 
