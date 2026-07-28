@@ -29,7 +29,59 @@ export default function CartPage() {
   const [couponApplied, setCouponApplied] = useState(false);
   const [applying, setApplying] = useState(false);
   const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);
-  const [detailModalItem, setDetailModalItem] = useState<any>(null);
+  const [detailModalGroup, setDetailModalGroup] = useState<any>(null);
+
+  // دالة مساعدة لاستخراج اسم المنتج الأساسي بدون الأقواس
+  const getBaseProductName = (name: string) => {
+    return name.split(' (')[0].trim();
+  };
+
+  // دالة مساعدة لاستخراج اسم الخيار/المقاس داخل الأقواس
+  const getOptionName = (name: string) => {
+    const startIdx = name.indexOf('(');
+    if (startIdx === -1) return '';
+    return name.substring(startIdx + 1, name.length - 1).trim();
+  };
+
+  // تجميع السلة: تجميع عناصر المنتجات المتطابقة في كارد واحد
+  const groupedItems = (() => {
+    const groups: Record<string, {
+      productId: string;
+      baseProduct: any;
+      subItems: any[];
+      totalQty: number;
+      totalPrice: number;
+    }> = {};
+
+    items.forEach(item => {
+      const key = item.type === 'product' && item.productId ? item.productId : item.id;
+      if (!groups[key]) {
+        groups[key] = {
+          productId: item.productId || item.id,
+          baseProduct: item,
+          subItems: [],
+          totalQty: 0,
+          totalPrice: 0
+        };
+      }
+      groups[key].subItems.push(item);
+      groups[key].totalQty += item.qty;
+      groups[key].totalPrice += item.price * item.qty;
+    });
+
+    return Object.values(groups);
+  })();
+
+  // مزامنة المودال ليكون تفاعلياً وتحديث معلوماته تلقائياً عند تغيير الكمية
+  const activeModalGroup = detailModalGroup
+    ? groupedItems.find(g => g.productId === detailModalGroup.productId)
+    : null;
+
+  useEffect(() => {
+    if (detailModalGroup && !activeModalGroup) {
+      setDetailModalGroup(null);
+    }
+  }, [activeModalGroup, detailModalGroup]);
 
   useEffect(() => {
     setMounted(true);
@@ -107,141 +159,170 @@ export default function CartPage() {
         {items.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* RIGHT COLUMN: Cart Items List */}
-            <div className="lg:col-span-8 space-y-6">
-              <div className="bg-white rounded-card shadow-card border border-paper-line p-6 space-y-6">
-                
-                {items.map((item) => (
-                  <div 
-                    key={item.id}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-paper-line last:pb-0 last:border-b-0"
-                  >
-                    {/* Item Details */}
-                    <div className="flex items-center gap-4 flex-grow cursor-pointer group" onClick={() => setDetailModalItem(item)}>
-                      <div className="relative w-20 h-20 bg-paper rounded-xl overflow-hidden shrink-0 border border-paper-line group-hover:border-amber transition-colors">
-                        <Image
-                          src={item.image}
-                          alt={item.name}
-                          fill
-                          sizes="80px"
-                          className="object-contain p-1.5 transition-transform duration-200 group-hover:scale-105"
-                        />
+                           {groupedItems.map((group) => {
+                  const item = group.baseProduct;
+                  const isGrouped = group.subItems.length > 1;
+                  const displayName = isGrouped ? getBaseProductName(item.name) : item.name;
+
+                  return (
+                    <div 
+                      key={group.productId}
+                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-paper-line last:pb-0 last:border-b-0 cursor-pointer group/card"
+                      onClick={() => setDetailModalGroup(group)}
+                    >
+                      {/* Item Details */}
+                      <div className="flex items-center gap-4 flex-grow">
+                        <div className="relative w-20 h-20 bg-paper rounded-xl overflow-hidden shrink-0 border border-paper-line group-hover/card:border-amber transition-colors">
+                          <Image
+                            src={item.image}
+                            alt={displayName}
+                            fill
+                            sizes="80px"
+                            className="object-contain p-1.5 transition-transform duration-200 group-hover/card:scale-105"
+                          />
+                        </div>
+                        
+                        <div className="text-right space-y-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <h3 className="font-extrabold text-sm sm:text-base text-ink leading-snug group-hover/card:text-amber transition-colors">
+                              {displayName}
+                            </h3>
+                            {isGrouped && (
+                              <span className="text-[10px] text-amber-800 bg-amber/10 font-bold px-2 py-0.5 rounded-full border border-amber/30 font-arabic">
+                                👁️ {group.subItems.length} خيارات مختارة
+                              </span>
+                            )}
+                          </div>
+                          
+                          {isGrouped ? (
+                            <p className="text-[11px] text-slate-400 font-extrabold font-arabic leading-relaxed mt-1">
+                              الخيارات المحددة: {group.subItems.map(sub => {
+                                const opt = getOptionName(sub.name);
+                                return `${opt || 'الأساسي'} (x${sub.qty})`;
+                              }).join('، ')}
+                            </p>
+                          ) : (
+                            <div className="flex flex-wrap items-center gap-2 mt-1.5 font-bold">
+                              {item.type === 'product' && (
+                                <span className="text-[9px] bg-paper text-ink-soft/85 px-2 py-0.5 rounded-full border border-paper-line">
+                                  {item.unitType === 'piece' ? 'شراء بالقطعة' : 'شراء بالعلبة'}
+                                </span>
+                              )}
+
+                              {item.type === 'box' && (
+                                <span className="text-[9px] bg-sage/10 text-sage-deep px-2 py-0.5 rounded-full border border-sage/10 flex items-center gap-1">
+                                  <Box size={10} /> باقة مخصصة
+                                </span>
+                              )}
+
+                              <span className="text-xs text-ink-soft/50 font-numbers font-bold">
+                                سعر الوحدة: {item.price} ج.م
+                              </span>
+                            </div>
+                          )}
+
+                          {/* Colors List (only for single options) */}
+                          {!isGrouped && (item as any).colors && (item as any).colors.length > 0 && (
+                            <div className="flex flex-wrap gap-1 items-center mt-2">
+                              <span className="text-[10px] text-slate-400 font-bold ml-1.5 font-arabic">الألوان:</span>
+                              {(item as any).colors.map((c: string, idx: number) => (
+                                <span key={idx} className="text-[9px] bg-amber/10 text-amber-deep font-bold px-2 py-0.5 rounded border border-amber/20 font-arabic">
+                                  {c}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Customized box items list inside cart */}
+                          {item.type === 'box' && item.customItems && (
+                            <div className="mt-3 bg-paper rounded-xl border border-paper-line p-3 max-w-md">
+                              <span className="block text-[10px] font-extrabold text-ink-soft/50 mb-1.5">محتويات الباقة المخصصة:</span>
+                              <div className="flex flex-wrap gap-1.5">
+                                {item.customItems.map((cItem, cIdx) => (
+                                  <span 
+                                    key={cIdx} 
+                                    className="text-[9px] bg-white text-ink-soft/80 px-2 py-0.5 rounded-md border border-paper-line font-numbers font-bold"
+                                  >
+                                    {cItem.name} (x{cItem.qty})
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-extrabold text-sm sm:text-base text-ink leading-snug group-hover:text-amber transition-colors">
-                            {item.name}
-                          </h3>
+
+                      {/* Qty and price controls */}
+                      <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-paper-line border-dashed">
+                        
+                        {/* Qty Counter */}
+                        {!isGrouped ? (
+                          <div className="flex items-center bg-paper rounded-full p-1 border border-paper-line" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              type="button"
+                              onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))}
+                              className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark transition-colors active:scale-95 shadow-sm"
+                              aria-label="تقليل"
+                            >
+                              <Minus size={12} />
+                            </button>
+                            <span className="w-8 text-center font-bold text-sm font-numbers text-ink">
+                              {item.qty}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => updateQty(item.id, item.qty + 1)}
+                              className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark transition-colors active:scale-95 shadow-sm"
+                              aria-label="زيادة"
+                            >
+                              <Plus size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-right font-arabic text-xs font-bold text-slate-400">
+                            <span>الكمية الإجمالية: </span>
+                            <span className="font-numbers font-black text-slate-800 text-sm bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200">{group.totalQty}</span>
+                          </div>
+                        )}
+
+                        {/* Total Price */}
+                        <div className="text-left font-numbers" style={{ minWidth: '90px' }}>
+                          <span className="block text-[9px] text-ink-soft/40 font-cairo font-bold">الإجمالي</span>
+                          <span className="text-coral-deep font-extrabold text-base">
+                            {group.totalPrice.toFixed(2)} <span className="text-[10px] font-cairo font-normal text-ink-soft">ج.م</span>
+                          </span>
+                        </div>
+
+                        {/* Remove / Edit Button */}
+                        {!isGrouped ? (
                           <button
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setDetailModalItem(item);
+                              removeItem(item.id);
                             }}
-                            className="text-[10px] text-amber-700 bg-amber/10 hover:bg-amber/20 font-bold px-2 py-0.5 rounded-full border border-amber/30 transition-colors font-arabic"
+                            className="p-2 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-full border border-transparent hover:border-rose-100 transition-colors"
+                            title="إزالة من السلة"
                           >
-                            👁️ التفاصيل
+                            <Trash2 size={16} />
                           </button>
-                        </div>
-                        
-                        <div className="flex flex-wrap items-center gap-2 mt-1.5 font-bold">
-                          {item.type === 'product' && (
-                            <span className="text-[9px] bg-paper text-ink-soft/85 px-2 py-0.5 rounded-full border border-paper-line">
-                              {item.unitType === 'piece' ? 'شراء بالقطعة' : 'شراء بالعلبة'}
-                            </span>
-                          )}
-
-                          {item.type === 'box' && (
-                            <span className="text-[9px] bg-sage/10 text-sage-deep px-2 py-0.5 rounded-full border border-sage/10 flex items-center gap-1">
-                              <Box size={10} /> باقة مخصصة
-                            </span>
-                          )}
-
-                          <span className="text-xs text-ink-soft/50 font-numbers font-bold">
-                            سعر الوحدة: {item.price} ج.م
-                          </span>
-                        </div>
-
-                        {/* Colors List in Cart */}
-                        {(item as any).colors && (item as any).colors.length > 0 && (
-                          <div className="flex flex-wrap gap-1 items-center mt-2.5">
-                            <span className="text-[10px] text-slate-400 font-bold ml-1.5 font-arabic">الألوان المختارة:</span>
-                            {(item as any).colors.map((c: string, idx: number) => (
-                              <span key={idx} className="text-[9px] bg-amber/10 text-amber-deep font-bold px-2 py-0.5 rounded border border-amber/20 font-arabic">
-                                {c}
-                              </span>
-                            ))}
-                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailModalGroup(group);
+                            }}
+                            className="text-xs bg-amber/10 text-amber-deep font-bold px-3 py-1.5 rounded-xl border border-amber/30 hover:bg-amber hover:text-white transition-all font-arabic"
+                          >
+                            تعديل
+                          </button>
                         )}
 
-                        {/* Customized box items list inside cart */}
-                        {item.type === 'box' && item.customItems && (
-                          <div className="mt-3 bg-paper rounded-xl border border-paper-line p-3 max-w-md">
-                            <span className="block text-[10px] font-extrabold text-ink-soft/50 mb-1.5">محتويات الباقة المخصصة:</span>
-                            <div className="flex flex-wrap gap-1.5">
-                              {item.customItems.map((cItem, cIdx) => (
-                                <span 
-                                  key={cIdx} 
-                                  className="text-[9px] bg-white text-ink-soft/80 px-2 py-0.5 rounded-md border border-paper-line font-numbers font-bold"
-                                >
-                                  {cItem.name} (x{cItem.qty})
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
-                    </div>
-
-                    {/* Qty and price controls */}
-                    <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto shrink-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-paper-line border-dashed">
-                      
-                      {/* Qty Counter */}
-                      <div className="flex items-center bg-paper rounded-full p-1 border border-paper-line">
-                        <button
-                          type="button"
-                          onClick={() => updateQty(item.id, item.qty - 1)}
-                          className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark transition-colors active:scale-95 shadow-sm"
-                          aria-label="تقليل"
-                        >
-                          <Minus size={12} />
-                        </button>
-                        <span className="w-8 text-center font-bold text-sm font-numbers text-ink">
-                          {item.qty}
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => updateQty(item.id, item.qty + 1)}
-                          className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark transition-colors active:scale-95 shadow-sm"
-                          aria-label="زيادة"
-                        >
-                          <Plus size={12} />
-                        </button>
-                      </div>
-
-                      {/* Total Price */}
-                      <div className="text-left font-numbers">
-                        <span className="block text-[9px] text-ink-soft/40 font-cairo font-bold">الإجمالي</span>
-                        <span className="text-coral-deep font-extrabold text-base">
-                          {(item.price * item.qty).toFixed(2)} <span className="text-[10px] font-cairo font-normal text-ink-soft">ج.م</span>
-                        </span>
-                      </div>
-
-                      {/* Remove Button */}
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="p-2 text-rose-500 hover:bg-rose-50 hover:text-rose-600 rounded-full border border-transparent hover:border-rose-100 transition-colors"
-                        title="إزالة من السلة"
-                      >
-                        <Trash2 size={16} />
-                      </button>
 
                     </div>
-
-                  </div>
-                ))}
-
+                })}
               </div>
 
               {/* SUGGESTED ITEMS CROSS-SELLING */}
@@ -411,11 +492,10 @@ export default function CartPage() {
 
       </div>
 
-      {/* 👁️ مودال تفاصيل المنتج والخيارات المختارة (Interactive Product Details Modal) */}
-      {detailModalItem && (
+      {activeModalGroup && (
         <div 
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setDetailModalItem(null)}
+          onClick={() => setDetailModalGroup(null)}
         >
           <div 
             className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 space-y-5 text-right animate-scale-up"
@@ -425,7 +505,7 @@ export default function CartPage() {
             {/* Close Button */}
             <button
               type="button"
-              onClick={() => setDetailModalItem(null)}
+              onClick={() => setDetailModalGroup(null)}
               className="absolute top-4 left-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition-colors"
             >
               <X size={16} />
@@ -435,8 +515,8 @@ export default function CartPage() {
             <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
               <div className="relative w-14 h-14 bg-slate-50 rounded-2xl overflow-hidden shrink-0 border border-slate-200">
                 <Image
-                  src={detailModalItem.image}
-                  alt={detailModalItem.name}
+                  src={activeModalGroup.baseProduct.image}
+                  alt={getBaseProductName(activeModalGroup.baseProduct.name)}
                   fill
                   sizes="64px"
                   className="object-contain p-1"
@@ -444,71 +524,107 @@ export default function CartPage() {
               </div>
               <div>
                 <h3 className="font-extrabold text-base text-slate-900 leading-snug">
-                  {detailModalItem.name}
+                  {getBaseProductName(activeModalGroup.baseProduct.name)}
                 </h3>
                 <span className="text-[11px] font-bold text-amber font-arabic">
-                  {detailModalItem.unitType === 'piece' ? '🟢 فردي / قطعة' : '📦 علبة / جملة'}
+                  تفاصيل الخيارات والمقاسات المحددة
                 </span>
               </div>
             </div>
 
-            {/* Details Breakdown */}
-            <div className="space-y-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
-              <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
-                <span className="text-slate-500 font-bold font-arabic">سعر الوحدة:</span>
-                <span className="font-black text-slate-800 font-numbers text-sm">{detailModalItem.price} ج.م</span>
-              </div>
+            {/* Subitems List */}
+            <div className="space-y-4 max-h-[45vh] overflow-y-auto pr-1 scrollbar-thin">
+              {activeModalGroup.subItems.map((subItem) => {
+                const isBox = subItem.type === 'box';
+                return (
+                  <div key={subItem.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60 flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <span className="font-extrabold text-xs text-slate-800 block">
+                          {getOptionName(subItem.name) || (isBox ? 'باقة مخصصة' : 'الخيار الافتراضي')}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-numbers font-bold mt-1 block">
+                          سعر الوحدة: {subItem.price} ج.م
+                        </span>
+                      </div>
 
-              <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">
-                <span className="text-slate-500 font-bold font-arabic">الكمية المطلوبة:</span>
-                <span className="font-black text-amber-900 font-numbers text-sm">{detailModalItem.qty} {detailModalItem.unitType === 'piece' ? 'قطعة' : 'علبة'}</span>
-              </div>
-
-              <div className="flex justify-between items-center pt-1 font-arabic">
-                <span className="text-slate-700 font-extrabold">الإجمالي لهذا العنصر:</span>
-                <span className="font-black text-amber text-base font-numbers">
-                  {(detailModalItem.price * detailModalItem.qty).toFixed(2)} ج.م
-                </span>
-              </div>
-            </div>
-
-            {/* Colors Breakdown if present */}
-            {detailModalItem.colors && detailModalItem.colors.length > 0 && (
-              <div className="space-y-2">
-                <span className="block text-xs font-extrabold text-slate-800 font-arabic">🎨 الألوان والكميات التفصيلية:</span>
-                <div className="flex flex-wrap gap-1.5 p-3 bg-amber/10 border border-amber/30 rounded-xl">
-                  {Array.from(new Set(detailModalItem.colors)).map((c: any, idx: number) => {
-                    const count = detailModalItem.colors.filter((x: any) => x === c).length;
-                    return (
-                      <span key={idx} className="text-xs bg-white text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber/30 font-arabic shadow-2xs">
-                        {c}: <strong className="text-amber font-numbers font-black">{count}</strong> قطعة
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Box items breakdown if customized box */}
-            {detailModalItem.type === 'box' && detailModalItem.customItems && (
-              <div className="space-y-2">
-                <span className="block text-xs font-extrabold text-slate-800 font-arabic">📦 المحتويات داخل هذه الباقة:</span>
-                <div className="max-h-36 overflow-y-auto space-y-1.5 p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  {detailModalItem.customItems.map((cItem: any, cIdx: number) => (
-                    <div key={cIdx} className="flex justify-between text-xs font-bold text-slate-700">
-                      <span>{cItem.name}</span>
-                      <span className="text-amber font-numbers">×{cItem.qty}</span>
+                      {/* Quantity control inside modal */}
+                      <div className="flex items-center border border-slate-200 rounded-lg bg-white p-1 overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => updateQty(subItem.id, Math.max(1, subItem.qty - 1))}
+                          className="p-1 hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                        >
+                          <Minus size={11} />
+                        </button>
+                        <span className="w-6 text-center text-xs font-black font-numbers">{subItem.qty}</span>
+                        <button
+                          type="button"
+                          onClick={() => updateQty(subItem.id, subItem.qty + 1)}
+                          className="p-1 hover:bg-slate-100 rounded text-slate-600 transition-colors"
+                        >
+                          <Plus size={11} />
+                        </button>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
+
+                    {/* Colors details if any */}
+                    {subItem.colors && subItem.colors.length > 0 && (
+                      <div className="flex flex-wrap gap-1 items-center bg-white p-2 rounded-lg border border-slate-200/60 text-[10px]">
+                        <span className="text-slate-400 font-bold ml-1">الألوان المختارة:</span>
+                        {Array.from(new Set(subItem.colors)).map((c: any, idx: number) => {
+                          const count = subItem.colors.filter((x: any) => x === c).length;
+                          return (
+                            <span key={idx} className="bg-amber/10 text-amber-deep font-bold px-1.5 py-0.5 rounded border border-amber/20">
+                              {c} ({count})
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Box customized items list */}
+                    {isBox && subItem.customItems && (
+                      <div className="mt-1 bg-white rounded-lg border border-slate-200/60 p-2 text-[10px] max-h-24 overflow-y-auto space-y-1">
+                        {subItem.customItems.map((cItem: any, cIdx: number) => (
+                          <div key={cIdx} className="flex justify-between text-slate-600 font-bold">
+                            <span>{cItem.name}</span>
+                            <span className="text-amber font-numbers">×{cItem.qty}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex justify-between items-center text-[10px] border-t border-slate-200 pt-2 mt-1">
+                      <span className="text-slate-500 font-bold">إجمالي هذا الخيار:</span>
+                      <div className="flex items-center gap-3">
+                        <span className="font-black text-slate-800 font-numbers text-xs">{(subItem.price * subItem.qty).toFixed(2)} ج.م</span>
+                        <button
+                          type="button"
+                          onClick={() => removeItem(subItem.id)}
+                          className="text-rose-500 hover:text-rose-600 p-1 rounded hover:bg-rose-50 transition-colors"
+                          title="حذف هذا الخيار"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Total Group Pricing */}
+            <div className="flex justify-between items-center p-3 bg-amber/5 rounded-xl border border-amber/10 text-xs">
+              <span className="font-extrabold text-slate-700">إجمالي المنتج لكافة الخيارات:</span>
+              <span className="font-black text-amber text-sm font-numbers">{activeModalGroup.totalPrice.toFixed(2)} ج.م</span>
+            </div>
 
             {/* Modal Actions */}
             <div className="pt-2">
               <button
                 type="button"
-                onClick={() => setDetailModalItem(null)}
+                onClick={() => setDetailModalGroup(null)}
                 className="w-full py-3 bg-amber hover:bg-amber-deep text-white font-black text-xs rounded-xl shadow-md transition-all font-arabic"
               >
                 إغلاق النافذة ✖
