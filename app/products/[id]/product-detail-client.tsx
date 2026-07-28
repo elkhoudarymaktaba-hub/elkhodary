@@ -639,8 +639,43 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   </span>
                 </div>
 
-                {/* Chips الرئيسية مع إظهار السعر بجانب اسم المقاس */}
+                {/* Chips الرئيسية (المقاس الأساسي + المقاسات الخاصة) */}
                 <div className="flex flex-wrap gap-2.5">
+                  {/* زر المقاس الأساسي */}
+                  {(() => {
+                    const isBaseActive = selectedSizeGroup === null;
+                    const baseColorsCount = (sizeColorsMap['__base__'] || []).length;
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSizeGroup(null);
+                          setIsColorDrawerOpen(true);
+                        }}
+                        className={`px-4 py-2 rounded-xl text-xs font-bold font-arabic border-2 transition-all flex items-center gap-2 shadow-2xs ${
+                          isBaseActive
+                            ? 'bg-amber border-amber text-white shadow-sm scale-[1.02]'
+                            : 'bg-white border-slate-200 text-slate-800 hover:border-amber/50 hover:bg-amber-50/40'
+                        }`}
+                      >
+                        <span>المقاس الأساسي</span>
+                        <span className={`text-[11px] font-numbers font-black px-2 py-0.5 rounded-lg ${
+                          isBaseActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+                        }`}>
+                          {product.price_unit} ج.م
+                        </span>
+                        {baseColorsCount > 0 && (
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-numbers font-black ${
+                            isBaseActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {baseColorsCount} قطع
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })()}
+
+                  {/* أزرار المقاسات الخاصة */}
                   {sizeGroups.map(group => {
                     const isActive = selectedSizeGroup === group.name;
                     const groupColorsCount = (sizeColorsMap[group.name] || []).length;
@@ -679,9 +714,40 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   })}
                 </div>
 
-                {/* عند اختيار مجموعة: أظهر سعر الفردي والعلبة مع زر إلغاء صريح */}
-                {activeSizeGroup && (
-                  <div className="space-y-1.5 pt-1">
+                {/* خيارات الشراء (فردي / علبة) للمقاس المحدد */}
+                <div className="space-y-1.5 pt-1">
+                  {selectedSizeGroup === null ? (
+                    /* خيارات المقاس الأساسي */
+                    <div className="flex flex-wrap gap-2 p-1 bg-slate-50 rounded-xl border border-slate-200 animate-fade-in">
+                      <button
+                        type="button"
+                        onClick={() => setUnitType('piece')}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center justify-center gap-0.5 ${
+                          unitType === 'piece'
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs font-black'
+                            : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'
+                        }`}
+                      >
+                        <span>🟢 فردي / قطعة</span>
+                        <span className="text-[11px] font-numbers font-black opacity-90">{product.price_unit} ج.م</span>
+                      </button>
+                      {product.price_box && (
+                        <button
+                          type="button"
+                          onClick={() => setUnitType('box')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center justify-center gap-0.5 ${
+                            unitType === 'box'
+                              ? 'bg-blue-500 border-blue-500 text-white shadow-xs font-black'
+                              : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                          }`}
+                        >
+                          <span>📦 علبة / جملة</span>
+                          <span className="text-[11px] font-numbers font-black opacity-90">{product.price_box} ج.م</span>
+                        </button>
+                      )}
+                    </div>
+                  ) : activeSizeGroup && (
+                    /* خيارات المقاس الخاص المحدد */
                     <div className="flex flex-wrap gap-2 p-1 bg-slate-50 rounded-xl border border-slate-200 animate-fade-in">
                       {activeSizeGroup.unitPrice !== undefined && (
                         <button
@@ -689,7 +755,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                           onClick={() => setSizeUnitType('unit')}
                           className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center justify-center gap-0.5 ${
                             sizeUnitType === 'unit'
-                              ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
+                              ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs font-black'
                               : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'
                           }`}
                         >
@@ -703,7 +769,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                           onClick={() => setSizeUnitType('box')}
                           className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center justify-center gap-0.5 ${
                             sizeUnitType === 'box'
-                              ? 'bg-blue-500 border-blue-500 text-white shadow-xs'
+                              ? 'bg-blue-500 border-blue-500 text-white shadow-xs font-black'
                               : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
                           }`}
                         >
@@ -712,8 +778,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         </button>
                       )}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             )}
 
