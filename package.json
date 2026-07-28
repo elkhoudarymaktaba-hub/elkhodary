@@ -14,6 +14,8 @@
     "@tiptap/react": "^3.27.3",
     "@tiptap/starter-kit": "^3.27.3",
     "framer-motion": "^12.42.2",
+    "gsap": "^3.12.5",
+    "lenis": "^1.1.5",
     "lucide-react": "^0.379.0",
     "next": "14.2.3",
     "react": "^18.3.1",
