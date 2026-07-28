@@ -107,16 +107,75 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const activeSizeGroup = sizeGroups.find(g => g.name === selectedSizeGroup);
   const currentPrice = (() => {
     if (activeSizeGroup) {
-      // إذا اختار "علبة" وفيه سعر علبة → استخدمه
       if (sizeUnitType === 'box' && activeSizeGroup.boxPrice !== undefined) return activeSizeGroup.boxPrice;
-      // إذا اختار "فردي" وفيه سعر فردي → استخدمه
       if (sizeUnitType === 'unit' && activeSizeGroup.unitPrice !== undefined) return activeSizeGroup.unitPrice;
-      // fallback: أي سعر متاح
       return activeSizeGroup.unitPrice ?? activeSizeGroup.boxPrice ?? product.price_unit;
     }
-    // بدون مقاسات: استخدم نوع الشراء
     return unitType === 'piece' ? product.price_unit : (product.price_box || product.price_unit);
   })();
+
+  // ---- 🛒 كارد ملخص الطلبات والمقاسات المباشر (Live Itemized Order Summary) ----
+  const activeOrderItems = (() => {
+    const items: {
+      key: string;
+      name: string;
+      unitPrice: number;
+      colors: string[];
+      qty: number;
+      total: number;
+    }[] = [];
+
+    // 1. فحص المقاسات الخاصة التي تم تحديد ألوان أو كمية لها
+    sizeGroups.forEach(group => {
+      const groupColors = sizeColorsMap[group.name] || [];
+      if (groupColors.length > 0) {
+        const price = (sizeUnitType === 'box' && group.boxPrice !== undefined)
+          ? group.boxPrice
+          : (group.unitPrice ?? group.boxPrice ?? product.price_unit);
+        
+        items.push({
+          key: group.name,
+          name: group.name,
+          unitPrice: price,
+          colors: groupColors,
+          qty: groupColors.length,
+          total: price * groupColors.length,
+        });
+      }
+    });
+
+    // 2. فحص السعر الأساسي للمنتج
+    const baseColors = sizeColorsMap['__base__'] || [];
+    const basePrice = unitType === 'piece' ? product.price_unit : (product.price_box || product.price_unit);
+    const baseQty = colors.length > 0 ? baseColors.length : (selectedSizeGroup === null ? manualQty : 0);
+
+    if (baseQty > 0 && (baseColors.length > 0 || (colors.length === 0 && selectedSizeGroup === null))) {
+      items.push({
+        key: '__base__',
+        name: 'المقاس الأساسي',
+        unitPrice: basePrice,
+        colors: baseColors,
+        qty: baseQty,
+        total: basePrice * baseQty,
+      });
+    }
+
+    // 3. حالة افتراضية إذا لم يتم اختيار ألوان
+    if (items.length === 0) {
+      items.push({
+        key: activeSizeKey,
+        name: activeSizeGroup ? activeSizeGroup.name : 'المقاس الأساسي',
+        unitPrice: currentPrice,
+        colors: selectedColors,
+        qty: quantity,
+        total: currentPrice * quantity,
+      });
+    }
+
+    return items;
+  })();
+
+  const grandTotal = activeOrderItems.reduce((sum, item) => sum + item.total, 0);
 
   const handleAddToBox = () => {
     if (!boxId || typeof window === 'undefined') return;
@@ -372,82 +431,56 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   }, [product]);
 
   const handleBuyNow = () => {
-    const sizeSuffix = activeSizeGroup
-      ? ` (${activeSizeGroup.name} - ${sizeUnitType === 'unit' ? 'فردي' : 'علبة'})`
-      : '';
-    addItem({
-      type: 'product',
-      productId: product.id,
-      name: `${product.name}${sizeSuffix}`,
-      price: currentPrice,
-      qty: quantity,
-      image: images[0],
-      unitType: activeSizeGroup ? sizeUnitType : unitType,
-      selectedSize: activeSizeGroup?.name,
-      colors: colors.length > 0 ? selectedColors : undefined,
-    } as any);
+    const itemsToAdd = activeOrderItems.filter(i => i.qty > 0);
+    if (itemsToAdd.length === 0) return;
 
-    trackClientEvent('AddToCart', {
-      id: product.id,
-      name: product.name,
-      value: currentPrice,
-      qty: quantity,
+    itemsToAdd.forEach(item => {
+      addItem({
+        type: 'product',
+        productId: product.id,
+        name: item.key === '__base__' ? product.name : `${product.name} (${item.name})`,
+        price: item.unitPrice,
+        qty: item.qty,
+        image: images[0],
+        unitType: item.key === '__base__' ? unitType : sizeUnitType,
+        selectedSize: item.key === '__base__' ? undefined : item.name,
+        colors: item.colors.length > 0 ? item.colors : undefined,
+      } as any);
+
+      trackClientEvent('AddToCart', {
+        id: product.id,
+        name: product.name,
+        value: item.unitPrice,
+        qty: item.qty,
+      });
     });
 
     router.push('/checkout');
   };
 
-  useEffect(() => {
-    if (product.categories?.name) {
-      setResolvedCategory(product.categories.name);
-      return;
-    }
-    try {
-      const local = localStorage.getItem('kh_categories');
-      if (local) {
-        const categoriesList = JSON.parse(local);
-        const cat = categoriesList.find((c: any) => c.id === product.category_id);
-        if (cat) setResolvedCategory(cat.name);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, [product]);
-
-  // (تمت إزالة منطق مزامنة الألوان مع الكمية - الآن الألوان تتحكم في الكمية)
-
-  // 1. Fire ViewContent event on mount
-  useEffect(() => {
-    trackClientEvent('ViewContent', {
-      id: product.id,
-      name: product.name,
-      value: product.price_unit,
-      type: 'product',
-    });
-  }, [product]);
-
-
-
   const handleAdd = () => {
-    const sizeSuffix = activeSizeGroup
-      ? ` (${activeSizeGroup.name} - ${sizeUnitType === 'unit' ? 'فردي' : 'علبة'})`
-      : '';
-    addItem({
-      type: 'product',
-      productId: product.id,
-      name: `${product.name}${sizeSuffix}`,
-      price: currentPrice,
-      qty: quantity,
-      image: images[0],
-      unitType: activeSizeGroup ? sizeUnitType : unitType,
-      colors: colors.length > 0 ? selectedColors : undefined,
-    } as any);
+    const itemsToAdd = activeOrderItems.filter(i => i.qty > 0);
+    if (itemsToAdd.length === 0) return;
 
-    trackClientEvent('AddToCart', {
-      id: product.id,
-      name: product.name,
-      value: currentPrice,
-      qty: quantity,
+    itemsToAdd.forEach(item => {
+      addItem({
+        type: 'product',
+        productId: product.id,
+        name: item.key === '__base__' ? product.name : `${product.name} (${item.name})`,
+        price: item.unitPrice,
+        qty: item.qty,
+        image: images[0],
+        unitType: item.key === '__base__' ? unitType : sizeUnitType,
+        selectedSize: item.key === '__base__' ? undefined : item.name,
+        colors: item.colors.length > 0 ? item.colors : undefined,
+      } as any);
+
+      trackClientEvent('AddToCart', {
+        id: product.id,
+        name: product.name,
+        value: item.unitPrice,
+        qty: item.qty,
+      });
     });
 
     setAdded(true);
@@ -790,40 +823,76 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
 
+            {/* 📋 كارد ملخص الطلبات والمقاسات التفاعلي المباشر (Live Itemized Order Summary Card) */}
+            {activeOrderItems.length > 0 && activeOrderItems.some(i => i.qty > 0) && (
+              <div className="p-3.5 bg-[#FFFBF5] border-2 border-amber/30 rounded-2xl space-y-2.5 text-right animate-fade-in my-3" dir="rtl">
+                <div className="flex items-center justify-between border-b border-amber/20 pb-2">
+                  <span className="text-[11px] text-amber-800 font-bold font-arabic bg-amber/15 px-2.5 py-0.5 rounded-full border border-amber/20">
+                    {activeOrderItems.filter(i => i.qty > 0).length} صنف / اختيار مضاف
+                  </span>
+                  <span className="text-xs font-black text-ink font-arabic flex items-center gap-1">
+                    📋 ملخص الأصناف المختارة لهذا المنتج:
+                  </span>
+                </div>
+
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {activeOrderItems.filter(i => i.qty > 0).map((item) => (
+                    <div
+                      key={item.key}
+                      className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-amber/25 text-xs shadow-2xs transition-all hover:border-amber/40"
+                    >
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (item.key === '__base__') {
+                              setSizeColorsMap(prev => ({ ...prev, '__base__': [] }));
+                            } else {
+                              setSizeColorsMap(prev => ({ ...prev, [item.key]: [] }));
+                              if (selectedSizeGroup === item.key) setSelectedSizeGroup(null);
+                            }
+                          }}
+                          className="text-[10px] text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg font-arabic font-bold transition-colors border border-red-100 shrink-0"
+                          title="إزالة هذا الاختيار بالكامل"
+                        >
+                          إزالة 🗑️
+                        </button>
+                        <div className="text-right">
+                          <span className="font-extrabold text-ink font-arabic block text-xs">
+                            {product.name} ({item.name})
+                          </span>
+                          {item.colors.length > 0 && (
+                            <span className="text-[10px] text-slate-500 font-arabic block mt-0.5">
+                              الألوان: {Array.from(new Set(item.colors)).map(c => `${item.colors.filter(x => x === c).length} ${c}`).join('، ')}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="text-left font-numbers shrink-0">
+                        <span className="font-black text-amber text-xs block">
+                          {item.total.toFixed(2)} ج.م
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold block">
+                          {item.qty} قطعة × {item.unitPrice} ج.م
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between pt-1.5 border-t border-amber/20 text-xs font-arabic">
+                  <span className="text-slate-600 font-bold">الإجمالي المباشر لكل الأجناس المختارة:</span>
+                  <span className="font-black text-amber text-sm font-numbers">
+                    {grandTotal.toFixed(2)} ج.م
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Qty Selector & Action buttons */}
             <div className="flex flex-col md:flex-row items-center gap-3 w-full">
               
-              {/* Qty Counter — مخفي لو في ألوان (الألوان تتحكم في الكمية) */}
-              {colors.length === 0 && (
-                <div className="flex items-center bg-slate-50 border border-paper-line rounded-cta p-1 shrink-0 w-full md:w-auto justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setManualQty(Math.max(1, manualQty - 1))}
-                    className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
-                    aria-label="تقليل الكمية"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="w-10 text-center font-bold text-base font-numbers text-ink">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setManualQty(manualQty + 1)}
-                    className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
-                    aria-label="زيادة الكمية"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-              )}
-              {colors.length > 0 && (
-                <div className="text-center px-3 py-1 bg-amber/10 border border-amber/30 rounded-cta shrink-0 flex items-center gap-2">
-                  <span className="text-[11px] font-bold text-amber font-arabic">الكمية:</span>
-                  <span className="text-lg font-black text-amber font-numbers">{quantity}</span>
-                </div>
-              )}
-
               {/* Action Buttons Row */}
               <div className="w-full">
                 {boxId ? (
@@ -908,7 +977,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                       className="w-full py-3.5 px-6 rounded-full font-black text-sm sm:text-base flex items-center justify-center gap-2 bg-[#C87D53] hover:bg-[#B56D45] text-white shadow-md hover:scale-[1.01] active:scale-[0.98] transition-all duration-200"
                     >
                       <Zap size={18} className="fill-white" />
-                      <span>شراء سريع (اقفزي للطلب الآن) — {(currentPrice * quantity).toFixed(2)} ج.م</span>
+                      <span>شراء سريع (اقفزي للطلب الآن) — {grandTotal.toFixed(2)} ج.م</span>
                     </button>
                   </div>
                 )}
