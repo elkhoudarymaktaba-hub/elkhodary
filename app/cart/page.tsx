@@ -145,12 +145,12 @@ export default function CartPage() {
   const total = getTotal();
 
   return (
-    <div className="bg-paper-dark/30 min-h-screen py-12 pt-20">
+    <div className="bg-paper-dark/30 min-h-screen py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
-        <div className="border-b border-dashed border-paper-line pb-6 mb-10">
-          <h1 className="text-3xl font-black text-ink flex items-center gap-3">
+        <div className="border-b border-dashed border-paper-line pb-4 mb-5">
+          <h1 className="text-2xl sm:text-3xl font-black text-ink flex items-center gap-3">
             <ShoppingBag size={28} className="text-coral" />
             <span>سلة التسوق الخاصة بك</span>
           </h1>

@@ -245,7 +245,7 @@ export default function CheckoutClient({ shippingZones }: CheckoutClientProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-28">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-2 sm:pt-4">
       
       {/* RIGHT SIDE: Shipping Form */}
       <div className="lg:col-span-7 order-2 lg:order-1">

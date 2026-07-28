@@ -47,15 +47,15 @@ export default async function CheckoutPage() {
   const shippingZones = await getShippingZones();
 
   return (
-    <div className="bg-brand-bg/40 min-h-screen py-12">
+    <div className="bg-brand-bg/40 min-h-screen py-6 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-black text-brand-text mb-2">
+        <div className="text-center mb-4 sm:mb-6">
+          <h1 className="text-2xl sm:text-3xl font-black text-brand-text mb-1.5">
             تأكيد الطلب والتوصيل
           </h1>
-          <p className="text-brand-text/60 text-sm max-w-lg mx-auto">
+          <p className="text-brand-text/60 text-xs sm:text-sm max-w-lg mx-auto leading-relaxed">
             يرجى تعبئة حقول الشحن لتوصيل طلبك في أسرع وقت. نوفر خدمة الشحن لجميع محافظات مصر والدفع عند الاستلام.
           </p>
         </div>
