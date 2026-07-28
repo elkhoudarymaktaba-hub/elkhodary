@@ -106,6 +106,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
   const [newReviewName, setNewReviewName] = useState('');
+  const [newReviewRating, setNewReviewRating] = useState(5);
+  const [newReviewText, setNewReviewText] = useState('');
+  const [submittingReview, setSubmittingReview] = useState(false);
+
   useEffect(() => {
     setSelectedSizeGroup(null);
     setSizeUnitType('unit');
