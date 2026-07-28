@@ -101,10 +101,14 @@ export default function ProductCard({ product }: ProductCardProps) {
   const colorIndex = product.id ? product.id.charCodeAt(0) % spineColors.length : 0;
   const spineColor = spineColors[colorIndex];
 
+  const cleanDescription = product.description 
+    ? product.description.replace(/\[COLORS\]:\s*(.+)$/m, '').trim() 
+    : '';
+
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-slate-200/80 shadow-sm hover:shadow-md hover:border-amber/50 transition-all duration-300 flex flex-col h-full relative hover:-translate-y-1">
-      {/* Product Image */}
-      <Link href={`/products/${product.id}`} className="relative block h-32 sm:h-36 overflow-hidden bg-slate-50/60 border-b border-slate-100 shrink-0">
+      {/* Product Image 1:1 Aspect Ratio */}
+      <Link href={`/products/${product.id}`} className="relative block aspect-square w-full overflow-hidden bg-slate-50/60 border-b border-slate-100 shrink-0">
         <Image
           src={mainImage}
           alt={product.name}
@@ -140,9 +144,9 @@ export default function ProductCard({ product }: ProductCardProps) {
             </h3>
           </Link>
 
-          {product.description && (
+          {cleanDescription && (
             <p className="text-slate-400 text-[10px] line-clamp-1 mb-2 leading-relaxed">
-              {product.description}
+              {cleanDescription}
             </p>
           )}
         </div>

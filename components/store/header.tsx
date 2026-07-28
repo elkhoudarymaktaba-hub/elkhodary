@@ -241,9 +241,7 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
               >
                 <ShoppingBag size={18} />
                 {cartCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 bg-amber text-white text-[10px] font-black font-numbers rounded-full w-4.5 h-4.5 flex items-center justify-center border-2 border-white shadow-sm pulse-badge">
-                    {cartCount}
-                  </span>
+                  <span className="absolute top-0.5 right-0.5 bg-amber rounded-full w-3.5 h-3.5 border-2 border-white shadow-sm pulse-badge" />
                 )}
               </Link>
             </div>
