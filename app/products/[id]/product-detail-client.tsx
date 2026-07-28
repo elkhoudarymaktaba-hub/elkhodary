@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ShoppingCart, Check, Plus, Minus, ShieldCheck, Box, ArrowRight, Star } from 'lucide-react';
+import { ShoppingCart, Check, Plus, Minus, ShieldCheck, Box, ArrowRight, Star, Zap } from 'lucide-react';
 import { useCartStore } from '@/lib/store/cart';
 import { trackClientEvent } from '@/lib/tracking';
 import { supabase } from '@/lib/supabase';
@@ -467,41 +467,41 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           </Link>
         </div>
       )}
-      <div className="bg-white rounded-card shadow-brand border border-brand-border p-3 sm:p-5 relative overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 md:p-8 relative overflow-hidden">
       
-      {/* 2-Column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      {/* 2-Column layout like reference design */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         
-        {/* Right column: Image Gallery */}
-        <div className="lg:col-span-5 space-y-2 shrink-0">
-          <div className="relative aspect-square max-h-[200px] sm:max-h-[220px] w-full rounded-2xl overflow-hidden bg-slate-50 border border-paper-line flex items-center justify-center p-2 mx-auto">
+        {/* Right column: Image Gallery (Prominent like reference) */}
+        <div className="lg:col-span-6 space-y-4 shrink-0">
+          <div className="relative aspect-square w-full rounded-3xl overflow-hidden bg-slate-50 border border-slate-200/60 shadow-xs flex items-center justify-center p-3">
             <Image
               src={activeImage}
               alt={product.name}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 45vw, 35vw"
-              className="object-contain p-2"
+              sizes="(max-width: 768px) 100vw, 50vw"
+              className="object-cover rounded-2xl"
               priority
             />
           </div>
 
-          {/* Thumbnails */}
+          {/* Thumbnails row (Exactly like reference design bottom thumbnails) */}
           {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar justify-center">
+            <div className="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar justify-start">
               {images.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImage(img)}
-                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 shrink-0 bg-white ${
-                    activeImage === img ? 'border-primary' : 'border-brand-border hover:border-primary/40'
+                  className={`relative w-16 h-16 rounded-xl overflow-hidden border-2 shrink-0 bg-slate-50 transition-all ${
+                    activeImage === img ? 'border-amber ring-2 ring-amber/20 scale-[1.03]' : 'border-slate-200 hover:border-amber/50'
                   }`}
                 >
                   <Image
                     src={img}
                     alt={`${product.name} thumbnail ${index + 1}`}
                     fill
-                    sizes="48px"
-                    className="object-contain p-1"
+                    sizes="64px"
+                    className="object-cover p-0.5 rounded-lg"
                   />
                 </button>
               ))}
@@ -510,7 +510,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         </div>
 
         {/* Left column: Product Actions & Information */}
-        <div className="lg:col-span-7 flex flex-col justify-between space-y-3.5">
+        <div className="lg:col-span-6 flex flex-col justify-between space-y-5">
           <div className="space-y-3">
             {/* Category tag */}
             <span className="inline-block bg-primary/10 text-primary text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border border-primary/10">
@@ -850,38 +850,65 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     )}
                   </button>
                 ) : (
-                  <div className="grid grid-cols-2 gap-2.5 w-full">
-                    {/* Buy Now (Primary CTA) */}
+                  <div className="flex flex-col gap-3 w-full">
+                    {/* Add to Cart (Clean Pill) */}
+                    <div className="flex items-center gap-3">
+                      {colors.length === 0 && (
+                        <div className="flex items-center bg-slate-100 border border-slate-200 rounded-full px-3 py-1.5 shrink-0 justify-between gap-3">
+                          <button
+                            type="button"
+                            onClick={() => setManualQty(Math.max(1, manualQty - 1))}
+                            className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-slate-700 hover:bg-slate-200 active:scale-95 transition-all shadow-xs"
+                            aria-label="تقليل الكمية"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="font-bold text-sm font-numbers text-slate-900">
+                            {quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setManualQty(manualQty + 1)}
+                            className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-slate-700 hover:bg-slate-200 active:scale-95 transition-all shadow-xs"
+                            aria-label="زيادة الكمية"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                      )}
+                      
+                      <button
+                        type="button"
+                        onClick={handleAdd}
+                        disabled={added}
+                        className={`flex-1 py-3 px-6 rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 border ${
+                          added
+                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-sm'
+                            : 'bg-[#F5F0E8] border-[#E8DFC8] text-[#5C4A38] hover:bg-[#EAE0CD] active:scale-[0.98]'
+                        }`}
+                      >
+                        {added ? (
+                          <>
+                            <Check size={16} />
+                            <span>تمت الإضافة للسلة!</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShoppingCart size={16} />
+                            <span>أضيفي للسلة</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Buy Now (Prominent Pill like reference button) */}
                     <button
                       type="button"
                       onClick={handleBuyNow}
-                      className="w-full py-2.5 px-4 rounded-cta font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 bg-amber hover:bg-amber-deep text-white shadow-md shadow-amber/20 hover:scale-[1.01] active:scale-[0.98] transition-all duration-200"
+                      className="w-full py-3.5 px-6 rounded-full font-black text-sm sm:text-base flex items-center justify-center gap-2 bg-[#C87D53] hover:bg-[#B56D45] text-white shadow-md hover:scale-[1.01] active:scale-[0.98] transition-all duration-200"
                     >
-                      <span>شراء الآن</span>
-                    </button>
-
-                    {/* Add to Cart (Secondary CTA) */}
-                    <button
-                      type="button"
-                      onClick={handleAdd}
-                      disabled={added}
-                      className={`w-full py-2.5 px-4 rounded-cta font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-300 border-2 ${
-                        added
-                          ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10'
-                          : 'border-ink-soft text-ink-soft bg-transparent hover:bg-ink-soft/5 active:scale-[0.98]'
-                      }`}
-                    >
-                      {added ? (
-                        <>
-                          <Check size={16} />
-                          <span>تمت الإضافة!</span>
-                        </>
-                      ) : (
-                        <>
-                          <ShoppingCart size={16} />
-                          <span>أضف للسلة</span>
-                        </>
-                      )}
+                      <Zap size={18} className="fill-white" />
+                      <span>شراء سريع (اقفزي للطلب الآن) — {(currentPrice * quantity).toFixed(2)} ج.م</span>
                     </button>
                   </div>
                 )}

@@ -130,8 +130,8 @@ export default function ProductClientPage({ id }: ProductClientPageProps) {
   }
 
   return (
-    <div className="bg-paper min-h-screen py-4 sm:py-6">
-      <div className="max-w-4xl mr-0 ml-auto px-4 sm:px-6">
+    <div className="bg-[#FAF7F2] min-h-screen py-6 sm:py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <div className="text-xs text-brand-text/50 mb-4 flex items-center gap-2" dir="rtl">
           <Link href="/" className="hover:text-primary transition-colors">الرئيسية</Link>
