@@ -461,7 +461,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         
         {/* Right column: Image Gallery */}
         <div className="lg:col-span-5 space-y-2 shrink-0">
-          <div className="relative aspect-square max-h-[240px] sm:max-h-[270px] w-full rounded-2xl overflow-hidden bg-slate-50 border border-paper-line flex items-center justify-center p-2 mx-auto">
+          <div className="relative aspect-square max-h-[200px] sm:max-h-[220px] w-full rounded-2xl overflow-hidden bg-slate-50 border border-paper-line flex items-center justify-center p-2 mx-auto">
             <Image
               src={activeImage}
               alt={product.name}
