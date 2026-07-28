@@ -4,7 +4,7 @@ import ProductClientPage from './product-client-page';
 import ProductCard from '@/components/store/product-card';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import { getMockData } from '@/lib/mockData';
 
 export const revalidate = 10;
@@ -15,7 +15,7 @@ interface ProductDetailPageProps {
   };
 }
 
-async function getProductData(id: string) {
+const getProductData = cache(async (id: string) => {
   try {
     let product: any = null;
 

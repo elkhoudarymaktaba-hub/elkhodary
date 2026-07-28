@@ -17,27 +17,8 @@ export default function ProductClientPage({ id }: ProductClientPageProps) {
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    async function loadProduct() {
-      setLoading(true);
-
-      // 1. Try Supabase first
-      try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*, categories(id, name)')
-          .eq('id', id)
-          .single();
-
-        if (!error && data) {
-          setProduct(data);
-          setLoading(false);
-          return;
-        }
-      } catch (e) {
-        console.warn('Supabase product fetch failed, trying local:', e);
-      }
-
-      // 2. Fallback: localStorage
+    function loadProduct() {
+      // 1. Instant check: localStorage
       if (typeof window !== 'undefined') {
         try {
           const stored = localStorage.getItem('kh_products');
@@ -45,7 +26,6 @@ export default function ProductClientPage({ id }: ProductClientPageProps) {
             const localProducts = JSON.parse(stored);
             const found = localProducts.find((p: any) => p.id === id);
             if (found) {
-              // Try to get category name
               let catName = 'أدوات مكتبية';
               try {
                 const catStored = localStorage.getItem('kh_categories');
@@ -69,7 +49,7 @@ export default function ProductClientPage({ id }: ProductClientPageProps) {
         }
       }
 
-      // 3. Fallback: getMockData (server-side mock)
+      // 2. Instant check: getMockData
       const mockProducts = getMockData.products();
       const mockFound = mockProducts.find((p: any) => p.id === id);
       if (mockFound) {
@@ -83,9 +63,27 @@ export default function ProductClientPage({ id }: ProductClientPageProps) {
         return;
       }
 
-      // Not found anywhere
-      setNotFound(true);
-      setLoading(false);
+      // 3. Supabase fallback query if not in local
+      (async () => {
+        try {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*, categories(id, name)')
+            .eq('id', id)
+            .single();
+
+          if (!error && data) {
+            setProduct(data);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.warn('Supabase product fetch failed:', e);
+        }
+
+        setNotFound(true);
+        setLoading(false);
+      })();
     }
 
     loadProduct();
