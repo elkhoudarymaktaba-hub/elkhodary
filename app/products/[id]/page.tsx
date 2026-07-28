@@ -152,7 +152,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
   return (
     <div className="bg-brand-bg/40 min-h-screen py-4 sm:py-6">
-      <div className="max-w-4xl ml-0 mr-auto px-4 sm:px-6">
+      <div className="max-w-4xl mr-0 ml-auto px-4 sm:px-6">
         
         {/* Breadcrumbs */}
         <div className="text-xs text-brand-text/50 mb-4 flex items-center gap-2">
