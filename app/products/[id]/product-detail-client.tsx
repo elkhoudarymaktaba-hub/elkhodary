@@ -70,10 +70,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [activeImage, setActiveImage] = useState(images[0]);
   // unitType: للمنتجات بدون مقاسات (price_unit / price_box)
   const [unitType, setUnitType] = useState<'piece' | 'box'>('piece');
-  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups
-  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(
-    sizeGroups.length > 0 ? sizeGroups[0].name : null
-  );
+  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups (افتراضياً null ليعرض السعر الأساسي)
+  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(null);
   // sizeUnitType: هل المستخدم اختار فردي أم علبة داخل المقاس؟
   const [sizeUnitType, setSizeUnitType] = useState<'unit' | 'box'>('unit');
   // selectedColors: الألوان المُختارة — كل لون = قطعة واحدة
@@ -456,14 +454,14 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           </Link>
         </div>
       )}
-      <div className="bg-white rounded-card shadow-brand border border-brand-border p-4 sm:p-6 relative overflow-hidden">
+      <div className="bg-white rounded-card shadow-brand border border-brand-border p-3 sm:p-5 relative overflow-hidden">
       
       {/* 2-Column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
         
         {/* Right column: Image Gallery */}
-        <div className="lg:col-span-5 space-y-3 shrink-0">
-          <div className="relative aspect-square max-h-[340px] sm:max-h-[380px] w-full rounded-2xl overflow-hidden bg-slate-50 border border-paper-line flex items-center justify-center p-2 mx-auto">
+        <div className="lg:col-span-5 space-y-2 shrink-0">
+          <div className="relative aspect-square max-h-[240px] sm:max-h-[270px] w-full rounded-2xl overflow-hidden bg-slate-50 border border-paper-line flex items-center justify-center p-2 mx-auto">
             <Image
               src={activeImage}
               alt={product.name}
@@ -481,7 +479,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <button
                   key={index}
                   onClick={() => setActiveImage(img)}
-                  className={`relative w-14 h-14 rounded-xl overflow-hidden border-2 shrink-0 bg-white ${
+                  className={`relative w-12 h-12 rounded-xl overflow-hidden border-2 shrink-0 bg-white ${
                     activeImage === img ? 'border-primary' : 'border-brand-border hover:border-primary/40'
                   }`}
                 >
@@ -489,7 +487,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     src={img}
                     alt={`${product.name} thumbnail ${index + 1}`}
                     fill
-                    sizes="56px"
+                    sizes="48px"
                     className="object-contain p-1"
                   />
                 </button>
@@ -511,23 +509,45 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             </h1>
 
             {/* Price section */}
-            <div className="p-3 bg-brand-bg/40 rounded-xl border border-brand-border/60 space-y-2">
+            <div className="p-3 bg-brand-bg/40 rounded-xl border border-brand-border/60 space-y-1.5">
               <div className="flex items-baseline justify-between">
-                <span className="text-brand-text/60 text-xs font-bold">
+                <span className="text-brand-text/70 text-xs font-bold font-arabic">
                   {activeSizeGroup
-                    ? `السعر النهائي (${sizeUnitType === 'unit' ? 'فردي' : 'علبة'}):`
-                    : unitType === 'piece' ? 'سعر القطعة (فردي):' : 'سعر العلبة الكاملة:'}
+                    ? `سعر مقاس (${activeSizeGroup.name}) - ${sizeUnitType === 'unit' ? 'فردي' : 'علبة'}:`
+                    : unitType === 'piece' ? 'السعر الأساسي للمنتج (فردي):' : 'السعر الأساسي للمنتج (علبة):'}
                 </span>
-                <span className="text-primary font-black text-2xl font-numbers">
-                  {currentPrice} <span className="text-sm font-cairo font-semibold">ج.م</span>
-                </span>
+                <div className="text-right">
+                  <span className="text-primary font-black text-2xl font-numbers">
+                    {currentPrice} <span className="text-sm font-cairo font-semibold">ج.م</span>
+                  </span>
+                  {activeSizeGroup && (
+                    <span className="block text-[10px] text-emerald-600 font-bold font-arabic">
+                      ✓ مقاس خاص مفعّل
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* ---- Sizes / Variants Selector ---- */}
             {sizeGroups.length > 0 && (
-              <div className="space-y-3 mt-4" dir="rtl">
-                <span className="block text-xs font-bold text-slate-700 font-arabic">اختر الحجم / الكمية المطلوبة:</span>
+              <div className="space-y-2.5 mt-3" dir="rtl">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 font-arabic">
+                    اختر مقاس خاص (اختياري):
+                  </span>
+                  {selectedSizeGroup && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedSizeGroup(null)}
+                      className="text-[11px] text-red-600 hover:text-red-700 font-bold font-arabic flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-lg border border-red-200 transition-colors"
+                      title="إلغاء التحديد والرجوع للسعر الأساسي للمنتج"
+                    >
+                      <span>✖ إلغاء المقاس (الرجوع للأساسي)</span>
+                    </button>
+                  )}
+                </div>
+
                 {/* Chips الرئيسية */}
                 <div className="flex flex-wrap gap-2">
                   {sizeGroups.map(group => {
@@ -537,54 +557,60 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         key={group.name}
                         type="button"
                         onClick={() => {
-                          setSelectedSizeGroup(group.name);
-                          // تلقائياً اختر النوع المتاح
-                          if (group.unitPrice !== undefined) setSizeUnitType('unit');
-                          else if (group.boxPrice !== undefined) setSizeUnitType('box');
+                          if (isActive) {
+                            setSelectedSizeGroup(null); // إلغاء عند النقر على المكتمل
+                          } else {
+                            setSelectedSizeGroup(group.name);
+                            if (group.unitPrice !== undefined) setSizeUnitType('unit');
+                            else if (group.boxPrice !== undefined) setSizeUnitType('box');
+                          }
                         }}
-                        className={`px-4 py-2 rounded-full text-sm font-bold font-arabic border-2 transition-all ${
+                        className={`px-3.5 py-1.5 rounded-full text-xs font-bold font-arabic border-2 transition-all flex items-center gap-1.5 ${
                           isActive
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-md scale-[1.03]'
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-md scale-[1.02]'
                             : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-400 hover:bg-emerald-50'
                         }`}
                       >
-                        {group.name}
+                        <span>{group.name}</span>
+                        {isActive && <span className="text-[10px] text-white/80 font-bold">✖</span>}
                       </button>
                     );
                   })}
                 </div>
 
-                {/* عند اختيار مجموعة: أظهر سعر الفردي والعلبة */}
+                {/* عند اختيار مجموعة: أظهر سعر الفردي والعلبة مع زر إلغاء صريح */}
                 {activeSizeGroup && (
-                  <div className="flex flex-wrap gap-2 pt-1 pb-1 px-1 bg-slate-50 rounded-2xl border border-slate-200 animate-fade-in">
-                    {activeSizeGroup.unitPrice !== undefined && (
-                      <button
-                        type="button"
-                        onClick={() => setSizeUnitType('unit')}
-                        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center gap-0.5 ${
-                          sizeUnitType === 'unit'
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm'
-                            : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'
-                        }`}
-                      >
-                        <span>🟢 فردي / قطعة</span>
-                        <span className="text-[11px] font-numbers font-black opacity-90">{activeSizeGroup.unitPrice} ج.م</span>
-                      </button>
-                    )}
-                    {activeSizeGroup.boxPrice !== undefined && (
-                      <button
-                        type="button"
-                        onClick={() => setSizeUnitType('box')}
-                        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center gap-0.5 ${
-                          sizeUnitType === 'box'
-                            ? 'bg-blue-500 border-blue-500 text-white shadow-sm'
-                            : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
-                        }`}
-                      >
-                        <span>📦 علبة / جملة</span>
-                        <span className="text-[11px] font-numbers font-black opacity-90">{activeSizeGroup.boxPrice} ج.م</span>
-                      </button>
-                    )}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex flex-wrap gap-2 p-1 bg-slate-50 rounded-xl border border-slate-200 animate-fade-in">
+                      {activeSizeGroup.unitPrice !== undefined && (
+                        <button
+                          type="button"
+                          onClick={() => setSizeUnitType('unit')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center justify-center gap-0.5 ${
+                            sizeUnitType === 'unit'
+                              ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs'
+                              : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'
+                          }`}
+                        >
+                          <span>🟢 فردي / قطعة</span>
+                          <span className="text-[11px] font-numbers font-black opacity-90">{activeSizeGroup.unitPrice} ج.م</span>
+                        </button>
+                      )}
+                      {activeSizeGroup.boxPrice !== undefined && (
+                        <button
+                          type="button"
+                          onClick={() => setSizeUnitType('box')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center justify-center gap-0.5 ${
+                            sizeUnitType === 'box'
+                              ? 'bg-blue-500 border-blue-500 text-white shadow-xs'
+                              : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                          }`}
+                        >
+                          <span>📦 علبة / جملة</span>
+                          <span className="text-[11px] font-numbers font-black opacity-90">{activeSizeGroup.boxPrice} ج.م</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
