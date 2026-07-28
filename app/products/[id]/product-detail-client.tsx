@@ -74,8 +74,21 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(null);
   // sizeUnitType: هل المستخدم اختار فردي أم علبة داخل المقاس؟
   const [sizeUnitType, setSizeUnitType] = useState<'unit' | 'box'>('unit');
-  // selectedColors: الألوان المُختارة — كل لون = قطعة واحدة
-  const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  
+  // ---- 🎨 تخزين ألوان كل مقاس بشكل منفصل ومحفوظ ----
+  const activeSizeKey = selectedSizeGroup || '__base__';
+  const [sizeColorsMap, setSizeColorsMap] = useState<Record<string, string[]>>({});
+  const [isColorDrawerOpen, setIsColorDrawerOpen] = useState<boolean>(false);
+  
+  const selectedColors = sizeColorsMap[activeSizeKey] || [];
+  const setSelectedColors = (updater: string[] | ((prev: string[]) => string[])) => {
+    setSizeColorsMap(prev => {
+      const current = prev[activeSizeKey] || [];
+      const next = typeof updater === 'function' ? updater(current) : updater;
+      return { ...prev, [activeSizeKey]: next };
+    });
+  };
+
   // quantity: إذا فيه ألوان، الكمية = عدد الألوان المختارة (min 1)؛ وإلا يدوي
   const [manualQty, setManualQty] = useState(1);
   const quantity = colors.length > 0 ? Math.max(1, selectedColors.length) : manualQty;
@@ -552,15 +565,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                 <div className="flex flex-wrap gap-2">
                   {sizeGroups.map(group => {
                     const isActive = selectedSizeGroup === group.name;
+                    const groupColorsCount = (sizeColorsMap[group.name] || []).length;
                     return (
                       <button
                         key={group.name}
                         type="button"
                         onClick={() => {
                           if (isActive) {
-                            setSelectedSizeGroup(null); // إلغاء عند النقر على المكتمل
+                            // إذا ضغط على المقاس النشط مجدداً -> فتح/إغلاق نافذة الألوان
+                            setIsColorDrawerOpen(prev => !prev);
                           } else {
                             setSelectedSizeGroup(group.name);
+                            setIsColorDrawerOpen(true); // فتح قائمة الألوان مباشرة عند التبديل
                             if (group.unitPrice !== undefined) setSizeUnitType('unit');
                             else if (group.boxPrice !== undefined) setSizeUnitType('box');
                           }
@@ -572,7 +588,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         }`}
                       >
                         <span>{group.name}</span>
-                        {isActive && <span className="text-[10px] text-white/80 font-bold">✖</span>}
+                        {groupColorsCount > 0 && (
+                          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-numbers font-black ${
+                            isActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {groupColorsCount} قطع
+                          </span>
+                        )}
+                        {isActive && (
+                          <span className="text-[10px] text-white/80 font-bold">
+                            {isColorDrawerOpen ? '▲' : '▼'}
+                          </span>
+                        )}
                       </button>
                     );
                   })}
@@ -626,102 +653,134 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
 
-            {/* Colors Selector: زر زيادة (+)، ناقص (-)، ورز حذف لكل لون */}
+            {/* Colors Selector: طي وإخفاء الألوان مع بقاء الأرقام والأسعار محفوظة */}
             {colors.length > 0 && (
-              <div className="space-y-3 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-right mt-4 animate-fade-in" dir="rtl">
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-amber-700 font-arabic bg-amber/10 px-2.5 py-1 rounded-full border border-amber/20">
-                    {selectedColors.length > 0
-                      ? `إجمالي القطع المختارة: ${selectedColors.length}`
-                      : 'حدد الكمية المطلوبة من كل لون'}
-                  </span>
-                  <span className="block text-xs font-extrabold text-ink font-arabic">تحديد الألوان المطلوبة:</span>
-                </div>
+              <div className="mt-3 animate-fade-in" dir="rtl">
+                {isColorDrawerOpen ? (
+                  <div className="space-y-3 p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl text-right">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-amber-700 font-arabic bg-amber/10 px-2.5 py-1 rounded-full border border-amber/20">
+                        {selectedColors.length > 0
+                          ? `إجمالي القطع المختارة: ${selectedColors.length}`
+                          : 'حدد الكمية المطلوبة من كل لون'}
+                      </span>
+                      
+                      <div className="flex items-center gap-2">
+                        <span className="block text-xs font-extrabold text-ink font-arabic">تحديد الألوان:</span>
+                        <button
+                          type="button"
+                          onClick={() => setIsColorDrawerOpen(false)}
+                          className="text-[11px] text-slate-600 hover:text-ink font-bold font-arabic bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg shadow-xs transition-colors"
+                        >
+                          إخفاء الألوان 🔼
+                        </button>
+                      </div>
+                    </div>
 
-                {/* أزرار التحكم في الألوان (+ / - / حذف) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  {colors.map(color => {
-                    const count = selectedColors.filter(c => c === color).length;
-                    const isSelected = count > 0;
-                    return (
-                      <div
-                        key={color}
-                        className={`flex items-center justify-between p-2.5 rounded-xl border-2 transition-all ${
-                          isSelected
-                            ? 'bg-white border-amber shadow-xs'
-                            : 'bg-white/80 border-slate-200 hover:border-slate-300'
-                        }`}
-                      >
-                        {/* اسم اللون وتصفيات */}
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs text-ink font-arabic">{color}</span>
-                          {isSelected && (
-                            <button
-                              type="button"
-                              onClick={() => setSelectedColors(prev => prev.filter(c => c !== color))}
-                              className="text-[10px] text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-md font-arabic font-bold transition-colors"
-                              title="حذف هذا اللون بالكامل"
-                            >
-                              حذف
-                            </button>
-                          )}
-                        </div>
-
-                        {/* عداد + و - */}
-                        <div className="flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            disabled={count === 0}
-                            onClick={() => {
-                              setSelectedColors(prev => {
-                                const idx = [...prev].lastIndexOf(color);
-                                if (idx === -1) return prev;
-                                const next = [...prev];
-                                next.splice(idx, 1);
-                                return next;
-                              });
-                            }}
-                            className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
-                              count > 0
-                                ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 active:scale-95'
-                                : 'bg-slate-50 text-slate-300 cursor-not-allowed'
+                    {/* أزرار التحكم في الألوان (+ / - / حذف) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                      {colors.map(color => {
+                        const count = selectedColors.filter(c => c === color).length;
+                        const isSelected = count > 0;
+                        return (
+                          <div
+                            key={color}
+                            className={`flex items-center justify-between p-2 rounded-xl border-2 transition-all ${
+                              isSelected
+                                ? 'bg-white border-amber shadow-xs'
+                                : 'bg-white/80 border-slate-200 hover:border-slate-300'
                             }`}
                           >
-                            -
-                          </button>
+                            {/* اسم اللون وتصفيات */}
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-xs text-ink font-arabic">{color}</span>
+                              {isSelected && (
+                                <button
+                                  type="button"
+                                  onClick={() => setSelectedColors(prev => prev.filter(c => c !== color))}
+                                  className="text-[10px] text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-md font-arabic font-bold transition-colors"
+                                  title="حذف هذا اللون بالكامل"
+                                >
+                                  حذف
+                                </button>
+                              )}
+                            </div>
 
-                          <span className={`w-7 text-center font-black text-xs font-numbers ${
-                            count > 0 ? 'text-amber-600' : 'text-slate-400'
-                          }`}>
-                            {count}
-                          </span>
+                            {/* عداد + و - */}
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                disabled={count === 0}
+                                onClick={() => {
+                                  setSelectedColors(prev => {
+                                    const idx = [...prev].lastIndexOf(color);
+                                    if (idx === -1) return prev;
+                                    const next = [...prev];
+                                    next.splice(idx, 1);
+                                    return next;
+                                  });
+                                }}
+                                className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
+                                  count > 0
+                                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 active:scale-95'
+                                    : 'bg-slate-50 text-slate-300 cursor-not-allowed'
+                                }`}
+                              >
+                                -
+                              </button>
 
-                          <button
-                            type="button"
-                            onClick={() => setSelectedColors(prev => [...prev, color])}
-                            className="w-7 h-7 rounded-lg bg-amber hover:bg-amber-deep text-white font-bold text-xs flex items-center justify-center shadow-xs active:scale-95 transition-all"
-                          >
-                            +
-                          </button>
-                        </div>
+                              <span className={`w-7 text-center font-black text-xs font-numbers ${
+                                count > 0 ? 'text-amber-600' : 'text-slate-400'
+                              }`}>
+                                {count}
+                              </span>
+
+                              <button
+                                type="button"
+                                onClick={() => setSelectedColors(prev => [...prev, color])}
+                                className="w-7 h-7 rounded-lg bg-amber hover:bg-amber-deep text-white font-bold text-xs flex items-center justify-center shadow-xs active:scale-95 transition-all"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* زر تصفير الكل */}
+                    {selectedColors.length > 0 && (
+                      <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200 text-xs">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedColors([])}
+                          className="text-[11px] text-red-600 hover:text-red-700 font-bold font-arabic flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors"
+                        >
+                          <span>🗑️ تصفير كل الألوان</span>
+                        </button>
+                        <span className="text-[10px] text-slate-400 font-arabic">
+                          إجمالي العدد: <strong className="text-amber font-numbers text-xs">{selectedColors.length}</strong> قطعة
+                        </span>
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* زر تصفير الكل */}
-                {selectedColors.length > 0 && (
-                  <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200 text-xs">
+                    )}
+                  </div>
+                ) : (
+                  /* الشريط المصغر عند الإغلاق: خفيف ومحفوظ بدون ظهور الشبكة الأكبر */
+                  <div className="flex items-center justify-between p-2.5 bg-amber/10 border border-amber/30 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-amber-900 font-arabic">
+                        {selectedColors.length > 0
+                          ? `🎨 تم اختيار (${selectedColors.length}) قطعة بألوان مخصصة`
+                          : '🎨 تخصيص وألوان المنتج (اختياري)'}
+                      </span>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setSelectedColors([])}
-                      className="text-[11px] text-red-600 hover:text-red-700 font-bold font-arabic flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors"
+                      onClick={() => setIsColorDrawerOpen(true)}
+                      className="text-xs font-bold text-amber-800 hover:text-amber-950 bg-white border border-amber/40 px-3 py-1 rounded-lg shadow-xs hover:bg-amber-50 transition-all font-arabic"
                     >
-                      <span>🗑️ تصفير كل الألوان</span>
+                      {selectedColors.length > 0 ? 'تعديل الألوان ✏️' : 'تحديد الألوان 🎨'}
                     </button>
-                    <span className="text-[10px] text-slate-400 font-arabic">
-                      إجمالي العدد: <strong className="text-amber font-numbers text-xs">{selectedColors.length}</strong> قطعة
-                    </span>
                   </div>
                 )}
               </div>
