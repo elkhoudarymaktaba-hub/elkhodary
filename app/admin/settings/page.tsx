@@ -469,7 +469,8 @@ export default function SettingsPage() {
     ];
 
     try {
-      await supabase.from('site_settings').upsert(updates);
+      // الرفع على سوبابيس بالخلفية دون حجب أو تعطيل واجهة المستخدم
+      supabase.from('site_settings').upsert(updates).catch(err => console.error('Supabase settings upsert error:', err));
       
       // مزامنة موك داتا محلياً وتحديث الكوكي لعمل الـ middleware
       const settings = getMockData.settings();
