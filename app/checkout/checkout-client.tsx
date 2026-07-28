@@ -182,7 +182,7 @@ export default function CheckoutClient({ shippingZones }: CheckoutClientProps) {
       clearCart();
     } catch (err: any) {
       console.error('Error placing order:', err);
-      setError('حدث خطأ أثناء تسجيل طلبك، يرجى المحاولة مرة أخرى.');
+      setError(`حدث خطأ أثناء تسجيل طلبك: ${err.message || err.details || JSON.stringify(err)}`);
     } finally {
       setLoading(false);
     }
