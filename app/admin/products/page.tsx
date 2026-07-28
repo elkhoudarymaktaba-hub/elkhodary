@@ -883,53 +883,53 @@ export default function ProductsPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* خيارات الألوان */}
               <div className="flex flex-col justify-center gap-1">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-arabic">خيارات الألوان</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-100 font-arabic">خيارات الألوان</span>
                 <button
                   type="button"
                   onClick={() => setFormColorsEnabled(!formColorsEnabled)}
-                  className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200"
+                  className="flex items-center gap-2 mt-1.5 py-2.5 px-4 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all justify-between text-slate-800 dark:text-slate-100 font-black shadow-2xs active:scale-98"
                 >
-                  <span className="text-xs font-arabic font-bold">تفعيل اختيار الألوان</span>
-                  {formColorsEnabled ? <ToggleRight className="w-6 h-6 text-[#2E7FD9]" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
+                  <span className="text-sm font-arabic font-bold">تفعيل اختيار الألوان</span>
+                  {formColorsEnabled ? <ToggleRight className="w-8 h-8 text-[#2E7FD9]" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
                 </button>
               </div>
 
               {/* خيارات المقاسات والأحجام بأسعار مختلفة */}
               <div className="flex flex-col justify-center gap-1">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-arabic">المقاسات والأحجام</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-100 font-arabic">المقاسات والأحجام</span>
                 <button
                   type="button"
                   onClick={() => setFormSizesEnabled(!formSizesEnabled)}
-                  className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200"
+                  className="flex items-center gap-2 mt-1.5 py-2.5 px-4 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all justify-between text-slate-800 dark:text-slate-100 font-black shadow-2xs active:scale-98"
                 >
-                  <span className="text-xs font-arabic font-bold">تفعيل المقاسات والأسعار</span>
-                  {formSizesEnabled ? <ToggleRight className="w-6 h-6 text-[#2E7FD9]" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
+                  <span className="text-sm font-arabic font-bold">تفعيل المقاسات والأسعار</span>
+                  {formSizesEnabled ? <ToggleRight className="w-8 h-8 text-[#2E7FD9]" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
                 </button>
               </div>
 
               {/* مفتاح مميز */}
               <div className="flex flex-col justify-center gap-1">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-arabic">منتج مميز بالرئيسية</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-100 font-arabic">منتج مميز بالرئيسية</span>
                 <button
                   type="button"
                   onClick={() => setFormIsFeatured(!formIsFeatured)}
-                  className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200"
+                  className="flex items-center gap-2 mt-1.5 py-2.5 px-4 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all justify-between text-slate-800 dark:text-slate-100 font-black shadow-2xs active:scale-98"
                 >
-                  <span className="text-xs font-arabic font-bold">تفعيل في الرئيسي</span>
-                  {formIsFeatured ? <ToggleRight className="w-6 h-6 text-amber-500" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
+                  <span className="text-sm font-arabic font-bold">تفعيل في الرئيسي</span>
+                  {formIsFeatured ? <ToggleRight className="w-8 h-8 text-amber-500" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
                 </button>
               </div>
 
               {/* مفتاح نشط */}
               <div className="flex flex-col justify-center gap-1">
-                <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-arabic">حالة المنتج</span>
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-100 font-arabic">حالة المنتج</span>
                 <button
                   type="button"
                   onClick={() => setFormIsActive(!formIsActive)}
-                  className="flex items-center gap-2 mt-1.5 py-2 px-3 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors justify-between text-slate-700 dark:text-slate-200"
+                  className="flex items-center gap-2 mt-1.5 py-2.5 px-4 border border-slate-200 dark:border-slate-700 rounded-[12px] bg-slate-50 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all justify-between text-slate-800 dark:text-slate-100 font-black shadow-2xs active:scale-98"
                 >
-                  <span className="text-xs font-arabic font-bold">متاح للطلب</span>
-                  {formIsActive ? <ToggleRight className="w-6 h-6 text-emerald-500" /> : <ToggleLeft className="w-6 h-6 text-slate-400" />}
+                  <span className="text-sm font-arabic font-bold">متاح للطلب</span>
+                  {formIsActive ? <ToggleRight className="w-8 h-8 text-emerald-500" /> : <ToggleLeft className="w-8 h-8 text-slate-400" />}
                 </button>
               </div>
             </div>
