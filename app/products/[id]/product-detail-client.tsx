@@ -456,32 +456,32 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
           </Link>
         </div>
       )}
-      <div className="bg-white rounded-card shadow-brand border border-brand-border p-6 md:p-10 relative overflow-hidden">
+      <div className="bg-white rounded-card shadow-brand border border-brand-border p-4 sm:p-6 relative overflow-hidden">
       
       {/* 2-Column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Right column: Image Gallery */}
-        <div className="lg:col-span-6 space-y-4">
-          <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-slate-50 border border-paper-line">
+        <div className="lg:col-span-5 space-y-3 shrink-0">
+          <div className="relative aspect-square max-h-[340px] sm:max-h-[380px] w-full rounded-2xl overflow-hidden bg-slate-50 border border-paper-line flex items-center justify-center p-2 mx-auto">
             <Image
               src={activeImage}
               alt={product.name}
               fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 40vw"
-              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 45vw, 35vw"
+              className="object-contain p-2"
               priority
             />
           </div>
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar">
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar justify-center">
               {images.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setActiveImage(img)}
-                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 shrink-0 bg-white ${
+                  className={`relative w-14 h-14 rounded-xl overflow-hidden border-2 shrink-0 bg-white ${
                     activeImage === img ? 'border-primary' : 'border-brand-border hover:border-primary/40'
                   }`}
                 >
@@ -489,8 +489,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     src={img}
                     alt={`${product.name} thumbnail ${index + 1}`}
                     fill
-                    sizes="80px"
-                    className="object-cover p-1"
+                    sizes="56px"
+                    className="object-contain p-1"
                   />
                 </button>
               ))}
@@ -499,21 +499,21 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
         </div>
 
         {/* Left column: Product Actions & Information */}
-        <div className="lg:col-span-6 flex flex-col justify-between space-y-6">
-          <div className="space-y-4">
+        <div className="lg:col-span-7 flex flex-col justify-between space-y-3.5">
+          <div className="space-y-3">
             {/* Category tag */}
-            <span className="inline-block bg-primary/10 text-primary text-xs font-extrabold px-3 py-1 rounded-full border border-primary/10">
+            <span className="inline-block bg-primary/10 text-primary text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border border-primary/10">
               {resolvedCategory}
             </span>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-brand-text leading-snug">
+            <h1 className="text-xl sm:text-2xl font-black text-brand-text leading-snug">
               {product.name}
             </h1>
 
             {/* Price section */}
-            <div className="p-4 bg-brand-bg/40 rounded-2xl border border-brand-border/60 space-y-3">
+            <div className="p-3 bg-brand-bg/40 rounded-xl border border-brand-border/60 space-y-2">
               <div className="flex items-baseline justify-between">
-                <span className="text-brand-text/50 text-xs font-bold">
+                <span className="text-brand-text/60 text-xs font-bold">
                   {activeSizeGroup
                     ? `السعر النهائي (${sizeUnitType === 'unit' ? 'فردي' : 'علبة'}):`
                     : unitType === 'piece' ? 'سعر القطعة (فردي):' : 'سعر العلبة الكاملة:'}
@@ -702,16 +702,16 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             )}
           </div>
 
-          <div className="space-y-6 pt-6 border-t border-paper-line">
+          <div className="space-y-3 pt-3 border-t border-paper-line">
             {/* Unit Selector: فقط لو ما فيش مقاسات وفيه سعر علبة */}
             {sizeGroups.length === 0 && product.price_box && (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <span className="block text-xs font-bold text-ink-soft">طريقة الشراء:</span>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2.5">
                   <button
                     type="button"
                     onClick={() => setUnitType('piece')}
-                    className={`py-3 px-4 rounded-xl text-xs font-bold border-2 transition-all text-center flex flex-col items-center justify-center gap-1 ${
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border-2 transition-all text-center flex flex-col items-center justify-center gap-0.5 ${
                       unitType === 'piece'
                         ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm font-black'
                         : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:bg-emerald-50'
@@ -724,7 +724,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   <button
                     type="button"
                     onClick={() => setUnitType('box')}
-                    className={`py-3 px-4 rounded-xl text-xs font-bold border-2 transition-all text-center flex flex-col items-center justify-center gap-1 ${
+                    className={`py-2 px-3 rounded-xl text-xs font-bold border-2 transition-all text-center flex flex-col items-center justify-center gap-0.5 ${
                       unitType === 'box'
                         ? 'bg-blue-500 border-blue-500 text-white shadow-sm font-black'
                         : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300 hover:bg-blue-50'
@@ -738,36 +738,36 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             )}
 
             {/* Qty Selector & Action buttons */}
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full">
+            <div className="flex flex-col md:flex-row items-center gap-3 w-full">
               
               {/* Qty Counter — مخفي لو في ألوان (الألوان تتحكم في الكمية) */}
               {colors.length === 0 && (
-                <div className="flex items-center bg-slate-50 border border-paper-line rounded-cta p-1.5 shrink-0 w-full md:w-auto justify-between">
+                <div className="flex items-center bg-slate-50 border border-paper-line rounded-cta p-1 shrink-0 w-full md:w-auto justify-between">
                   <button
                     type="button"
                     onClick={() => setManualQty(Math.max(1, manualQty - 1))}
-                    className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
+                    className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
                     aria-label="تقليل الكمية"
                   >
-                    <Minus size={16} />
+                    <Minus size={14} />
                   </button>
-                  <span className="w-14 text-center font-bold text-lg font-numbers text-ink">
+                  <span className="w-10 text-center font-bold text-base font-numbers text-ink">
                     {quantity}
                   </span>
                   <button
                     type="button"
                     onClick={() => setManualQty(manualQty + 1)}
-                    className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
+                    className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
                     aria-label="زيادة الكمية"
                   >
-                    <Plus size={16} />
+                    <Plus size={14} />
                   </button>
                 </div>
               )}
               {colors.length > 0 && (
-                <div className="text-center px-4 py-2 bg-amber/10 border border-amber/30 rounded-cta shrink-0">
-                  <span className="text-xs font-bold text-amber font-arabic block">الكمية</span>
-                  <span className="text-2xl font-black text-amber font-numbers">{quantity}</span>
+                <div className="text-center px-3 py-1 bg-amber/10 border border-amber/30 rounded-cta shrink-0 flex items-center gap-2">
+                  <span className="text-[11px] font-bold text-amber font-arabic">الكمية:</span>
+                  <span className="text-lg font-black text-amber font-numbers">{quantity}</span>
                 </div>
               )}
 
@@ -778,7 +778,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     type="button"
                     onClick={handleAddToBox}
                     disabled={added}
-                    className={`w-full py-4 px-6 rounded-cta font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition-all duration-300 border-2 ${
+                    className={`w-full py-2.5 px-4 rounded-cta font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all duration-300 border-2 ${
                       added
                         ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10'
                         : 'bg-amber border-amber text-white shadow-md shadow-amber/20 hover:scale-[1.02] active:scale-[0.98]'
@@ -786,23 +786,23 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   >
                     {added ? (
                       <>
-                        <Check size={18} />
+                        <Check size={16} />
                         <span>تمت الإضافة للباقة!</span>
                       </>
                     ) : (
                       <>
-                        <Plus size={18} />
+                        <Plus size={16} />
                         <span>إضافة للباقة المدرسية</span>
                       </>
                     )}
                   </button>
                 ) : (
-                  <div className="grid grid-cols-2 gap-3 w-full">
+                  <div className="grid grid-cols-2 gap-2.5 w-full">
                     {/* Buy Now (Primary CTA) */}
                     <button
                       type="button"
                       onClick={handleBuyNow}
-                      className="w-full py-4 px-6 rounded-cta font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 bg-amber hover:bg-amber-deep text-white shadow-md shadow-amber/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                      className="w-full py-2.5 px-4 rounded-cta font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 bg-amber hover:bg-amber-deep text-white shadow-md shadow-amber/20 hover:scale-[1.01] active:scale-[0.98] transition-all duration-200"
                     >
                       <span>شراء الآن</span>
                     </button>
@@ -812,7 +812,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                       type="button"
                       onClick={handleAdd}
                       disabled={added}
-                      className={`w-full py-4 px-6 rounded-cta font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all duration-300 border-2 ${
+                      className={`w-full py-2.5 px-4 rounded-cta font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all duration-300 border-2 ${
                         added
                           ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-500/10'
                           : 'border-ink-soft text-ink-soft bg-transparent hover:bg-ink-soft/5 active:scale-[0.98]'
@@ -820,12 +820,12 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                     >
                       {added ? (
                         <>
-                          <Check size={18} />
+                          <Check size={16} />
                           <span>تمت الإضافة!</span>
                         </>
                       ) : (
                         <>
-                          <ShoppingCart size={18} />
+                          <ShoppingCart size={16} />
                           <span>أضف للسلة</span>
                         </>
                       )}
