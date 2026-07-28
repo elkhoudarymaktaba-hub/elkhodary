@@ -73,6 +73,7 @@ export default function ProductsPage() {
   const [formSizes, setFormSizes] = useState<{ name: string; price: number }[]>([]);
   const [newSizeNameInput, setNewSizeNameInput] = useState('');
   const [newSizePriceInput, setNewSizePriceInput] = useState<number | ''>('');
+  const [newSizeBoxPriceInput, setNewSizeBoxPriceInput] = useState<number | ''>('');
 
   // حالات ودوال السحب والإفلات لترتيب الصور
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -1066,37 +1067,73 @@ export default function ProductsPage() {
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
-                  <input
-                    type="text"
-                    placeholder="اسم المقاس (مثال: سعر فردي / علبة 12 قلم)"
-                    value={newSizeNameInput}
-                    onChange={(e) => setNewSizeNameInput(e.target.value)}
-                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs rounded-[10px] focus:outline-none focus:border-[#2E7FD9] font-arabic text-slate-800 dark:text-slate-100"
-                  />
-                  <input
-                    type="number"
-                    placeholder="السعر الخاص لهذا المقاس (ج.م)"
-                    value={newSizePriceInput === '' ? '' : newSizePriceInput}
-                    onChange={(e) => setNewSizePriceInput(e.target.value === '' ? '' : Number(e.target.value))}
-                    className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs rounded-[10px] focus:outline-none focus:border-[#2E7FD9] font-arabic text-slate-800 dark:text-slate-100 font-english"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (newSizeNameInput.trim() && newSizePriceInput !== '') {
-                        setFormSizes(prev => [...prev, { name: newSizeNameInput.trim(), price: Number(newSizePriceInput) }]);
+                <div className="space-y-2 pt-1">
+                  {/* السطر الأول: اسم المقاس + سعر الفردي */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      placeholder="اسم المقاس (مثال: A4 / علبة 12 قلم / قطعة)"
+                      value={newSizeNameInput}
+                      onChange={(e) => setNewSizeNameInput(e.target.value)}
+                      className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs rounded-[10px] focus:outline-none focus:border-[#2E7FD9] font-arabic text-slate-800 dark:text-slate-100"
+                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        placeholder="سعر الفردي / القطعة (ج.م)"
+                        value={newSizePriceInput === '' ? '' : newSizePriceInput}
+                        onChange={(e) => setNewSizePriceInput(e.target.value === '' ? '' : Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-700 text-xs rounded-[10px] focus:outline-none focus:border-emerald-500 font-arabic text-slate-800 dark:text-slate-100 font-english"
+                      />
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-emerald-600 font-bold pointer-events-none">فردي</span>
+                    </div>
+                  </div>
+
+                  {/* السطر الثاني: سعر العلبة + زر الإضافة */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <div className="relative">
+                      <input
+                        type="number"
+                        placeholder="سعر العلبة / الجملة (ج.م) — اختياري"
+                        value={newSizeBoxPriceInput === '' ? '' : newSizeBoxPriceInput}
+                        onChange={(e) => setNewSizeBoxPriceInput(e.target.value === '' ? '' : Number(e.target.value))}
+                        className="w-full px-3 py-2 bg-blue-50 dark:bg-blue-950/30 border border-blue-300 dark:border-blue-700 text-xs rounded-[10px] focus:outline-none focus:border-blue-500 font-arabic text-slate-800 dark:text-slate-100 font-english"
+                      />
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-blue-600 font-bold pointer-events-none">علبة</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!newSizeNameInput.trim()) {
+                          alert('يرجى إدخال اسم المقاس!');
+                          return;
+                        }
+                        if (newSizePriceInput === '' && newSizeBoxPriceInput === '') {
+                          alert('يرجى إدخال سعر الفردي أو سعر العلبة على الأقل!');
+                          return;
+                        }
+                        const toAdd: { name: string; price: number }[] = [];
+                        if (newSizePriceInput !== '') {
+                          toAdd.push({ name: `${newSizeNameInput.trim()} (فردي)`, price: Number(newSizePriceInput) });
+                        }
+                        if (newSizeBoxPriceInput !== '') {
+                          toAdd.push({ name: `${newSizeNameInput.trim()} (علبة)`, price: Number(newSizeBoxPriceInput) });
+                        }
+                        setFormSizes(prev => [...prev, ...toAdd]);
                         setNewSizeNameInput('');
                         setNewSizePriceInput('');
-                      } else {
-                        alert('يرجى ادخال اسم المقاس والسعر الخاص به!');
-                      }
-                    }}
-                    className="bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white font-bold text-xs px-4 py-2 rounded-[10px] transition-colors font-arabic flex items-center justify-center gap-1 shadow-sm"
-                  >
-                    + إضافة مقاس بسعر خاص
-                  </button>
+                        setNewSizeBoxPriceInput('');
+                      }}
+                      className="bg-[#2E7FD9] hover:bg-[#1B4F8A] text-white font-bold text-xs px-4 py-2 rounded-[10px] transition-colors font-arabic flex items-center justify-center gap-1 shadow-sm"
+                    >
+                      + إضافة مقاس بسعره
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-arabic">
+                    💡 سيتم إضافة (فردي) و(علبة) تلقائياً للاسم عند الحفظ إذا ملأت الحقلين معاً.
+                  </p>
                 </div>
+
 
                 <div className="flex flex-wrap gap-1 items-center pt-1.5 border-t border-dashed border-slate-200 dark:border-slate-700">
                   <span className="text-[10px] text-slate-400 font-arabic ml-1">مقاسات سريعة:</span>
