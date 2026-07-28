@@ -268,33 +268,93 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   useEffect(() => {
     const fetchRecommendations = async () => {
       let allProducts: any[] = [];
+
+      // 1. جلب من Supabase
       try {
         const { data } = await supabase.from('products').select('*');
         if (data && data.length > 0) {
           allProducts = data;
-        } else {
-          allProducts = getMockData.products();
         }
       } catch (err) {
+        console.warn('Supabase fetch for recommendations failed:', err);
+      }
+
+      // 2. جلب من LocalStorage (المنتجات المحلية)
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('kh_products');
+          if (stored) {
+            const localProducts = JSON.parse(stored);
+            // دمج بدون تكرار
+            localProducts.forEach((lp: any) => {
+              if (!allProducts.some(p => p.id === lp.id)) {
+                allProducts.push(lp);
+              }
+            });
+          }
+        } catch (_) {}
+      }
+
+      // 3. fallback: mock data
+      if (allProducts.length === 0) {
         allProducts = getMockData.products();
       }
 
-      // Filter out the current product
-      const filtered = allProducts.filter((p) => p.id !== product.id);
+      // استبعاد المنتج الحالي
+      const candidates = allProducts.filter((p) => p.id !== product.id);
 
-      // Recommendations Logic:
-      // 1. First, select products in the same category
-      let recommended = filtered.filter((p) => p.category_id === product.category_id);
+      // ---- 🧠 خوارزمية حساب معامل التشابه الذكية (Recommendation Scoring) ----
+      const tokenize = (text: string) => {
+        if (!text) return [];
+        return text
+          .toLowerCase()
+          .replace(/[^\u0621-\u064Aa-zA-Z0-9\s]/g, '')
+          .split(/\s+/)
+          .filter(w => w.length > 1);
+      };
 
-      // 2. If less than 4, pad with other products
-      if (recommended.length < 4) {
-        const otherProducts = filtered.filter((p) => p.category_id !== product.category_id);
-        recommended = [...recommended, ...otherProducts].slice(0, 4);
-      } else {
-        recommended = recommended.slice(0, 4);
-      }
+      const currentTokens = tokenize(`${product.name} ${product.description || ''}`);
+      const currentPriceVal = product.price_unit || 1;
 
-      setRecommendations(recommended);
+      const scoredProducts = candidates.map((item) => {
+        let score = 0;
+
+        // أ) تطابق القسم (Category Match) -> 40 نقطة
+        if (item.category_id && item.category_id === product.category_id) {
+          score += 40;
+        }
+
+        // ب) تشابه الكلمات في العنوان والوصف (Title & Word Overlap) -> حتى 35 نقطة
+        const itemTokens = tokenize(`${item.name} ${item.description || ''}`);
+        const sharedWords = currentTokens.filter(t => itemTokens.includes(t));
+        if (sharedWords.length > 0) {
+          score += Math.min(35, sharedWords.length * 12);
+        }
+
+        // ج) التقارب السعري (Price Proximity) -> 15 نقطة
+        const itemPrice = item.price_unit || item.price || 1;
+        const priceRatio = Math.abs(itemPrice - currentPriceVal) / currentPriceVal;
+        if (priceRatio <= 0.25) {
+          score += 15; // تفاوت السعر أقل من 25%
+        } else if (priceRatio <= 0.5) {
+          score += 8;  // تفاوت السعر أقل من 50%
+        }
+
+        // د) المكافأة إذا كان مميزاً (Featured Boost) -> 5 نقاط
+        if (item.is_featured) {
+          score += 5;
+        }
+
+        return { product: item, score };
+      });
+
+      // ترتيب المنتجات تنازلياً حسب أعلى نقاط تشابه
+      scoredProducts.sort((a, b) => b.score - a.score);
+
+      // اختيار أفضل 4 منتجات مرتبة بالذكاء الاصطناعي
+      const topRecommended = scoredProducts.slice(0, 4).map(sp => sp.product);
+
+      setRecommendations(topRecommended);
     };
 
     fetchRecommendations();
