@@ -29,6 +29,7 @@ export default function CartPage() {
   const [couponApplied, setCouponApplied] = useState(false);
   const [applying, setApplying] = useState(false);
   const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);
+  const [detailModalItem, setDetailModalItem] = useState<any>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -116,21 +117,33 @@ export default function CartPage() {
                     className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-paper-line last:pb-0 last:border-b-0"
                   >
                     {/* Item Details */}
-                    <div className="flex items-center gap-4 flex-grow">
-                      <div className="relative w-20 h-20 bg-paper rounded-xl overflow-hidden shrink-0 border border-paper-line">
+                    <div className="flex items-center gap-4 flex-grow cursor-pointer group" onClick={() => setDetailModalItem(item)}>
+                      <div className="relative w-20 h-20 bg-paper rounded-xl overflow-hidden shrink-0 border border-paper-line group-hover:border-amber transition-colors">
                         <Image
                           src={item.image}
                           alt={item.name}
                           fill
                           sizes="80px"
-                          className="object-contain p-1.5"
+                          className="object-contain p-1.5 transition-transform duration-200 group-hover:scale-105"
                         />
                       </div>
                       
                       <div>
-                        <h3 className="font-extrabold text-sm sm:text-base text-ink leading-snug">
-                          {item.name}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-extrabold text-sm sm:text-base text-ink leading-snug group-hover:text-amber transition-colors">
+                            {item.name}
+                          </h3>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDetailModalItem(item);
+                            }}
+                            className="text-[10px] text-amber-700 bg-amber/10 hover:bg-amber/20 font-bold px-2 py-0.5 rounded-full border border-amber/30 transition-colors font-arabic"
+                          >
+                            👁️ التفاصيل
+                          </button>
+                        </div>
                         
                         <div className="flex flex-wrap items-center gap-2 mt-1.5 font-bold">
                           {item.type === 'product' && (

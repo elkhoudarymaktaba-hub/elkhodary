@@ -70,10 +70,8 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [activeImage, setActiveImage] = useState(images[0]);
   // unitType: للمنتجات بدون مقاسات (price_unit / price_box)
   const [unitType, setUnitType] = useState<'piece' | 'box'>('piece');
-  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups (تلقائياً أول مقاس إذا وجد)
-  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(() => {
-    return sizeGroups.length > 0 ? sizeGroups[0].name : null;
-  });
+  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups (تلقائياً المقاس الأساسي null)
+  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(null);
   // sizeUnitType: هل المستخدم اختار فردي أم علبة داخل المقاس؟
   const [sizeUnitType, setSizeUnitType] = useState<'unit' | 'box'>('unit');
   
