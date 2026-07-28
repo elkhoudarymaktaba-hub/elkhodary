@@ -70,8 +70,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [activeImage, setActiveImage] = useState(images[0]);
   // unitType: للمنتجات بدون مقاسات (price_unit / price_box)
   const [unitType, setUnitType] = useState<'piece' | 'box'>('piece');
-  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups (افتراضياً null ليعرض السعر الأساسي)
-  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(null);
+  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups (تلقائياً أول مقاس إذا وجد)
+  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(() => {
+    return sizeGroups.length > 0 ? sizeGroups[0].name : null;
+  });
   // sizeUnitType: هل المستخدم اختار فردي أم علبة داخل المقاس؟
   const [sizeUnitType, setSizeUnitType] = useState<'unit' | 'box'>('unit');
   
@@ -540,6 +542,73 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               ))}
             </div>
           )}
+
+          {/* 📋 كارد ملخص الطلبات والمقاسات التفاعلي المباشر (في جهة اليسار بجانب كارت المنتج) */}
+          {activeOrderItems.length > 0 && activeOrderItems.some(i => i.qty > 0) && (
+            <div className="p-3.5 bg-[#FFFBF5] border-2 border-amber/30 rounded-2xl space-y-2.5 text-right animate-fade-in mt-4" dir="rtl">
+              <div className="flex items-center justify-between border-b border-amber/20 pb-2">
+                <span className="text-[11px] text-amber-800 font-bold font-arabic bg-amber/15 px-2.5 py-0.5 rounded-full border border-amber/20">
+                  {activeOrderItems.filter(i => i.qty > 0).length} صنف مضاف
+                </span>
+                <span className="text-xs font-black text-ink font-arabic flex items-center gap-1">
+                  📋 ملخص الأصناف المختارة:
+                </span>
+              </div>
+
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {activeOrderItems.filter(i => i.qty > 0).map((item) => (
+                  <div
+                    key={item.key}
+                    className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-amber/25 text-xs shadow-2xs transition-all hover:border-amber/40"
+                  >
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (item.key === '__base__') {
+                            setSizeColorsMap(prev => ({ ...prev, '__base__': [] }));
+                          } else {
+                            setSizeColorsMap(prev => ({ ...prev, [item.key]: [] }));
+                            if (selectedSizeGroup === item.key) setSelectedSizeGroup(null);
+                          }
+                        }}
+                        className="text-[10px] text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg font-arabic font-bold transition-colors border border-red-100 shrink-0"
+                        title="إزالة هذا الاختيار بالكامل"
+                      >
+                        إزالة 🗑️
+                      </button>
+                      <div className="text-right">
+                        <span className="font-extrabold text-ink font-arabic block text-xs">
+                          {product.name} ({item.name})
+                        </span>
+                        {item.colors.length > 0 && (
+                          <span className="text-[10px] text-slate-500 font-arabic block mt-0.5">
+                            الألوان: {Array.from(new Set(item.colors)).map(c => `${item.colors.filter(x => x === c).length} ${c}`).join('، ')}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-left font-numbers shrink-0">
+                      <span className="font-black text-amber text-xs block">
+                        {item.total.toFixed(2)} ج.م
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-bold block">
+                        {item.qty} قطعة × {item.unitPrice} ج.م
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between pt-1.5 border-t border-amber/20 text-xs font-arabic">
+                <span className="text-slate-600 font-bold">الإجمالي المباشر:</span>
+                <span className="font-black text-amber text-sm font-numbers">
+                  {grandTotal.toFixed(2)} ج.م
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Left column: Product Actions & Information */}
@@ -550,28 +619,14 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               {resolvedCategory}
             </span>
 
-            <h1 className="text-xl sm:text-2xl font-black text-brand-text leading-snug">
-              {product.name}
-            </h1>
-
-            {/* Price section */}
-            <div className="p-3 bg-brand-bg/40 rounded-xl border border-brand-border/60 space-y-1.5">
-              <div className="flex items-baseline justify-between">
-                <span className="text-brand-text/70 text-xs font-bold font-arabic">
-                  {activeSizeGroup
-                    ? `سعر مقاس (${activeSizeGroup.name}) - ${sizeUnitType === 'unit' ? 'فردي' : 'علبة'}:`
-                    : unitType === 'piece' ? 'السعر الأساسي للمنتج (فردي):' : 'السعر الأساسي للمنتج (علبة):'}
+            <div className="flex items-baseline justify-between pt-1">
+              <h1 className="text-xl sm:text-2xl font-black text-brand-text leading-snug">
+                {product.name}
+              </h1>
+              <div className="text-left shrink-0">
+                <span className="text-amber font-black text-2xl sm:text-3xl font-numbers">
+                  {currentPrice} <span className="text-sm font-cairo font-semibold">ج.م</span>
                 </span>
-                <div className="text-right">
-                  <span className="text-primary font-black text-2xl font-numbers">
-                    {currentPrice} <span className="text-sm font-cairo font-semibold">ج.م</span>
-                  </span>
-                  {activeSizeGroup && (
-                    <span className="block text-[10px] text-emerald-600 font-bold font-arabic">
-                      ✓ مقاس خاص مفعّل
-                    </span>
-                  )}
-                </div>
               </div>
             </div>
 
@@ -579,58 +634,44 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {sizeGroups.length > 0 && (
               <div className="space-y-2.5 mt-3" dir="rtl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 font-arabic">
-                    اختر مقاس خاص (اختياري):
+                  <span className="text-xs font-extrabold text-slate-800 font-arabic">
+                    المقاسات والخيارات المتاحة:
                   </span>
-                  {selectedSizeGroup && (
-                    <button
-                      type="button"
-                      onClick={() => setSelectedSizeGroup(null)}
-                      className="text-[11px] text-red-600 hover:text-red-700 font-bold font-arabic flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2 py-0.5 rounded-lg border border-red-200 transition-colors"
-                      title="إلغاء التحديد والرجوع للسعر الأساسي للمنتج"
-                    >
-                      <span>✖ إلغاء المقاس (الرجوع للأساسي)</span>
-                    </button>
-                  )}
                 </div>
 
-                {/* Chips الرئيسية */}
-                <div className="flex flex-wrap gap-2">
+                {/* Chips الرئيسية مع إظهار السعر بجانب اسم المقاس */}
+                <div className="flex flex-wrap gap-2.5">
                   {sizeGroups.map(group => {
                     const isActive = selectedSizeGroup === group.name;
                     const groupColorsCount = (sizeColorsMap[group.name] || []).length;
+                    const groupPrice = group.unitPrice ?? group.boxPrice ?? product.price_unit;
                     return (
                       <button
                         key={group.name}
                         type="button"
                         onClick={() => {
-                          if (isActive) {
-                            // إذا ضغط على المقاس النشط مجدداً -> فتح/إغلاق نافذة الألوان
-                            setIsColorDrawerOpen(prev => !prev);
-                          } else {
-                            setSelectedSizeGroup(group.name);
-                            setIsColorDrawerOpen(true); // فتح قائمة الألوان مباشرة عند التبديل
-                            if (group.unitPrice !== undefined) setSizeUnitType('unit');
-                            else if (group.boxPrice !== undefined) setSizeUnitType('box');
-                          }
+                          setSelectedSizeGroup(group.name);
+                          setIsColorDrawerOpen(true);
+                          if (group.unitPrice !== undefined) setSizeUnitType('unit');
+                          else if (group.boxPrice !== undefined) setSizeUnitType('box');
                         }}
-                        className={`px-3.5 py-1.5 rounded-full text-xs font-bold font-arabic border-2 transition-all flex items-center gap-1.5 ${
+                        className={`px-4 py-2 rounded-xl text-xs font-bold font-arabic border-2 transition-all flex items-center gap-2 shadow-2xs ${
                           isActive
-                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-md scale-[1.02]'
-                            : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-400 hover:bg-emerald-50'
+                            ? 'bg-amber border-amber text-white shadow-sm scale-[1.02]'
+                            : 'bg-white border-slate-200 text-slate-800 hover:border-amber/50 hover:bg-amber-50/40'
                         }`}
                       >
                         <span>{group.name}</span>
+                        <span className={`text-[11px] font-numbers font-black px-2 py-0.5 rounded-lg ${
+                          isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
+                        }`}>
+                          {groupPrice} ج.م
+                        </span>
                         {groupColorsCount > 0 && (
                           <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-numbers font-black ${
                             isActive ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800'
                           }`}>
                             {groupColorsCount} قطع
-                          </span>
-                        )}
-                        {isActive && (
-                          <span className="text-[10px] text-white/80 font-bold">
-                            {isColorDrawerOpen ? '▲' : '▼'}
                           </span>
                         )}
                       </button>
@@ -823,72 +864,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
 
-            {/* 📋 كارد ملخص الطلبات والمقاسات التفاعلي المباشر (Live Itemized Order Summary Card) */}
-            {activeOrderItems.length > 0 && activeOrderItems.some(i => i.qty > 0) && (
-              <div className="p-3.5 bg-[#FFFBF5] border-2 border-amber/30 rounded-2xl space-y-2.5 text-right animate-fade-in my-3" dir="rtl">
-                <div className="flex items-center justify-between border-b border-amber/20 pb-2">
-                  <span className="text-[11px] text-amber-800 font-bold font-arabic bg-amber/15 px-2.5 py-0.5 rounded-full border border-amber/20">
-                    {activeOrderItems.filter(i => i.qty > 0).length} صنف / اختيار مضاف
-                  </span>
-                  <span className="text-xs font-black text-ink font-arabic flex items-center gap-1">
-                    📋 ملخص الأصناف المختارة لهذا المنتج:
-                  </span>
-                </div>
 
-                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                  {activeOrderItems.filter(i => i.qty > 0).map((item) => (
-                    <div
-                      key={item.key}
-                      className="flex items-center justify-between p-2.5 bg-white rounded-xl border border-amber/25 text-xs shadow-2xs transition-all hover:border-amber/40"
-                    >
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (item.key === '__base__') {
-                              setSizeColorsMap(prev => ({ ...prev, '__base__': [] }));
-                            } else {
-                              setSizeColorsMap(prev => ({ ...prev, [item.key]: [] }));
-                              if (selectedSizeGroup === item.key) setSelectedSizeGroup(null);
-                            }
-                          }}
-                          className="text-[10px] text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg font-arabic font-bold transition-colors border border-red-100 shrink-0"
-                          title="إزالة هذا الاختيار بالكامل"
-                        >
-                          إزالة 🗑️
-                        </button>
-                        <div className="text-right">
-                          <span className="font-extrabold text-ink font-arabic block text-xs">
-                            {product.name} ({item.name})
-                          </span>
-                          {item.colors.length > 0 && (
-                            <span className="text-[10px] text-slate-500 font-arabic block mt-0.5">
-                              الألوان: {Array.from(new Set(item.colors)).map(c => `${item.colors.filter(x => x === c).length} ${c}`).join('، ')}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="text-left font-numbers shrink-0">
-                        <span className="font-black text-amber text-xs block">
-                          {item.total.toFixed(2)} ج.م
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-bold block">
-                          {item.qty} قطعة × {item.unitPrice} ج.م
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between pt-1.5 border-t border-amber/20 text-xs font-arabic">
-                  <span className="text-slate-600 font-bold">الإجمالي المباشر لكل الأجناس المختارة:</span>
-                  <span className="font-black text-amber text-sm font-numbers">
-                    {grandTotal.toFixed(2)} ج.م
-                  </span>
-                </div>
-              </div>
-            )}
 
             {/* Qty Selector & Action buttons */}
             <div className="flex flex-col md:flex-row items-center gap-3 w-full">
