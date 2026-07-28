@@ -321,10 +321,10 @@ export default function CartPage() {
                             تعديل
                           </button>
                         )}
-
                       </div>
 
                     </div>
+                  );
                 })}
               </div>
 
