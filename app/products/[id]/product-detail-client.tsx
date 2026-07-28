@@ -45,14 +45,43 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
   const sizes = product.sizes || [];
 
+  // ---- تجميع المقاسات: دمج (فردي) و(علبة) بنفس الاسم في مجموعة واحدة ----
+  const sizeGroups = (() => {
+    const groups: Record<string, { unitPrice?: number; boxPrice?: number }> = {};
+    sizes.forEach(s => {
+      const unitMatch = s.name.match(/^(.+?)\s*\(فردي\)$/);
+      const boxMatch  = s.name.match(/^(.+?)\s*\(علبة\)$/);
+      if (unitMatch) {
+        const base = unitMatch[1].trim();
+        if (!groups[base]) groups[base] = {};
+        groups[base].unitPrice = s.price;
+      } else if (boxMatch) {
+        const base = boxMatch[1].trim();
+        if (!groups[base]) groups[base] = {};
+        groups[base].boxPrice = s.price;
+      } else {
+        if (!groups[s.name]) groups[s.name] = {};
+        groups[s.name].unitPrice = s.price; // سعر وحيد → يُعامَل كـ فردي
+      }
+    });
+    return Object.entries(groups).map(([name, prices]) => ({ name, ...prices }));
+  })();
+
   const [activeImage, setActiveImage] = useState(images[0]);
+  // unitType: للمنتجات بدون مقاسات (price_unit / price_box)
   const [unitType, setUnitType] = useState<'piece' | 'box'>('piece');
-  const [selectedSize, setSelectedSize] = useState<{ name: string; price: number } | null>(
-    sizes.length > 0 ? sizes[0] : null
+  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups
+  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(
+    sizeGroups.length > 0 ? sizeGroups[0].name : null
   );
-  const [quantity, setQuantity] = useState(1);
-  const [added, setAdded] = useState(false);
+  // sizeUnitType: هل المستخدم اختار فردي أم علبة داخل المقاس؟
+  const [sizeUnitType, setSizeUnitType] = useState<'unit' | 'box'>('unit');
+  // selectedColors: الألوان المُختارة — كل لون = قطعة واحدة
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  // quantity: إذا فيه ألوان، الكمية = عدد الألوان المختارة (min 1)؛ وإلا يدوي
+  const [manualQty, setManualQty] = useState(1);
+  const quantity = colors.length > 0 ? Math.max(1, selectedColors.length) : manualQty;
+  const [added, setAdded] = useState(false);
   const [resolvedCategory, setResolvedCategory] = useState(product.categories?.name || 'أدوات مدرسية');
   const addItem = useCartStore((state) => state.addItem);
   const router = useRouter();
@@ -63,10 +92,20 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   const [newReviewText, setNewReviewText] = useState('');
   const [submittingReview, setSubmittingReview] = useState(false);
 
-  // Handle unit price selection (if size selected, use size price)
-  const currentPrice = selectedSize 
-    ? selectedSize.price 
-    : (unitType === 'piece' ? product.price_unit : (product.price_box || product.price_unit));
+  // ---- حساب السعر الحالي ----
+  const activeSizeGroup = sizeGroups.find(g => g.name === selectedSizeGroup);
+  const currentPrice = (() => {
+    if (activeSizeGroup) {
+      // إذا اختار "علبة" وفيه سعر علبة → استخدمه
+      if (sizeUnitType === 'box' && activeSizeGroup.boxPrice !== undefined) return activeSizeGroup.boxPrice;
+      // إذا اختار "فردي" وفيه سعر فردي → استخدمه
+      if (sizeUnitType === 'unit' && activeSizeGroup.unitPrice !== undefined) return activeSizeGroup.unitPrice;
+      // fallback: أي سعر متاح
+      return activeSizeGroup.unitPrice ?? activeSizeGroup.boxPrice ?? product.price_unit;
+    }
+    // بدون مقاسات: استخدم نوع الشراء
+    return unitType === 'piece' ? product.price_unit : (product.price_box || product.price_unit);
+  })();
 
   const handleAddToBox = () => {
     if (!boxId || typeof window === 'undefined') return;
@@ -262,15 +301,18 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   }, [product]);
 
   const handleBuyNow = () => {
+    const sizeSuffix = activeSizeGroup
+      ? ` (${activeSizeGroup.name} - ${sizeUnitType === 'unit' ? 'فردي' : 'علبة'})`
+      : '';
     addItem({
       type: 'product',
       productId: product.id,
-      name: selectedSize ? `${product.name} (${selectedSize.name})` : product.name,
+      name: `${product.name}${sizeSuffix}`,
       price: currentPrice,
       qty: quantity,
       image: images[0],
-      unitType: unitType,
-      selectedSize: selectedSize?.name,
+      unitType: activeSizeGroup ? sizeUnitType : unitType,
+      selectedSize: activeSizeGroup?.name,
       colors: colors.length > 0 ? selectedColors : undefined,
     } as any);
 
@@ -301,21 +343,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     }
   }, [product]);
 
-  useEffect(() => {
-    if (colors.length > 0) {
-      setSelectedColors(prev => {
-        const next = [...prev];
-        if (next.length < quantity) {
-          while (next.length < quantity) {
-            next.push(colors[0] || '');
-          }
-        } else if (next.length > quantity) {
-          next.length = quantity;
-        }
-        return next;
-      });
-    }
-  }, [quantity, colors]);
+  // (تمت إزالة منطق مزامنة الألوان مع الكمية - الآن الألوان تتحكم في الكمية)
 
   // 1. Fire ViewContent event on mount
   useEffect(() => {
@@ -330,14 +358,17 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
 
   const handleAdd = () => {
+    const sizeSuffix = activeSizeGroup
+      ? ` (${activeSizeGroup.name} - ${sizeUnitType === 'unit' ? 'فردي' : 'علبة'})`
+      : '';
     addItem({
       type: 'product',
       productId: product.id,
-      name: product.name,
+      name: `${product.name}${sizeSuffix}`,
       price: currentPrice,
       qty: quantity,
       image: images[0],
-      unitType: unitType,
+      unitType: activeSizeGroup ? sizeUnitType : unitType,
       colors: colors.length > 0 ? selectedColors : undefined,
     } as any);
 
@@ -423,55 +454,79 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             <div className="p-4 bg-brand-bg/40 rounded-2xl border border-brand-border/60 space-y-3">
               <div className="flex items-baseline justify-between">
                 <span className="text-brand-text/50 text-xs font-bold">
-                  {selectedSize ? `سعر مقاس (${selectedSize.name}):` : 'سعر القطعة الفردية:'}
+                  {activeSizeGroup
+                    ? `السعر النهائي (${sizeUnitType === 'unit' ? 'فردي' : 'علبة'}):`
+                    : unitType === 'piece' ? 'سعر القطعة (فردي):' : 'سعر العلبة الكاملة:'}
                 </span>
                 <span className="text-primary font-black text-2xl font-numbers">
                   {currentPrice} <span className="text-sm font-cairo font-semibold">ج.م</span>
                 </span>
               </div>
-
-              {!selectedSize && product.price_box && (
-                <div className="flex items-baseline justify-between pt-2 border-t border-brand-border/50">
-                  <span className="text-brand-text/50 text-xs font-bold flex items-center gap-1.5">
-                    <Box size={14} className="text-secondary" /> سعر العلبة الكاملة:
-                  </span>
-                  <span className="text-secondary font-black text-xl font-numbers">
-                    {product.price_box} <span className="text-sm font-cairo font-semibold">ج.م</span>
-                  </span>
-                </div>
-              )}
             </div>
 
-            {/* Sizes / Variants Selector Widget */}
-            {sizes.length > 0 && (
-              <div className="space-y-2.5 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-right mt-4" dir="rtl">
-                <span className="block text-xs font-bold text-slate-800 font-arabic">
-                  اختر المقاس / الحجم المطلوب:
-                </span>
-                <div className="flex flex-wrap gap-2 pt-1">
-                  {sizes.map((s, idx) => {
-                    const isSelected = selectedSize?.name === s.name;
+            {/* ---- Sizes / Variants Selector ---- */}
+            {sizeGroups.length > 0 && (
+              <div className="space-y-3 mt-4" dir="rtl">
+                <span className="block text-xs font-bold text-slate-700 font-arabic">اختر الحجم / الكمية المطلوبة:</span>
+                {/* Chips الرئيسية */}
+                <div className="flex flex-wrap gap-2">
+                  {sizeGroups.map(group => {
+                    const isActive = selectedSizeGroup === group.name;
                     return (
                       <button
-                        key={idx}
+                        key={group.name}
                         type="button"
-                        onClick={() => setSelectedSize(s)}
-                        className={`px-3.5 py-2 rounded-xl text-xs font-bold font-arabic transition-all flex items-center gap-2 border ${
-                          isSelected
-                            ? 'bg-[#2E7FD9] text-white border-[#2E7FD9] shadow-md scale-[1.02]'
-                            : 'bg-white text-slate-700 border-slate-200 hover:border-[#2E7FD9]/50 hover:bg-slate-50'
+                        onClick={() => {
+                          setSelectedSizeGroup(group.name);
+                          // تلقائياً اختر النوع المتاح
+                          if (group.unitPrice !== undefined) setSizeUnitType('unit');
+                          else if (group.boxPrice !== undefined) setSizeUnitType('box');
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-bold font-arabic border-2 transition-all ${
+                          isActive
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-md scale-[1.03]'
+                            : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-400 hover:bg-emerald-50'
                         }`}
                       >
-                        <span>{s.name}</span>
-                        <span className={`text-[11px] font-english font-black px-2 py-0.5 rounded-full ${
-                          isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-emerald-600 border border-slate-200'
-                        }`}>
-                          {s.price} ج.م
-                        </span>
+                        {group.name}
                       </button>
                     );
                   })}
                 </div>
+
+                {/* عند اختيار مجموعة: أظهر سعر الفردي والعلبة */}
+                {activeSizeGroup && (
+                  <div className="flex flex-wrap gap-2 pt-1 pb-1 px-1 bg-slate-50 rounded-2xl border border-slate-200 animate-fade-in">
+                    {activeSizeGroup.unitPrice !== undefined && (
+                      <button
+                        type="button"
+                        onClick={() => setSizeUnitType('unit')}
+                        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center gap-0.5 ${
+                          sizeUnitType === 'unit'
+                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm'
+                            : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'
+                        }`}
+                      >
+                        <span>🟢 فردي / قطعة</span>
+                        <span className="text-[11px] font-numbers font-black opacity-90">{activeSizeGroup.unitPrice} ج.م</span>
+                      </button>
+                    )}
+                    {activeSizeGroup.boxPrice !== undefined && (
+                      <button
+                        type="button"
+                        onClick={() => setSizeUnitType('box')}
+                        className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold font-arabic border-2 transition-all flex flex-col items-center gap-0.5 ${
+                          sizeUnitType === 'box'
+                            ? 'bg-blue-500 border-blue-500 text-white shadow-sm'
+                            : 'bg-white border-slate-200 text-slate-600 hover:border-blue-300'
+                        }`}
+                      >
+                        <span>📦 علبة / جملة</span>
+                        <span className="text-[11px] font-numbers font-black opacity-90">{activeSizeGroup.boxPrice} ج.م</span>
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -485,75 +540,117 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
 
-            {/* Colors Selector Widget */}
+            {/* Colors Selector: كل لون تنقر عليه = قطعة واحدة */}
             {colors.length > 0 && (
               <div className="space-y-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-right mt-4 animate-fade-in" dir="rtl">
-                <span className="block text-xs font-bold text-ink-soft font-arabic">
-                  تحديد الألوان المطلوبة للكمية ({quantity} قطع/علب):
-                </span>
-                <div className="space-y-3 max-h-48 overflow-y-auto pr-1">
-                  {Array.from({ length: quantity }).map((_, i) => (
-                    <div key={i} className="flex items-center justify-between gap-3 text-xs border-b border-dashed border-slate-200/60 pb-2 last:border-0 last:pb-0">
-                      <span className="text-slate-500 font-arabic font-medium">القطعة/العلبة رقم {i + 1}:</span>
-                      <div className="flex flex-wrap gap-1.5 justify-end">
-                        {colors.map(color => (
-                          <button
-                            key={color}
-                            type="button"
-                            onClick={() => {
-                              setSelectedColors(prev => {
-                                const updated = [...prev];
-                                updated[i] = color;
-                                return updated;
-                              });
-                            }}
-                            className={`px-3 py-1 rounded-full border text-xs font-bold font-arabic transition-all ${
-                              selectedColors[i] === color
-                                ? 'bg-amber border-amber text-white shadow-sm animate-pulse-subtle'
-                                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                            }`}
-                          >
-                            {color}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400 font-arabic">
+                    {selectedColors.length > 0
+                      ? `${selectedColors.length} قطعة مختارة`
+                      : 'انقر على اللون لإضافة قطعة'}
+                  </span>
+                  <span className="block text-xs font-bold text-ink-soft font-arabic">اختر الألوان المطلوبة:</span>
                 </div>
+
+                {/* أزرار الألوان */}
+                <div className="flex flex-wrap gap-2 justify-end">
+                  {colors.map(color => {
+                    const count = selectedColors.filter(c => c === color).length;
+                    const isSelected = count > 0;
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => {
+                          // كل ضغطة تضيف قطعة من هذا اللون
+                          setSelectedColors(prev => [...prev, color]);
+                        }}
+                        onContextMenu={(e) => {
+                          // كليك يمين يحذف آخر قطعة من هذا اللون
+                          e.preventDefault();
+                          setSelectedColors(prev => {
+                            const idx = [...prev].lastIndexOf(color);
+                            if (idx === -1) return prev;
+                            const next = [...prev];
+                            next.splice(idx, 1);
+                            return next;
+                          });
+                        }}
+                        className={`px-4 py-2 rounded-full border-2 text-sm font-bold font-arabic transition-all relative ${
+                          isSelected
+                            ? 'bg-amber border-amber text-white shadow-md scale-[1.05]'
+                            : 'bg-white border-slate-200 text-slate-700 hover:border-amber/50 hover:bg-amber/5'
+                        }`}
+                      >
+                        {color}
+                        {count > 1 && (
+                          <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                            {count}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* ملخص الاختيار */}
+                {selectedColors.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pt-2 border-t border-dashed border-slate-200">
+                    {selectedColors.map((c, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center gap-1 bg-amber/15 border border-amber/30 text-amber-700 px-2 py-0.5 rounded-full text-[11px] font-bold font-arabic"
+                      >
+                        {c}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedColors(prev => prev.filter((_, j) => j !== i))}
+                          className="text-amber-600 hover:text-red-500 font-black text-xs leading-none"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                <p className="text-[10px] text-slate-400 font-arabic text-right">
+                  💡 اضغط على اللون لإضافة قطعة — اضغط × لإزالة قطعة
+                </p>
               </div>
             )}
           </div>
 
           <div className="space-y-6 pt-6 border-t border-paper-line">
-            {/* Unit Selector (if box price exists) */}
-            {product.price_box && (
+            {/* Unit Selector: فقط لو ما فيش مقاسات وفيه سعر علبة */}
+            {sizeGroups.length === 0 && product.price_box && (
               <div className="space-y-2">
-                <span className="block text-xs font-bold text-ink-soft">طريقة الشراء المعتمدة:</span>
+                <span className="block text-xs font-bold text-ink-soft">طريقة الشراء:</span>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
-                    onClick={() => { setUnitType('piece'); setQuantity(1); }}
-                    className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center justify-center gap-1 ${
+                    onClick={() => setUnitType('piece')}
+                    className={`py-3 px-4 rounded-xl text-xs font-bold border-2 transition-all text-center flex flex-col items-center justify-center gap-1 ${
                       unitType === 'piece'
-                        ? 'bg-amber border-amber text-white shadow-sm font-black'
-                        : 'bg-white border-paper-line text-slate-400 hover:bg-slate-50'
+                        ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm font-black'
+                        : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-300 hover:bg-emerald-50'
                     }`}
                   >
-                    <span>شراء بالقطعة</span>
-                    <span className="text-[10px] opacity-75 font-numbers">({product.price_unit} ج.م)</span>
+                    <span>🟢 فردي / قطعة</span>
+                    <span className="text-[11px] font-numbers font-black">{product.price_unit} ج.م</span>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => { setUnitType('box'); setQuantity(1); }}
-                    className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all text-center flex flex-col items-center justify-center gap-1 ${
+                    onClick={() => setUnitType('box')}
+                    className={`py-3 px-4 rounded-xl text-xs font-bold border-2 transition-all text-center flex flex-col items-center justify-center gap-1 ${
                       unitType === 'box'
-                        ? 'border-2 border-ink-soft text-ink-soft bg-white shadow-sm font-black'
-                        : 'bg-white border-paper-line text-slate-400 hover:bg-slate-50'
+                        ? 'bg-blue-500 border-blue-500 text-white shadow-sm font-black'
+                        : 'bg-white border-slate-200 text-slate-500 hover:border-blue-300 hover:bg-blue-50'
                     }`}
                   >
-                    <span>شراء بالعلبة</span>
-                    <span className="text-[10px] opacity-75 font-numbers">({product.price_box} ... خصم خاص)</span>
+                    <span>📦 علبة / جملة</span>
+                    <span className="text-[11px] font-numbers font-black">{product.price_box} ج.م</span>
                   </button>
                 </div>
               </div>
@@ -562,28 +659,36 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
             {/* Qty Selector & Action buttons */}
             <div className="flex flex-col md:flex-row items-center gap-4 w-full">
               
-              {/* Qty Counter */}
-              <div className="flex items-center bg-slate-50 border border-paper-line rounded-cta p-1.5 shrink-0 w-full md:w-auto justify-between">
-                <button
-                  type="button"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
-                  aria-label="تقليل الكمية"
-                >
-                  <Minus size={16} />
-                </button>
-                <span className="w-14 text-center font-bold text-lg font-numbers text-ink">
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
-                  aria-label="زيادة الكمية"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
+              {/* Qty Counter — مخفي لو في ألوان (الألوان تتحكم في الكمية) */}
+              {colors.length === 0 && (
+                <div className="flex items-center bg-slate-50 border border-paper-line rounded-cta p-1.5 shrink-0 w-full md:w-auto justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setManualQty(Math.max(1, manualQty - 1))}
+                    className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
+                    aria-label="تقليل الكمية"
+                  >
+                    <Minus size={16} />
+                  </button>
+                  <span className="w-14 text-center font-bold text-lg font-numbers text-ink">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setManualQty(manualQty + 1)}
+                    className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-ink border border-paper-line hover:bg-paper-dark active:scale-95 transition-all"
+                    aria-label="زيادة الكمية"
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+              )}
+              {colors.length > 0 && (
+                <div className="text-center px-4 py-2 bg-amber/10 border border-amber/30 rounded-cta shrink-0">
+                  <span className="text-xs font-bold text-amber font-arabic block">الكمية</span>
+                  <span className="text-2xl font-black text-amber font-numbers">{quantity}</span>
+                </div>
+              )}
 
               {/* Action Buttons Row */}
               <div className="w-full">
