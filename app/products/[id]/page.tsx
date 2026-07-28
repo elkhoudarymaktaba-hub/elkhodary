@@ -112,7 +112,7 @@ const getProductData = cache(async (id: string) => {
     console.error('Error fetching product details:', error);
     return null;
   }
-}
+});
 
 export async function generateMetadata({ params }: ProductDetailPageProps) {
   const data = await getProductData(params.id);

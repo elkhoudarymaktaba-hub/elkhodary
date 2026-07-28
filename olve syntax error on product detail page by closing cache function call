@@ -1,0 +1,509 @@
+[1mdiff --git a/app/admin/settings/page.tsx b/app/admin/settings/page.tsx[m
+[1mindex a9e864b..2de6dc1 100644[m
+[1m--- a/app/admin/settings/page.tsx[m
+[1m+++ b/app/admin/settings/page.tsx[m
+[36m@@ -469,7 +469,8 @@[m [mexport default function SettingsPage() {[m
+     ];[m
+ [m
+     try {[m
+[31m-      await supabase.from('site_settings').upsert(updates);[m
+[32m+[m[32m      // الرفع على سوبابيس بالخلفية دون حجب أو تعطيل واجهة المستخدم[m
+[32m+[m[32m      supabase.from('site_settings').upsert(updates).catch(err => console.error('Supabase settings upsert error:', err));[m
+       [m
+       // مزامنة موك داتا محلياً وتحديث الكوكي لعمل الـ middleware[m
+       const settings = getMockData.settings();[m
+[1mdiff --git a/app/cart/page.tsx b/app/cart/page.tsx[m
+[1mindex cbac2a6..1d9ea8a 100644[m
+[1m--- a/app/cart/page.tsx[m
+[1m+++ b/app/cart/page.tsx[m
+[36m@@ -29,6 +29,7 @@[m [mexport default function CartPage() {[m
+   const [couponApplied, setCouponApplied] = useState(false);[m
+   const [applying, setApplying] = useState(false);[m
+   const [suggestedProducts, setSuggestedProducts] = useState<any[]>([]);[m
+[32m+[m[32m  const [detailModalItem, setDetailModalItem] = useState<any>(null);[m
+ [m
+   useEffect(() => {[m
+     setMounted(true);[m
+[36m@@ -116,21 +117,33 @@[m [mexport default function CartPage() {[m
+                     className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-paper-line last:pb-0 last:border-b-0"[m
+                   >[m
+                     {/* Item Details */}[m
+[31m-                    <div className="flex items-center gap-4 flex-grow">[m
+[31m-                      <div className="relative w-20 h-20 bg-paper rounded-xl overflow-hidden shrink-0 border border-paper-line">[m
+[32m+[m[32m                    <div className="flex items-center gap-4 flex-grow cursor-pointer group" onClick={() => setDetailModalItem(item)}>[m
+[32m+[m[32m                      <div className="relative w-20 h-20 bg-paper rounded-xl overflow-hidden shrink-0 border border-paper-line group-hover:border-amber transition-colors">[m
+                         <Image[m
+                           src={item.image}[m
+                           alt={item.name}[m
+                           fill[m
+                           sizes="80px"[m
+[31m-                          className="object-contain p-1.5"[m
+[32m+[m[32m                          className="object-contain p-1.5 transition-transform duration-200 group-hover:scale-105"[m
+                         />[m
+                       </div>[m
+                       [m
+                       <div>[m
+[31m-                        <h3 className="font-extrabold text-sm sm:text-base text-ink leading-snug">[m
+[31m-                          {item.name}[m
+[31m-                        </h3>[m
+[32m+[m[32m                        <div className="flex items-center gap-2">[m
+[32m+[m[32m                          <h3 className="font-extrabold text-sm sm:text-base text-ink leading-snug group-hover:text-amber transition-colors">[m
+[32m+[m[32m                            {item.name}[m
+[32m+[m[32m                          </h3>[m
+[32m+[m[32m                          <button[m
+[32m+[m[32m                            type="button"[m
+[32m+[m[32m                            onClick={(e) => {[m
+[32m+[m[32m                              e.stopPropagation();[m
+[32m+[m[32m                              setDetailModalItem(item);[m
+[32m+[m[32m                            }}[m
+[32m+[m[32m                            className="text-[10px] text-amber-700 bg-amber/10 hover:bg-amber/20 font-bold px-2 py-0.5 rounded-full border border-amber/30 transition-colors font-arabic"[m
+[32m+[m[32m                          >[m
+[32m+[m[32m                            👁️ التفاصيل[m
+[32m+[m[32m                          </button>[m
+[32m+[m[32m                        </div>[m
+                         [m
+                         <div className="flex flex-wrap items-center gap-2 mt-1.5 font-bold">[m
+                           {item.type === 'product' && ([m
+[36m@@ -397,6 +410,113 @@[m [mexport default function CartPage() {[m
+         )}[m
+ [m
+       </div>[m
+[32m+[m
+[32m+[m[32m      {/* 👁️ مودال تفاصيل المنتج والخيارات المختارة (Interactive Product Details Modal) */}[m
+[32m+[m[32m      {detailModalItem && ([m
+[32m+[m[32m        <div[m[41m [m
+[32m+[m[32m          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in"[m
+[32m+[m[32m          onClick={() => setDetailModalItem(null)}[m
+[32m+[m[32m        >[m
+[32m+[m[32m          <div[m[41m [m
+[32m+[m[32m            className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl relative border border-slate-200 space-y-5 text-right animate-scale-up"[m
+[32m+[m[32m            onClick={(e) => e.stopPropagation()}[m
+[32m+[m[32m            dir="rtl"[m
+[32m+[m[32m          >[m
+[32m+[m[32m            {/* Close Button */}[m
+[32m+[m[32m            <button[m
+[32m+[m[32m              type="button"[m
+[32m+[m[32m              onClick={() => setDetailModalItem(null)}[m
+[32m+[m[32m              className="absolute top-4 left-4 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center font-bold text-sm transition-colors"[m
+[32m+[m[32m            >[m
+[32m+[m[32m              <X size={16} />[m
+[32m+[m[32m            </button>[m
+[32m+[m
+[32m+[m[32m            {/* Modal Header */}[m
+[32m+[m[32m            <div className="flex items-center gap-3 border-b border-slate-100 pb-3">[m
+[32m+[m[32m              <div className="relative w-14 h-14 bg-slate-50 rounded-2xl overflow-hidden shrink-0 border border-slate-200">[m
+[32m+[m[32m                <Image[m
+[32m+[m[32m                  src={detailModalItem.image}[m
+[32m+[m[32m                  alt={detailModalItem.name}[m
+[32m+[m[32m                  fill[m
+[32m+[m[32m                  sizes="64px"[m
+[32m+[m[32m                  className="object-contain p-1"[m
+[32m+[m[32m                />[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m              <div>[m
+[32m+[m[32m                <h3 className="font-extrabold text-base text-slate-900 leading-snug">[m
+[32m+[m[32m                  {detailModalItem.name}[m
+[32m+[m[32m                </h3>[m
+[32m+[m[32m                <span className="text-[11px] font-bold text-amber font-arabic">[m
+[32m+[m[32m                  {detailModalItem.unitType === 'piece' ? '🟢 فردي / قطعة' : '📦 علبة / جملة'}[m
+[32m+[m[32m                </span>[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m            </div>[m
+[32m+[m
+[32m+[m[32m            {/* Details Breakdown */}[m
+[32m+[m[32m            <div className="space-y-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200/80">[m
+[32m+[m[32m              <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">[m
+[32m+[m[32m                <span className="text-slate-500 font-bold font-arabic">سعر الوحدة:</span>[m
+[32m+[m[32m                <span className="font-black text-slate-800 font-numbers text-sm">{detailModalItem.price} ج.م</span>[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div className="flex justify-between items-center pb-2 border-b border-slate-200/60">[m
+[32m+[m[32m                <span className="text-slate-500 font-bold font-arabic">الكمية المطلوبة:</span>[m
+[32m+[m[32m                <span className="font-black text-amber-900 font-numbers text-sm">{detailModalItem.qty} {detailModalItem.unitType === 'piece' ? 'قطعة' : 'علبة'}</span>[m
+[32m+[m[32m              </div>[m
+[32m+[m
+[32m+[m[32m              <div className="flex justify-between items-center pt-1 font-arabic">[m
+[32m+[m[32m                <span className="text-slate-700 font-extrabold">الإجمالي لهذا العنصر:</span>[m
+[32m+[m[32m                <span className="font-black text-amber text-base font-numbers">[m
+[32m+[m[32m                  {(detailModalItem.price * detailModalItem.qty).toFixed(2)} ج.م[m
+[32m+[m[32m                </span>[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m            </div>[m
+[32m+[m
+[32m+[m[32m            {/* Colors Breakdown if present */}[m
+[32m+[m[32m            {detailModalItem.colors && detailModalItem.colors.length > 0 && ([m
+[32m+[m[32m              <div className="space-y-2">[m
+[32m+[m[32m                <span className="block text-xs font-extrabold text-slate-800 font-arabic">🎨 الألوان والكميات التفصيلية:</span>[m
+[32m+[m[32m                <div className="flex flex-wrap gap-1.5 p-3 bg-amber/10 border border-amber/30 rounded-xl">[m
+[32m+[m[32m                  {Array.from(new Set(detailModalItem.colors)).map((c: any, idx: number) => {[m
+[32m+[m[32m                    const count = detailModalItem.colors.filter((x: any) => x === c).length;[m
+[32m+[m[32m                    return ([m
+[32m+[m[32m                      <span key={idx} className="text-xs bg-white text-amber-900 font-bold px-2.5 py-1 rounded-lg border border-amber/30 font-arabic shadow-2xs">[m
+[32m+[m[32m                        {c}: <strong className="text-amber font-numbers font-black">{count}</strong> قطعة[m
+[32m+[m[32m                      </span>[m
+[32m+[m[32m                    );[m
+[32m+[m[32m                  })}[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m            )}[m
+[32m+[m
+[32m+[m[32m            {/* Box items breakdown if customized box */}[m
+[32m+[m[32m            {detailModalItem.type === 'box' && detailModalItem.customItems && ([m
+[32m+[m[32m              <div className="space-y-2">[m
+[32m+[m[32m                <span className="block text-xs font-extrabold text-slate-800 font-arabic">📦 المحتويات داخل هذه الباقة:</span>[m
+[32m+[m[32m                <div className="max-h-36 overflow-y-auto space-y-1.5 p-3 bg-slate-50 rounded-xl border border-slate-200">[m
+[32m+[m[32m                  {detailModalItem.customItems.map((cItem: any, cIdx: number) => ([m
+[32m+[m[32m                    <div key={cIdx} className="flex justify-between text-xs font-bold text-slate-700">[m
+[32m+[m[32m                      <span>{cItem.name}</span>[m
+[32m+[m[32m                      <span className="text-amber font-numbers">×{cItem.qty}</span>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                  ))}[m
+[32m+[m[32m                </div>[m
+[32m+[m[32m              </div>[m
+[32m+[m[32m            )}[m
+[32m+[m
+[32m+[m[32m            {/* Modal Actions */}[m
+[32m+[m[32m            <div className="pt-2">[m
+[32m+[m[32m              <button[m
+[32m+[m[32m                type="button"[m
+[32m+[m[32m                onClick={() => setDetailModalItem(null)}[m
+[32m+[m[32m                className="w-full py-3 bg-amber hover:bg-amber-deep text-white font-black text-xs rounded-xl shadow-md transition-all font-arabic"[m
+[32m+[m[32m              >[m
+[32m+[m[32m                إغلاق النافذة ✖[m
+[32m+[m[32m              </button>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m          </div>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m      )}[m
+     </div>[m
+   );[m
+ }[m
+[1mdiff --git a/app/products/[id]/page.tsx b/app/products/[id]/page.tsx[m
+[1mindex 0e04af6..af7681f 100644[m
+[1m--- a/app/products/[id]/page.tsx[m
+[1m+++ b/app/products/[id]/page.tsx[m
+[36m@@ -4,7 +4,7 @@[m [mimport ProductClientPage from './product-client-page';[m
+ import ProductCard from '@/components/store/product-card';[m
+ import { ArrowLeft } from 'lucide-react';[m
+ import Link from 'next/link';[m
+[31m-import { Suspense } from 'react';[m
+[32m+[m[32mimport { Suspense, cache } from 'react';[m
+ import { getMockData } from '@/lib/mockData';[m
+ [m
+ export const revalidate = 10;[m
+[36m@@ -15,7 +15,7 @@[m [minterface ProductDetailPageProps {[m
+   };[m
+ }[m
+ [m
+[31m-async function getProductData(id: string) {[m
+[32m+[m[32mconst getProductData = cache(async (id: string) => {[m
+   try {[m
+     let product: any = null;[m
+ [m
+[1mdiff --git a/app/products/[id]/product-client-page.tsx b/app/products/[id]/product-client-page.tsx[m
+[1mindex 7a3787c..d81b21e 100644[m
+[1m--- a/app/products/[id]/product-client-page.tsx[m
+[1m+++ b/app/products/[id]/product-client-page.tsx[m
+[36m@@ -17,27 +17,8 @@[m [mexport default function ProductClientPage({ id }: ProductClientPageProps) {[m
+   const [notFound, setNotFound] = useState(false);[m
+ [m
+   useEffect(() => {[m
+[31m-    async function loadProduct() {[m
+[31m-      setLoading(true);[m
+[31m-[m
+[31m-      // 1. Try Supabase first[m
+[31m-      try {[m
+[31m-        const { data, error } = await supabase[m
+[31m-          .from('products')[m
+[31m-          .select('*, categories(id, name)')[m
+[31m-          .eq('id', id)[m
+[31m-          .single();[m
+[31m-[m
+[31m-        if (!error && data) {[m
+[31m-          setProduct(data);[m
+[31m-          setLoading(false);[m
+[31m-          return;[m
+[31m-        }[m
+[31m-      } catch (e) {[m
+[31m-        console.warn('Supabase product fetch failed, trying local:', e);[m
+[31m-      }[m
+[31m-[m
+[31m-      // 2. Fallback: localStorage[m
+[32m+[m[32m    function loadProduct() {[m
+[32m+[m[32m      // 1. Instant check: localStorage[m
+       if (typeof window !== 'undefined') {[m
+         try {[m
+           const stored = localStorage.getItem('kh_products');[m
+[36m@@ -45,7 +26,6 @@[m [mexport default function ProductClientPage({ id }: ProductClientPageProps) {[m
+             const localProducts = JSON.parse(stored);[m
+             const found = localProducts.find((p: any) => p.id === id);[m
+             if (found) {[m
+[31m-              // Try to get category name[m
+               let catName = 'أدوات مكتبية';[m
+               try {[m
+                 const catStored = localStorage.getItem('kh_categories');[m
+[36m@@ -69,7 +49,7 @@[m [mexport default function ProductClientPage({ id }: ProductClientPageProps) {[m
+         }[m
+       }[m
+ [m
+[31m-      // 3. Fallback: getMockData (server-side mock)[m
+[32m+[m[32m      // 2. Instant check: getMockData[m
+       const mockProducts = getMockData.products();[m
+       const mockFound = mockProducts.find((p: any) => p.id === id);[m
+       if (mockFound) {[m
+[36m@@ -83,9 +63,27 @@[m [mexport default function ProductClientPage({ id }: ProductClientPageProps) {[m
+         return;[m
+       }[m
+ [m
+[31m-      // Not found anywhere[m
+[31m-      setNotFound(true);[m
+[31m-      setLoading(false);[m
+[32m+[m[32m      // 3. Supabase fallback query if not in local[m
+[32m+[m[32m      (async () => {[m
+[32m+[m[32m        try {[m
+[32m+[m[32m          const { data, error } = await supabase[m
+[32m+[m[32m            .from('products')[m
+[32m+[m[32m            .select('*, categories(id, name)')[m
+[32m+[m[32m            .eq('id', id)[m
+[32m+[m[32m            .single();[m
+[32m+[m
+[32m+[m[32m          if (!error && data) {[m
+[32m+[m[32m            setProduct(data);[m
+[32m+[m[32m            setLoading(false);[m
+[32m+[m[32m            return;[m
+[32m+[m[32m          }[m
+[32m+[m[32m        } catch (e) {[m
+[32m+[m[32m          console.warn('Supabase product fetch failed:', e);[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        setNotFound(true);[m
+[32m+[m[32m        setLoading(false);[m
+[32m+[m[32m      })();[m
+     }[m
+ [m
+     loadProduct();[m
+[1mdiff --git a/app/products/[id]/product-detail-client.tsx b/app/products/[id]/product-detail-client.tsx[m
+[1mindex d2d69bf..518e47d 100644[m
+[1m--- a/app/products/[id]/product-detail-client.tsx[m
+[1m+++ b/app/products/[id]/product-detail-client.tsx[m
+[36m@@ -70,10 +70,8 @@[m [mexport default function ProductDetailClient({ product }: ProductDetailClientProp[m
+   const [activeImage, setActiveImage] = useState(images[0]);[m
+   // unitType: للمنتجات بدون مقاسات (price_unit / price_box)[m
+   const [unitType, setUnitType] = useState<'piece' | 'box'>('piece');[m
+[31m-  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups (تلقائياً أول مقاس إذا وجد)[m
+[31m-  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(() => {[m
+[31m-    return sizeGroups.length > 0 ? sizeGroups[0].name : null;[m
+[31m-  });[m
+[32m+[m[32m  // selectedSizeGroup: اسم المجموعة المختارة من sizeGroups (تلقائياً المقاس الأساسي null)[m
+[32m+[m[32m  const [selectedSizeGroup, setSelectedSizeGroup] = useState<string | null>(null);[m
+   // sizeUnitType: هل المستخدم اختار فردي أم علبة داخل المقاس؟[m
+   const [sizeUnitType, setSizeUnitType] = useState<'unit' | 'box'>('unit');[m
+   [m
+[36m@@ -112,6 +110,13 @@[m [mexport default function ProductDetailClient({ product }: ProductDetailClientProp[m
+   const [newReviewText, setNewReviewText] = useState('');[m
+   const [submittingReview, setSubmittingReview] = useState(false);[m
+ [m
+[32m+[m[32m  useEffect(() => {[m
+[32m+[m[32m    setSelectedSizeGroup(null);[m
+[32m+[m[32m    setSizeUnitType('unit');[m
+[32m+[m[32m    setUnitType('piece');[m
+[32m+[m[32m    setManualQty(1);[m
+[32m+[m[32m  }, [product.id]);[m
+[32m+[m
+   // ---- حساب السعر الحالي ----[m
+   const activeSizeGroup = sizeGroups.find(g => g.name === selectedSizeGroup);[m
+   const currentPrice = (() => {[m
+[36m@@ -486,15 +491,17 @@[m [mexport default function ProductDetailClient({ product }: ProductDetailClientProp[m
+     setValidationError(null);[m
+ [m
+     itemsToAdd.forEach(item => {[m
+[32m+[m[32m      const variantId = `${product.id}_${item.key}`;[m
+       addItem({[m
+[32m+[m[32m        id: variantId,[m
+         type: 'product',[m
+         productId: product.id,[m
+[31m-        name: item.key === '__base__' ? product.name : `${product.name} (${item.name})`,[m
+[32m+[m[32m        name: `${product.name} (${item.name})`,[m
+         price: item.unitPrice,[m
+         qty: item.qty,[m
+         image: images[0],[m
+[31m-        unitType: item.key === '__base__' ? unitType : sizeUnitType,[m
+[31m-        selectedSize: item.key === '__base__' ? undefined : item.name,[m
+[32m+[m[32m        unitType: item.unitType === 'piece' || item.unitType === 'unit' ? 'piece' : 'box',[m
+[32m+[m[32m        selectedSize: item.name,[m
+         colors: item.colors.length > 0 ? item.colors : undefined,[m
+       } as any);[m
+ [m
+[36m@@ -519,15 +526,17 @@[m [mexport default function ProductDetailClient({ product }: ProductDetailClientProp[m
+     setValidationError(null);[m
+ [m
+     itemsToAdd.forEach(item => {[m
+[32m+[m[32m      const variantId = `${product.id}_${item.key}`;[m
+       addItem({[m
+[32m+[m[32m        id: variantId,[m
+         type: 'product',[m
+         productId: product.id,[m
+[31m-        name: item.key === '__base__' ? product.name : `${product.name} (${item.name})`,[m
+[32m+[m[32m        name: `${product.name} (${item.name})`,[m
+         price: item.unitPrice,[m
+         qty: item.qty,[m
+         image: images[0],[m
+[31m-        unitType: item.key === '__base__' ? unitType : sizeUnitType,[m
+[31m-        selectedSize: item.key === '__base__' ? undefined : item.name,[m
+[32m+[m[32m        unitType: item.unitType === 'piece' || item.unitType === 'unit' ? 'piece' : 'box',[m
+[32m+[m[32m        selectedSize: item.name,[m
+         colors: item.colors.length > 0 ? item.colors : undefined,[m
+       } as any);[m
+ [m
+[36m@@ -1065,7 +1074,7 @@[m [mexport default function ProductDetailClient({ product }: ProductDetailClientProp[m
+                         ) : ([m
+                           <>[m
+                             <ShoppingCart size={16} />[m
+[31m-                            <span>أضيفي للسلة</span>[m
+[32m+[m[32m                            <span>أضف للسلة</span>[m
+                           </>[m
+                         )}[m
+                       </button>[m
+[36m@@ -1078,7 +1087,7 @@[m [mexport default function ProductDetailClient({ product }: ProductDetailClientProp[m
+                       className="w-full py-3.5 px-6 rounded-full font-black text-sm sm:text-base flex items-center justify-center gap-2 bg-[#C87D53] hover:bg-[#B56D45] text-white shadow-md hover:scale-[1.01] active:scale-[0.98] transition-all duration-200"[m
+                     >[m
+                       <Zap size={18} className="fill-white" />[m
+[31m-                      <span>شراء سريع (اقفزي للطلب الآن) — {grandTotal.toFixed(2)} ج.م</span>[m
+[32m+[m[32m                      <span>شراء سريع (اطلب الآن) — {grandTotal.toFixed(2)} ج.م</span>[m
+                     </button>[m
+                   </div>[m
+                 )}[m
+[1mdiff --git a/components/store/header.tsx b/components/store/header.tsx[m
+[1mindex 3debdad..eb0be20 100644[m
+[1m--- a/components/store/header.tsx[m
+[1m+++ b/components/store/header.tsx[m
+[36m@@ -138,53 +138,69 @@[m [mexport default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea[m
+       )}[m
+ [m
+       <header[m
+[31m-        className={`sticky top-0 left-0 right-0 z-40 transition-all duration-200 border-b border-paper-line bg-white ${[m
+[32m+[m[32m        className={`relative w-full z-45 transition-all duration-200 border-b border-paper-line bg-white ${[m
+           scrolled[m
+[31m-            ? 'shadow-brand py-2 sm:py-3'[m
+[31m-            : 'py-3.5 sm:py-5'[m
+[32m+[m[32m            ? 'shadow-brand py-1'[m
+[32m+[m[32m            : 'py-1.5 sm:py-2'[m
+         }`}[m
+       >[m
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12">[m
+[31m-          <div className="flex items-center justify-between md:justify-between w-full">[m
+[32m+[m[32m          <div className="flex items-center justify-between w-full">[m
+             [m
+             {/* Mobile Hamburger Trigger (Far Right on mobile, order-1) */}[m
+[31m-            <div className="flex md:hidden w-12 justify-start order-1">[m
+[32m+[m[32m            <div className="flex md:hidden w-10 justify-start order-1 items-center">[m
+               <button[m
+                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}[m
+[31m-                className="p-2 rounded-full hover:bg-paper text-ink/80 border border-paper-line bg-white shadow-sm transition-all active:scale-95"[m
+[32m+[m[32m                className="p-1.5 rounded-full hover:bg-paper text-ink/80 border border-paper-line bg-white shadow-sm transition-all active:scale-95"[m
+                 aria-label="قائمة التنقل"[m
+               >[m
+[31m-                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}[m
+[32m+[m[32m                {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}[m
+               </button>[m
+             </div>[m
+ [m
+[31m-            {/* Logo Section (Larger logo and prominent brand title) */}[m
+[31m-            <div className="flex-grow md:flex-grow-0 flex justify-center md:justify-start order-2 md:order-1">[m
+[31m-              <Link href="/" prefetch={true} className="flex items-center gap-3 md:gap-4 group">[m
+[32m+[m[32m            {/* Logo Section (Compact logo and sleek brand title, vertically centered) */}[m
+[32m+[m[32m            <div className="flex-grow md:flex-grow-0 flex justify-center md:justify-start order-2 md:order-1 items-center">[m
+[32m+[m[32m              <Link href="/" prefetch={true} className="flex items-center gap-2 sm:gap-2.5 group">[m
+                 {currentLogo && currentLogo !== 'null' && currentLogo !== '' ? ([m
+                   <img[m
+                     src={currentLogo}[m
+                     alt={currentName}[m
+[31m-                    className="h-14 w-auto max-w-[170px] sm:h-20 sm:max-w-[240px] md:h-24 md:max-w-[280px] object-contain drop-shadow-sm transition-transform duration-200 group-hover:scale-[1.02]"[m
+[32m+[m[32m                    className={`w-auto object-contain drop-shadow-sm transition-all duration-200 group-hover:scale-[1.02] ${[m
+[32m+[m[32m                      scrolled[m
+[32m+[m[32m                        ? 'h-6 sm:h-8'[m
+[32m+[m[32m                        : 'h-8 sm:h-10 md:h-11'[m
+[32m+[m[32m                    }`}[m
+                   />[m
+                 ) : ([m
+[31m-                  <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black text-2xl sm:text-4xl md:text-5xl shadow-md transform -rotate-2 group-hover:rotate-0 transition-transform duration-300">[m
+[32m+[m[32m                  <div className={`rounded-xl bg-gradient-to-br from-amber via-amber-deep to-ink-soft flex items-center justify-center text-white font-black shadow-md transform -rotate-2 group-hover:rotate-0 transition-all duration-300 ${[m
+[32m+[m[32m                    scrolled[m
+[32m+[m[32m                      ? 'w-7 h-7 text-base'[m
+[32m+[m[32m                      : 'w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 text-lg sm:text-xl md:text-2xl'[m
+[32m+[m[32m                  }`}>[m
+                     خ[m
+                   </div>[m
+                 )}[m
+[31m-                <div className="flex flex-col text-right font-arabic">[m
+[31m-                  <span className="text-lg sm:text-2xl md:text-3xl font-black text-ink-soft leading-none tracking-tight whitespace-nowrap">[m
+[32m+[m[32m                <div className="flex flex-col text-right font-arabic justify-center">[m
+[32m+[m[32m                  <span className={`font-black text-ink-soft leading-none tracking-tight whitespace-nowrap transition-all ${[m
+[32m+[m[32m                    scrolled[m
+[32m+[m[32m                      ? 'text-xs sm:text-sm'[m
+[32m+[m[32m                      : 'text-sm sm:text-base md:text-lg'[m
+[32m+[m[32m                  }`}>[m
+                     مكتبة الخضري[m
+                   </span>[m
+[31m-                  <span className="text-[10px] sm:text-xs md:text-sm font-black text-amber font-english tracking-widest leading-none mt-1">[m
+[32m+[m[32m                  <span className={`font-black text-amber font-english tracking-widest leading-none mt-0.5 transition-all ${[m
+[32m+[m[32m                    scrolled[m
+[32m+[m[32m                      ? 'text-[7px] sm:text-[8px]'[m
+[32m+[m[32m                      : 'text-[8px] sm:text-[9px] md:text-[10px]'[m
+[32m+[m[32m                  }`}>[m
+                     AL-KHOUDARY[m
+                   </span>[m
+                 </div>[m
+               </Link>[m
+             </div>[m
+ [m
+[31m-            {/* Desktop Navigation (Fast prefetching & zero lag) */}[m
+[31m-            <nav className="hidden md:flex items-center gap-8 lg:gap-10 order-2">[m
+[32m+[m[32m            {/* Desktop Navigation (Fast prefetching, bold links, vertically centered) */}[m
+[32m+[m[32m            <nav className="hidden md:flex items-center gap-4 lg:gap-6 order-2 h-full">[m
+               {navLinks.map((link) => {[m
+                 const isActive =[m
+                   link.path === '/'[m
+[36m@@ -195,16 +211,16 @@[m [mexport default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea[m
+                     key={link.path}[m
+                     href={link.path}[m
+                     prefetch={true}[m
+[31m-                    className={`text-base lg:text-lg font-extrabold relative py-1.5 transition-all duration-150 active:scale-95 ${[m
+[32m+[m[32m                    className={`text-xs sm:text-sm lg:text-base font-bold relative py-1 transition-all duration-150 active:scale-95 ${[m
+                       isActive[m
+[31m-                        ? 'text-amber font-black'[m
+[32m+[m[32m                        ? 'text-amber font-bold'[m
+                         : 'text-slate-700 hover:text-amber'[m
+                     }`}[m
+                   >[m
+                     {link.name}[m
+                     {/* Scale expand gold border at bottom */}[m
+                     <span [m
+[31m-                      className={`absolute bottom-0 left-0 right-0 h-[3px] bg-amber rounded-full origin-center transition-transform duration-200 ${[m
+[32m+[m[32m                      className={`absolute bottom-0 left-0 right-0 h-[2px] bg-amber rounded-full origin-center transition-transform duration-200 ${[m
+                         isActive ? 'scale-x-100' : 'scale-x-0 hover:scale-x-100'[m
+                       }`}[m
+                     />[m
+[36m@@ -214,18 +230,18 @@[m [mexport default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea[m
+             </nav>[m
+ [m
+             {/* Action Area / Cart Trigger (Far Left on mobile, order-3) */}[m
+[31m-            <div className="flex items-center justify-end w-12 md:w-auto order-3 md:order-3">[m
+[32m+[m[32m            <div className="flex items-center justify-end w-10 md:w-auto order-3 md:order-3">[m
+               <Link[m
+                 href="/cart"[m
+                 prefetch={true}[m
+[31m-                className={`relative p-3 rounded-full hover:bg-paper text-ink/80 hover:text-ink-soft transition-all border border-paper-line shadow-sm bg-white active:scale-95 ${[m
+[32m+[m[32m                className={`relative p-2 rounded-full hover:bg-paper text-ink/80 hover:text-ink-soft transition-all border border-paper-line shadow-sm bg-white active:scale-95 ${[m
+                   animateCart ? 'animate-bounce shadow-glow scale-110 text-amber border-amber' : ''[m
+                 }`}[m
+                 aria-label="سلة التسوق"[m
+               >[m
+[31m-                <ShoppingBag size={22} />[m
+[32m+[m[32m                <ShoppingBag size={18} />[m
+                 {cartCount > 0 && ([m
+[31m-                  <span className="absolute -top-1.5 -right-1.5 bg-amber text-white text-xs font-black font-numbers rounded-full w-5.5 h-5.5 flex items-center justify-center border-2 border-white shadow-sm pulse-badge">[m
+[32m+[m[32m                  <span className="absolute -top-1.5 -right-1.5 bg-amber text-white text-[10px] font-black font-numbers rounded-full w-4.5 h-4.5 flex items-center justify-center border-2 border-white shadow-sm pulse-badge">[m
+                     {cartCount}[m
+                   </span>[m
+                 )}[m

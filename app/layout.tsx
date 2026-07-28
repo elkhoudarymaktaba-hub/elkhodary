@@ -5,6 +5,7 @@ import { supabase, cachedFetch } from '@/lib/supabase';
 import TrackingProvider from '@/components/store/tracking-provider';
 import Header from '@/components/store/header';
 import Footer from '@/components/store/footer';
+import SmoothScrollProvider from '@/components/store/smooth-scroll-provider';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -115,11 +116,13 @@ export default async function RootLayout({
           }}
         />
         <TrackingProvider pixels={pixels as any}>
-          <Header storeName={storeName} logoUrl={logoUrl} topRibbonText={topRibbonText} pages={pages} />
-          <main className="flex-grow">
-            {children}
-          </main>
-          <Footer storeName={storeName} />
+          <SmoothScrollProvider>
+            <Header storeName={storeName} logoUrl={logoUrl} topRibbonText={topRibbonText} pages={pages} />
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer storeName={storeName} />
+          </SmoothScrollProvider>
         </TrackingProvider>
       </body>
     </html>
