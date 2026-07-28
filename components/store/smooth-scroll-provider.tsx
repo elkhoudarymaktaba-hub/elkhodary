@@ -32,6 +32,9 @@ export default function SmoothScrollProvider({ children }: { children: React.Rea
             touchMultiplier: 1.8,
           });
 
+          // Expose globally to control scroll locking
+          (window as any).lenis = lenisInstance;
+
           // Connect with GSAP ScrollTrigger if present
           try {
             const gsapModule = await import('gsap').catch(() => null);

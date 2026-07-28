@@ -78,6 +78,26 @@ export default function CartPage() {
     : null;
 
   useEffect(() => {
+    if (activeModalGroup) {
+      document.body.style.overflow = 'hidden';
+      if (typeof window !== 'undefined' && (window as any).lenis) {
+        (window as any).lenis.stop();
+      }
+    } else {
+      document.body.style.overflow = '';
+      if (typeof window !== 'undefined' && (window as any).lenis) {
+        (window as any).lenis.start();
+      }
+    }
+    return () => {
+      document.body.style.overflow = '';
+      if (typeof window !== 'undefined' && (window as any).lenis) {
+        (window as any).lenis.start();
+      }
+    };
+  }, [activeModalGroup]);
+
+  useEffect(() => {
     if (detailModalGroup && !activeModalGroup) {
       setDetailModalGroup(null);
     }
@@ -536,7 +556,7 @@ export default function CartPage() {
             </div>
 
             {/* Subitems List */}
-            <div className="space-y-4 max-h-[45vh] overflow-y-auto pr-1 scrollbar-thin">
+            <div className="space-y-4 max-h-[45vh] overflow-y-auto pr-1 scrollbar-thin" data-lenis-prevent>
               {activeModalGroup.subItems.map((subItem) => {
                 const isBox = subItem.type === 'box';
                 return (
