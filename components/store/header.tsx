@@ -138,7 +138,7 @@ export default function Header({ storeName, logoUrl, topRibbonText, pages }: Hea
       )}
 
       <header
-        className={`sticky top-0 left-0 right-0 z-40 transition-all duration-200 border-b border-paper-line bg-white ${
+        className={`relative w-full z-40 transition-all duration-200 border-b border-paper-line bg-white ${
           scrolled
             ? 'shadow-brand py-2 sm:py-3'
             : 'py-3.5 sm:py-5'
