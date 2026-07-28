@@ -79,7 +79,7 @@ export default async function ProductsPage() {
   const pageSubtitle = heroBlock?.content?.subtitle || 'تصفح منتجاتنا الفردية بأسعار متميزة للقطعة والعلبة، وقم بفلترة المنتجات للوصول إلى ما تحتاجه دراستك سريعاً.';
 
   return (
-    <div className="bg-brand-bg/50 min-h-screen py-10 pt-32">
+    <div className="bg-brand-bg/50 min-h-screen py-10 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Page Header (Dynamic from Supabase page builder settings) */}

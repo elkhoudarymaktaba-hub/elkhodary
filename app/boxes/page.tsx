@@ -118,7 +118,7 @@ export default async function BoxesPage() {
   });
 
   return (
-    <div className="bg-paper-dark/30 min-h-screen py-12 pt-32">
+    <div className="bg-paper-dark/30 min-h-screen py-12 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Page Header (Dynamic from Supabase page builder settings) */}

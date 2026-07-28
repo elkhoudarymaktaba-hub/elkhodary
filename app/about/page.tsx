@@ -52,7 +52,7 @@ export default async function AboutPage() {
   const boxes = await getBoxes();
 
   return (
-    <div className="bg-paper-dark/30 min-h-screen py-16 pt-32">
+    <div className="bg-paper-dark/30 min-h-screen py-16 pt-20">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Card Wrapper */}

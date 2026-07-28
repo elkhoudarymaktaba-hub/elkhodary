@@ -88,7 +88,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="bg-paper-dark/30 min-h-screen py-16 pt-28">
+    <div className="bg-paper-dark/30 min-h-screen py-16 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Page Header */}
