@@ -1065,7 +1065,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                         ) : (
                           <>
                             <ShoppingCart size={16} />
-                            <span>أضيفي للسلة</span>
+                            <span>أضف للسلة</span>
                           </>
                         )}
                       </button>
@@ -1078,7 +1078,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                       className="w-full py-3.5 px-6 rounded-full font-black text-sm sm:text-base flex items-center justify-center gap-2 bg-[#C87D53] hover:bg-[#B56D45] text-white shadow-md hover:scale-[1.01] active:scale-[0.98] transition-all duration-200"
                     >
                       <Zap size={18} className="fill-white" />
-                      <span>شراء سريع (اقفزي للطلب الآن) — {grandTotal.toFixed(2)} ج.م</span>
+                      <span>شراء سريع (اطلب الآن) — {grandTotal.toFixed(2)} ج.م</span>
                     </button>
                   </div>
                 )}
