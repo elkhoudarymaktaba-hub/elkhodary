@@ -77,8 +77,14 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   // sizeUnitType: هل المستخدم اختار فردي أم علبة داخل المقاس؟
   const [sizeUnitType, setSizeUnitType] = useState<'unit' | 'box'>('unit');
   
-  // ---- 🎨 تخزين ألوان كل مقاس بشكل منفصل ومحفوظ ----
-  const activeSizeKey = selectedSizeGroup || '__base__';
+  // ---- 🎨 تخزين ألوان كل مقاس ونوع شراء (فردي / علبة) بشكل منفصل ومستقل ----
+  const activeSizeKey = (() => {
+    if (selectedSizeGroup === null) {
+      return unitType === 'box' ? '__base___box' : '__base___unit';
+    }
+    return sizeUnitType === 'box' ? `${selectedSizeGroup}_box` : `${selectedSizeGroup}_unit`;
+  })();
+
   const [sizeColorsMap, setSizeColorsMap] = useState<Record<string, string[]>>({});
   const [isColorDrawerOpen, setIsColorDrawerOpen] = useState<boolean>(false);
   
@@ -118,7 +124,6 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   })();
 
   // ---- 🛒 كارد ملخص الطلبات والمقاسات المباشر (Live Itemized Order Summary) ----
-  // تعرض فقط ما قام المستخدم باختياره فعلياً ورغب بإضافته
   const activeOrderItems = (() => {
     const items: {
       key: string;
@@ -127,41 +132,67 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       colors: string[];
       qty: number;
       total: number;
+      unitType: 'piece' | 'box' | 'unit';
     }[] = [];
 
-    // 1. فحص المقاسات الخاصة التي تم تحديد ألوان لها
+    // 1. فحص المنتج الأساسي (فردي)
+    const baseUnitColors = sizeColorsMap['__base___unit'] || [];
+    if (baseUnitColors.length > 0) {
+      items.push({
+        key: '__base___unit',
+        name: `${product.name} (فردي)`,
+        unitPrice: product.price_unit,
+        colors: baseUnitColors,
+        qty: baseUnitColors.length,
+        total: product.price_unit * baseUnitColors.length,
+        unitType: 'piece',
+      });
+    }
+
+    // 2. فحص المنتج الأساسي (علبة)
+    const baseBoxColors = sizeColorsMap['__base___box'] || [];
+    if (baseBoxColors.length > 0 && product.price_box) {
+      items.push({
+        key: '__base___box',
+        name: `${product.name} (علبة)`,
+        unitPrice: product.price_box,
+        colors: baseBoxColors,
+        qty: baseBoxColors.length,
+        total: product.price_box * baseBoxColors.length,
+        unitType: 'box',
+      });
+    }
+
+    // 3. فحص المقاسات الخاصة (فردي وعلبة لكل مقاس)
     sizeGroups.forEach(group => {
-      const groupColors = sizeColorsMap[group.name] || [];
-      if (groupColors.length > 0) {
-        const price = (sizeUnitType === 'box' && group.boxPrice !== undefined)
-          ? group.boxPrice
-          : (group.unitPrice ?? group.boxPrice ?? product.price_unit);
-        
+      // فردي للمقاس
+      const groupUnitColors = sizeColorsMap[`${group.name}_unit`] || [];
+      if (groupUnitColors.length > 0 && group.unitPrice !== undefined) {
         items.push({
-          key: group.name,
-          name: group.name,
-          unitPrice: price,
-          colors: groupColors,
-          qty: groupColors.length,
-          total: price * groupColors.length,
+          key: `${group.name}_unit`,
+          name: `${group.name} (فردي)`,
+          unitPrice: group.unitPrice,
+          colors: groupUnitColors,
+          qty: groupUnitColors.length,
+          total: group.unitPrice * groupUnitColors.length,
+          unitType: 'unit',
+        });
+      }
+
+      // علبة للمقاس
+      const groupBoxColors = sizeColorsMap[`${group.name}_box`] || [];
+      if (groupBoxColors.length > 0 && group.boxPrice !== undefined) {
+        items.push({
+          key: `${group.name}_box`,
+          name: `${group.name} (علبة)`,
+          unitPrice: group.boxPrice,
+          colors: groupBoxColors,
+          qty: groupBoxColors.length,
+          total: group.boxPrice * groupBoxColors.length,
+          unitType: 'box',
         });
       }
     });
-
-    // 2. فحص السعر الأساسي للمنتج إذا تم تحديد ألوان له
-    const baseColors = sizeColorsMap['__base__'] || [];
-    const basePrice = unitType === 'piece' ? product.price_unit : (product.price_box || product.price_unit);
-
-    if (baseColors.length > 0) {
-      items.push({
-        key: '__base__',
-        name: 'المقاس الأساسي',
-        unitPrice: basePrice,
-        colors: baseColors,
-        qty: baseColors.length,
-        total: basePrice * baseColors.length,
-      });
-    }
 
     return items;
   })();
@@ -664,10 +695,10 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
                 {/* Chips الرئيسية (المقاس الأساسي + المقاسات الخاصة) */}
                 <div className="flex flex-wrap gap-2.5">
-                  {/* زر المقاس الأساسي */}
+                  {/* زر المقاس الأساسي (ياخذ اسم المنتج مباشرة) */}
                   {(() => {
                     const isBaseActive = selectedSizeGroup === null;
-                    const baseColorsCount = (sizeColorsMap['__base__'] || []).length;
+                    const baseColorsCount = (sizeColorsMap['__base___unit'] || []).length + (sizeColorsMap['__base___box'] || []).length;
                     return (
                       <button
                         type="button"
@@ -681,7 +712,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                             : 'bg-white border-slate-200 text-slate-800 hover:border-amber/50 hover:bg-amber-50/40'
                         }`}
                       >
-                        <span>المقاس الأساسي</span>
+                        <span>{product.name}</span>
                         <span className={`text-[11px] font-numbers font-black px-2 py-0.5 rounded-lg ${
                           isBaseActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-700'
                         }`}>
