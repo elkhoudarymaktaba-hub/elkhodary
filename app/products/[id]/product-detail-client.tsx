@@ -600,83 +600,104 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
               </div>
             )}
 
-            {/* Colors Selector: كل لون تنقر عليه = قطعة واحدة */}
+            {/* Colors Selector: زر زيادة (+)، ناقص (-)، ورز حذف لكل لون */}
             {colors.length > 0 && (
-              <div className="space-y-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-right mt-4 animate-fade-in" dir="rtl">
+              <div className="space-y-3 p-4 bg-slate-50 border border-slate-200/80 rounded-2xl text-right mt-4 animate-fade-in" dir="rtl">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400 font-arabic">
+                  <span className="text-[11px] font-bold text-amber-700 font-arabic bg-amber/10 px-2.5 py-1 rounded-full border border-amber/20">
                     {selectedColors.length > 0
-                      ? `${selectedColors.length} قطعة مختارة`
-                      : 'انقر على اللون لإضافة قطعة'}
+                      ? `إجمالي القطع المختارة: ${selectedColors.length}`
+                      : 'حدد الكمية المطلوبة من كل لون'}
                   </span>
-                  <span className="block text-xs font-bold text-ink-soft font-arabic">اختر الألوان المطلوبة:</span>
+                  <span className="block text-xs font-extrabold text-ink font-arabic">تحديد الألوان المطلوبة:</span>
                 </div>
 
-                {/* أزرار الألوان */}
-                <div className="flex flex-wrap gap-2 justify-end">
+                {/* أزرار التحكم في الألوان (+ / - / حذف) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                   {colors.map(color => {
                     const count = selectedColors.filter(c => c === color).length;
                     const isSelected = count > 0;
                     return (
-                      <button
+                      <div
                         key={color}
-                        type="button"
-                        onClick={() => {
-                          // كل ضغطة تضيف قطعة من هذا اللون
-                          setSelectedColors(prev => [...prev, color]);
-                        }}
-                        onContextMenu={(e) => {
-                          // كليك يمين يحذف آخر قطعة من هذا اللون
-                          e.preventDefault();
-                          setSelectedColors(prev => {
-                            const idx = [...prev].lastIndexOf(color);
-                            if (idx === -1) return prev;
-                            const next = [...prev];
-                            next.splice(idx, 1);
-                            return next;
-                          });
-                        }}
-                        className={`px-4 py-2 rounded-full border-2 text-sm font-bold font-arabic transition-all relative ${
+                        className={`flex items-center justify-between p-2.5 rounded-xl border-2 transition-all ${
                           isSelected
-                            ? 'bg-amber border-amber text-white shadow-md scale-[1.05]'
-                            : 'bg-white border-slate-200 text-slate-700 hover:border-amber/50 hover:bg-amber/5'
+                            ? 'bg-white border-amber shadow-xs'
+                            : 'bg-white/80 border-slate-200 hover:border-slate-300'
                         }`}
                       >
-                        {color}
-                        {count > 1 && (
-                          <span className="absolute -top-2 -right-2 bg-primary text-white text-[10px] font-black w-5 h-5 rounded-full flex items-center justify-center">
+                        {/* اسم اللون وتصفيات */}
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs text-ink font-arabic">{color}</span>
+                          {isSelected && (
+                            <button
+                              type="button"
+                              onClick={() => setSelectedColors(prev => prev.filter(c => c !== color))}
+                              className="text-[10px] text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-1.5 py-0.5 rounded-md font-arabic font-bold transition-colors"
+                              title="حذف هذا اللون بالكامل"
+                            >
+                              حذف
+                            </button>
+                          )}
+                        </div>
+
+                        {/* عداد + و - */}
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            disabled={count === 0}
+                            onClick={() => {
+                              setSelectedColors(prev => {
+                                const idx = [...prev].lastIndexOf(color);
+                                if (idx === -1) return prev;
+                                const next = [...prev];
+                                next.splice(idx, 1);
+                                return next;
+                              });
+                            }}
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
+                              count > 0
+                                ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 active:scale-95'
+                                : 'bg-slate-50 text-slate-300 cursor-not-allowed'
+                            }`}
+                          >
+                            -
+                          </button>
+
+                          <span className={`w-7 text-center font-black text-xs font-numbers ${
+                            count > 0 ? 'text-amber-600' : 'text-slate-400'
+                          }`}>
                             {count}
                           </span>
-                        )}
-                      </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setSelectedColors(prev => [...prev, color])}
+                            className="w-7 h-7 rounded-lg bg-amber hover:bg-amber-deep text-white font-bold text-xs flex items-center justify-center shadow-xs active:scale-95 transition-all"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
 
-                {/* ملخص الاختيار */}
+                {/* زر تصفير الكل */}
                 {selectedColors.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 pt-2 border-t border-dashed border-slate-200">
-                    {selectedColors.map((c, i) => (
-                      <span
-                        key={i}
-                        className="inline-flex items-center gap-1 bg-amber/15 border border-amber/30 text-amber-700 px-2 py-0.5 rounded-full text-[11px] font-bold font-arabic"
-                      >
-                        {c}
-                        <button
-                          type="button"
-                          onClick={() => setSelectedColors(prev => prev.filter((_, j) => j !== i))}
-                          className="text-amber-600 hover:text-red-500 font-black text-xs leading-none"
-                        >
-                          ×
-                        </button>
-                      </span>
-                    ))}
+                  <div className="flex justify-between items-center pt-2 border-t border-dashed border-slate-200 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedColors([])}
+                      className="text-[11px] text-red-600 hover:text-red-700 font-bold font-arabic flex items-center gap-1 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-colors"
+                    >
+                      <span>🗑️ تصفير كل الألوان</span>
+                    </button>
+                    <span className="text-[10px] text-slate-400 font-arabic">
+                      إجمالي العدد: <strong className="text-amber font-numbers text-xs">{selectedColors.length}</strong> قطعة
+                    </span>
                   </div>
                 )}
-
-                <p className="text-[10px] text-slate-400 font-arabic text-right">
-                  💡 اضغط على اللون لإضافة قطعة — اضغط × لإزالة قطعة
-                </p>
               </div>
             )}
           </div>
