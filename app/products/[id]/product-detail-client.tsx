@@ -91,10 +91,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
     });
   };
 
-  // quantity: إذا فيه ألوان، الكمية = عدد الألوان المختارة (min 1)؛ وإلا يدوي
+  // quantity: إذا فيه ألوان، الكمية = عدد الألوان المختارة؛ وإلا يدوي
   const [manualQty, setManualQty] = useState(1);
-  const quantity = colors.length > 0 ? Math.max(1, selectedColors.length) : manualQty;
+  const quantity = colors.length > 0 ? selectedColors.length : manualQty;
   const [added, setAdded] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [resolvedCategory, setResolvedCategory] = useState(product.categories?.name || 'أدوات مدرسية');
   const addItem = useCartStore((state) => state.addItem);
   const router = useRouter();
@@ -117,6 +118,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   })();
 
   // ---- 🛒 كارد ملخص الطلبات والمقاسات المباشر (Live Itemized Order Summary) ----
+  // تعرض فقط ما قام المستخدم باختياره فعلياً ورغب بإضافته
   const activeOrderItems = (() => {
     const items: {
       key: string;
@@ -127,7 +129,7 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       total: number;
     }[] = [];
 
-    // 1. فحص المقاسات الخاصة التي تم تحديد ألوان أو كمية لها
+    // 1. فحص المقاسات الخاصة التي تم تحديد ألوان لها
     sizeGroups.forEach(group => {
       const groupColors = sizeColorsMap[group.name] || [];
       if (groupColors.length > 0) {
@@ -146,41 +148,58 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       }
     });
 
-    // 2. فحص السعر الأساسي للمنتج
+    // 2. فحص السعر الأساسي للمنتج إذا تم تحديد ألوان له
     const baseColors = sizeColorsMap['__base__'] || [];
     const basePrice = unitType === 'piece' ? product.price_unit : (product.price_box || product.price_unit);
-    const baseQty = colors.length > 0 ? baseColors.length : (selectedSizeGroup === null ? manualQty : 0);
 
-    if (baseQty > 0 && (baseColors.length > 0 || (colors.length === 0 && selectedSizeGroup === null))) {
+    if (baseColors.length > 0) {
       items.push({
         key: '__base__',
         name: 'المقاس الأساسي',
         unitPrice: basePrice,
         colors: baseColors,
-        qty: baseQty,
-        total: basePrice * baseQty,
-      });
-    }
-
-    // 3. حالة افتراضية إذا لم يتم اختيار ألوان
-    if (items.length === 0) {
-      items.push({
-        key: activeSizeKey,
-        name: activeSizeGroup ? activeSizeGroup.name : 'المقاس الأساسي',
-        unitPrice: currentPrice,
-        colors: selectedColors,
-        qty: quantity,
-        total: currentPrice * quantity,
+        qty: baseColors.length,
+        total: basePrice * baseColors.length,
       });
     }
 
     return items;
   })();
 
-  const grandTotal = activeOrderItems.reduce((sum, item) => sum + item.total, 0);
+  // حساب الإجمالي المباشر: إذا وجد ملخص يتم حسابه، وإلا حسب السعر والكمية اليدوية للمنتج بدون خيارات ألوان
+  const grandTotal = activeOrderItems.length > 0
+    ? activeOrderItems.reduce((sum, item) => sum + item.total, 0)
+    : (colors.length > 0 ? 0 : currentPrice * manualQty);
+
+  // دالة تحضير الأصناف المضافة للسلة
+  const getItemsToAdd = () => {
+    if (activeOrderItems.length > 0) {
+      return activeOrderItems.filter(i => i.qty > 0);
+    }
+    // إذا لم تكن هناك خيارات ألوان للمنتج أصلاً
+    if (colors.length === 0 && manualQty > 0) {
+      return [{
+        key: activeSizeKey,
+        name: activeSizeGroup ? activeSizeGroup.name : 'المقاس الأساسي',
+        unitPrice: currentPrice,
+        colors: [],
+        qty: manualQty,
+        total: currentPrice * manualQty,
+      }];
+    }
+    return [];
+  };
 
   const handleAddToBox = () => {
     if (!boxId || typeof window === 'undefined') return;
+
+    const itemsToAdd = getItemsToAdd();
+    if (itemsToAdd.length === 0) {
+      setValidationError('برجاء تحديد الألوان والكميات المطلوبة أولاً');
+      setTimeout(() => setValidationError(null), 3000);
+      return;
+    }
+    setValidationError(null);
 
     const saved = localStorage.getItem(`kh_custom_box_${boxId}`);
     let items: any[] = [];
@@ -192,34 +211,28 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
       }
     }
 
-    const existing = items.find((item) => item.productId === product.id);
-    let updatedItems = [];
-    if (existing) {
-      updatedItems = items.map((item) => {
-        if (item.productId === product.id) {
-          return {
-            ...item,
-            qty: item.qty + quantity,
-            colors: item.colors ? [...item.colors, ...selectedColors] : selectedColors
-          };
-        }
-        return item;
-      });
-    } else {
-      updatedItems = [
-        ...items,
-        {
+    let updatedItems = [...items];
+    itemsToAdd.forEach(toAdd => {
+      const existingIdx = updatedItems.findIndex((item) => item.productId === product.id && item.name === (toAdd.key === '__base__' ? product.name : `${product.name} (${toAdd.name})`));
+      if (existingIdx >= 0) {
+        updatedItems[existingIdx] = {
+          ...updatedItems[existingIdx],
+          qty: updatedItems[existingIdx].qty + toAdd.qty,
+          colors: toAdd.colors.length > 0 ? [...(updatedItems[existingIdx].colors || []), ...toAdd.colors] : updatedItems[existingIdx].colors,
+        };
+      } else {
+        updatedItems.push({
           productId: product.id,
-          name: product.name,
-          qty: quantity,
-          price: currentPrice,
+          name: toAdd.key === '__base__' ? product.name : `${product.name} (${toAdd.name})`,
+          qty: toAdd.qty,
+          price: toAdd.unitPrice,
           image: images[0],
           categoryId: product.category_id || '',
           categoryName: resolvedCategory,
-          colors: colors.length > 0 ? selectedColors : undefined
-        }
-      ];
-    }
+          colors: toAdd.colors.length > 0 ? toAdd.colors : undefined,
+        });
+      }
+    });
 
     localStorage.setItem(`kh_custom_box_${boxId}`, JSON.stringify(updatedItems));
     
@@ -433,8 +446,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   }, [product]);
 
   const handleBuyNow = () => {
-    const itemsToAdd = activeOrderItems.filter(i => i.qty > 0);
-    if (itemsToAdd.length === 0) return;
+    const itemsToAdd = getItemsToAdd();
+    if (itemsToAdd.length === 0) {
+      setValidationError('برجاء تحديد الألوان والكميات المطلوبة أولاً');
+      setTimeout(() => setValidationError(null), 3000);
+      return;
+    }
+    setValidationError(null);
 
     itemsToAdd.forEach(item => {
       addItem({
@@ -461,8 +479,13 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
   };
 
   const handleAdd = () => {
-    const itemsToAdd = activeOrderItems.filter(i => i.qty > 0);
-    if (itemsToAdd.length === 0) return;
+    const itemsToAdd = getItemsToAdd();
+    if (itemsToAdd.length === 0) {
+      setValidationError('برجاء تحديد الألوان والكميات المطلوبة أولاً');
+      setTimeout(() => setValidationError(null), 3000);
+      return;
+    }
+    setValidationError(null);
 
     itemsToAdd.forEach(item => {
       addItem({
@@ -962,6 +985,11 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
                   </button>
                 ) : (
                   <div className="flex flex-col gap-3 w-full">
+                    {validationError && (
+                      <div className="p-3 bg-amber-50 border border-amber-300 text-amber-900 text-xs font-extrabold font-arabic rounded-2xl text-center shadow-2xs animate-fade-in" dir="rtl">
+                        ⚠️ {validationError}
+                      </div>
+                    )}
                     {/* Add to Cart (Clean Pill) */}
                     <div className="flex items-center gap-3">
                       {colors.length === 0 && (
@@ -1029,9 +1057,9 @@ export default function ProductDetailClient({ product }: ProductDetailClientProp
 
             {/* Total calculation */}
             <div className="flex items-center justify-between text-xs text-ink-muted pt-2 font-numbers">
-              <span>الإجمالي الجزئي:</span>
+              <span>الإجمالي:</span>
               <span className="font-bold text-amber text-sm">
-                {(currentPrice * quantity).toFixed(2)} ج.م
+                {grandTotal.toFixed(2)} ج.م
               </span>
             </div>
 
