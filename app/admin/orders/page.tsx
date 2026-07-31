@@ -93,8 +93,8 @@ export default function OrdersPage() {
       }
     }
 
-    const initialOrders = localOrders.length > 0 ? localOrders : getMockData.orders();
-    const initialShipping = localShipping.length > 0 ? localShipping : getMockData.shippingRates();
+    const initialOrders = localOrders;
+    const initialShipping = localShipping;
 
     initialOrders.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
@@ -102,7 +102,7 @@ export default function OrdersPage() {
     setShippingRates(initialShipping);
     setLoading(false);
 
-    // Background fetch with 5 seconds timeout
+    // Background fetch from Supabase - always overrides local cache
     try {
       const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000));
       const dbPromise = (async () => {
@@ -115,8 +115,9 @@ export default function OrdersPage() {
 
       const { oData, sData } = await Promise.race([dbPromise, timeoutPromise]) as any;
 
-      if (oData && oData.length > 0) {
-        oData.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      // Always use Supabase data (even if empty) - clear old mock/cached data
+      if (oData !== null && oData !== undefined) {
+        oData.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
         setOrders(oData);
         if (typeof window !== 'undefined') {
           localStorage.setItem('kh_orders', JSON.stringify(oData));
